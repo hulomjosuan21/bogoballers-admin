@@ -34,7 +34,7 @@ const data = {
     platform: [
         {
             title: "Dashboard",
-            url: "/league-administrator/pages/dashboard",
+            url: "/league-administrator",
             icon: LayoutDashboard,
         },
         {
