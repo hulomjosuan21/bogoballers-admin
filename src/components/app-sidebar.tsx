@@ -99,11 +99,11 @@ const data = {
             items: [
                 {
                     title: "Structure",
-                    url: "/league-administrator/pages/league/bracket/structure",
+                    url: "/league-administrator/league/bracket/structure",
                 },
                 {
                     title: "Match Team",
-                    url: "/league-administrator/pages/league/bracket/match",
+                    url: "/league-administrator/league/bracket/structure",
                 }
             ],
         }
@@ -128,7 +128,7 @@ const data = {
     navSecondary: [
         {
             title: "Settings",
-            url: "/league-administrator/pages/settings",
+            url: "/league-administrator/settings",
             icon: Settings,
         },
         {

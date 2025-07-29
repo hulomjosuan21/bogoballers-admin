@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "name": "Game 1",
+    "nextMatchId": null,
+    "tournamentRoundText": "Round Robin",
+    "startTime": "2025-08-01T10:00:00",
+    "state": "SCORE_DONE",
+    "participants": [
+      {
+        "id": "1",
+        "name": "Team Alpha",
+        "isWinner": true,
+        "score": 65,
+        "resultText": "65"
+      },
+      {
+        "id": "2",
+        "name": "Team Beta",
+        "isWinner": false,
+        "score": 58,
+        "resultText": "58"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Game 2",
+    "nextMatchId": null,
+    "tournamentRoundText": "Round Robin",
+    "startTime": "2025-08-01T12:00:00",
+    "state": "SCORE_DONE",
+    "participants": [
+      {
+        "id": "3",
+        "name": "Team Gamma",
+        "isWinner": false,
+        "score": 61,
+        "resultText": "61"
+      },
+      {
+        "id": "4",
+        "name": "Team Delta",
+        "isWinner": true,
+        "score": 69,
+        "resultText": "69"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Game 3",
+    "nextMatchId": null,
+    "tournamentRoundText": "Round Robin",
+    "startTime": "2025-08-02T10:00:00",
+    "state": "SCORE_DONE",
+    "participants": [
+      {
+        "id": "5",
+        "name": "Team Eagles",
+        "isWinner": false,
+        "score": 60,
+        "resultText": "60"
+      },
+      {
+        "id": "6",
+        "name": "Team Falcons",
+        "isWinner": true,
+        "score": 70,
+        "resultText": "70"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Semi Final 1",
+    "nextMatchId": null,
+    "tournamentRoundText": "Semi Finals",
+    "startTime": "2025-08-10T10:00:00",
+    "state": "SCHEDULED",
+    "participants": [
+      {
+        "id": "1",
+        "name": "Team Alpha",
+        "isWinner": false,
+        "score": 0,
+        "resultText": ""
+      },
+      {
+        "id": "4",
+        "name": "Team Delta",
+        "isWinner": false,
+        "score": 0,
+        "resultText": ""
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Semi Final 2",
+    "nextMatchId": null,
+    "tournamentRoundText": "Semi Finals",
+    "startTime": "2025-08-10T13:00:00",
+    "state": "SCHEDULED",
+    "participants": [
+      {
+        "id": "6",
+        "name": "Team Falcons",
+        "isWinner": false,
+        "score": 0,
+        "resultText": ""
+      },
+      {
+        "id": "2",
+        "name": "Team Beta",
+        "isWinner": false,
+        "score": 0,
+        "resultText": ""
+      }
+    ]
+  }
+]
