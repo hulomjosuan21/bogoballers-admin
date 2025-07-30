@@ -1,9 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import LeagueAdminLayout from './layouts/LeagueAdminLayout'
-import DashboardPage from './pages/league-administrator/DashboardPage'
-import TeamSubmissionPage from './pages/league-administrator/TeamSubmissionPage'
-import BracketStructurePage from './pages/league-administrator/bracket/structurePage'
-import SettingsPage from './pages/settingPage'
+import ProtectedRoute from './components/ProtectedRoute'
+import { leagueAdminRoutes } from './routes/leagueAdminRoutes'
 
 export default function App() {
   return (
@@ -11,11 +9,17 @@ export default function App() {
       <Routes>
         <Route path="/" element={<h1>Home</h1>} />
 
-        <Route path="/league-administrator" element={<LeagueAdminLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="team-submission" element={<TeamSubmissionPage />} />
-          <Route path="league/bracket/structure" element={<BracketStructurePage />} />
-          <Route path="settings" element={<SettingsPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/league-administrator" element={<LeagueAdminLayout />}>
+            {leagueAdminRoutes.map((route, index) => (
+              <Route
+                key={index}
+                index={route.index}
+                path={route.path}
+                element={route.element}
+              />
+            ))}
+          </Route>
         </Route>
       </Routes>
     </>

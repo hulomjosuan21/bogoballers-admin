@@ -16,8 +16,8 @@ export function disableOnLoading({
 }): string {
   return [
     baseClass,
+    `transition-opacity duration-300 ease-in-out`,
     condition && `disable-on-loading-${opacity}`,
-    condition && "transition-opacity duration-300 ease-in-out",
   ]
     .filter(Boolean)
     .join(" ");

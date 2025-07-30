@@ -29,6 +29,7 @@ import { NavMenu } from "./nav-menu"
 // import { NavUser } from "./nav-profile"
 import { NavSecondaryMenu } from "./nav-secondary-menu"
 import { AppSidebarHeader } from "./nav-header"
+import { NavProfile } from "./nav-profile"
 
 const data = {
     platform: [
@@ -54,7 +55,7 @@ const data = {
                 },
                 {
                     title: "Submission",
-                    url: "/league-administrator/pages/player/submission",
+                    url: "/league-administrator/pages/league/player/submission",
                 }
             ],
         },
@@ -70,7 +71,7 @@ const data = {
                 },
                 {
                     title: "Submissions",
-                    url: "/league-administrator/pages/team/submission",
+                    url: "/league-administrator/pages/league/team/submission",
                 }
             ],
         },
@@ -78,7 +79,7 @@ const data = {
     league: [
         {
             title: "Create",
-            url: "/league-administrator/pages/league/create",
+            url: "/league-administrator/pages/league/new",
             icon: Plus,
         },
         {
@@ -99,19 +100,19 @@ const data = {
             items: [
                 {
                     title: "Structure",
-                    url: "/league-administrator/league/bracket/structure",
+                    url: "/league-administrator/pages/league/bracket/structure",
                 },
                 {
                     title: "Match Team",
-                    url: "/league-administrator/league/bracket/structure",
+                    url: "/league-administrator/pages/league/bracket/structure",
                 }
             ],
         }
     ],
     match: [
         {
-            title: "Staging Options",
-            url: "/league-administrator/pages/match/staging-options",
+            title: "Set Round",
+            url: "/league-administrator/pages/set/round",
             icon: FlagTriangleRight,
         },
         {
@@ -120,7 +121,7 @@ const data = {
             icon: CalendarArrowUp
         },
         {
-            title: "Scheduled",
+            title: "Scheduled Match",
             url: "/league-administrator/pages/match/scheduled",
             icon: CalendarCheck,
         },
@@ -128,7 +129,7 @@ const data = {
     navSecondary: [
         {
             title: "Settings",
-            url: "/league-administrator/settings",
+            url: "/league-administrator/pages/settings",
             icon: Settings,
         },
         {
@@ -182,7 +183,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {!temp && !temp && (
                     <NavSecondaryMenu items={data.navSecondary} className="mt-auto" />
                 )}
-                {/* {navUser()} */}
+                <NavProfile/>
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>

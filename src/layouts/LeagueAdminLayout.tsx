@@ -7,9 +7,9 @@ export default function LeagueAdminLayout() {
         <SidebarProvider>
             <main className="flex h-screen w-screen overflow-hidden">
                 <AppSidebar />
-                <main className="flex-1 h-full w-full overflow-auto">
+                <section className="flex-1 h-full w-full overflow-auto">
                     <Outlet />
-                </main>
+                </section>
             </main>
         </SidebarProvider>
     )

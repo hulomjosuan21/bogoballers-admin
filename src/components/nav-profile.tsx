@@ -29,9 +29,9 @@ import {
 } from "@/components/ui/sidebar"
 // import { useLogout } from "@/lib/logout"
 import { useState } from "react"
-import type { LeagueAdminType } from "@/models/league-administrator"
+import { Logo } from "@/assets"
 
-export function NavUser({ admin }: { admin: LeagueAdminType }) {
+export function NavProfile() {
     const { isMobile } = useSidebar()
     const [isLoggingOut, setIsLoggingOut] = useState(false)
     const handleLogout = async () => {
@@ -53,12 +53,12 @@ export function NavUser({ admin }: { admin: LeagueAdminType }) {
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
                             <Avatar className="h-8 w-8 rounded-lg">
-                                <AvatarImage src={admin.organization_logo_url} alt="logo" className="object-cover" />
-                                <AvatarFallback className="rounded-lg">BB</AvatarFallback>
+                                <AvatarImage src={Logo.Main} alt="logo" className="object-cover" />
+                                <AvatarFallback className="rounded-lg">B</AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-medium">{admin.organization_name}</span>
-                                <span className="truncate text-xs">{admin.user.email}</span>
+                                <span className="truncate font-medium">No data</span>
+                                <span className="truncate text-xs">No data</span>
                             </div>
                             <ChevronsUpDown className="ml-auto size-4" />
                         </SidebarMenuButton>
@@ -72,13 +72,13 @@ export function NavUser({ admin }: { admin: LeagueAdminType }) {
                         <DropdownMenuLabel className="p-0 font-normal">
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <Avatar className="h-8 w-8 rounded-lg">
-                                    <AvatarImage src={admin.organization_name} alt="org name" />
-                                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                                    <AvatarImage src={Logo.Main} alt="org name" />
+                                    <AvatarFallback className="rounded-lg">B</AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-medium">{admin.organization_name}</span>
-                                    <span className="truncate text-xs">{admin.user.email}</span>
-                                    <span className="truncate text-xs text-muted-foreground">{admin.organization_address}</span>
+                                    <span className="truncate font-medium">No data</span>
+                                    <span className="truncate text-xs">No data</span>
+                                    <span className="truncate text-xs text-muted-foreground">No data</span>
                                 </div>
                             </div>
                         </DropdownMenuLabel>
