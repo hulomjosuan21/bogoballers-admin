@@ -1,7 +1,7 @@
-import path from "path"
-import tailwindcss from "@tailwindcss/vite"
-import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import path from "path";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,8 +12,8 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ["basketball.bogoballers.site","dev.bogoballers.site"],
+    allowedHosts: ["basketball.bogoballers.site", "dev.bogoballers.site"],
     host: true,
-    port:5173
+    port: 5173,
   },
-})
+});

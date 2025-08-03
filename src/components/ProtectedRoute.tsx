@@ -3,6 +3,8 @@ import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getErrorMessage } from "@/lib/error";
+import { Progress } from "@/components/ui/progress";
+import { useEffect, useState } from "react";
 
 function hasAuthCookies(): boolean {
   const cookies = document.cookie;
@@ -14,10 +16,22 @@ export function ProtectedRoute() {
   const { leagueAdmin, leagueAdminLoading, leagueAdminError } =
     useAuthLeagueAdmin();
 
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (leagueAdminLoading) {
+      const interval = setInterval(() => {
+        setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, [leagueAdminLoading]);
+
   if (leagueAdminLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex flex-col items-center justify-center h-screen px-4 space-y-4">
+        <p className="text-sm text-muted-foreground">Loading your account...</p>
+        <Progress value={progress} className="w-64" />
       </div>
     );
   }

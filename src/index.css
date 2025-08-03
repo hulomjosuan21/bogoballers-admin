@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.price::before {
+  content: "₱";
+}
+
 .with-sidebar {
   @apply grid grid-cols-1 sm:grid-cols-[auto_1fr];
 }
@@ -164,7 +168,7 @@
 
 @layer base {
   html {
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
   }
 
   * {
@@ -199,12 +203,12 @@ h3.tiptap-heading:first-child {
   margin-top: 0;
 }
 
-h1.tiptap-heading+h2.tiptap-heading,
-h1.tiptap-heading+h3.tiptap-heading,
-h2.tiptap-heading+h1.tiptap-heading,
-h2.tiptap-heading+h3.tiptap-heading,
-h3.tiptap-heading+h1.tiptap-heading,
-h3.tiptap-heading+h2.tiptap-heading {
+h1.tiptap-heading + h2.tiptap-heading,
+h1.tiptap-heading + h3.tiptap-heading,
+h2.tiptap-heading + h1.tiptap-heading,
+h2.tiptap-heading + h3.tiptap-heading,
+h3.tiptap-heading + h1.tiptap-heading,
+h3.tiptap-heading + h2.tiptap-heading {
   margin-top: 0;
 }
 

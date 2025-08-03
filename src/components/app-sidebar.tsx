@@ -147,8 +147,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { leagueAdmin, leagueAdminLoading, leagueAdminError } =
-    useAuthLeagueAdmin();
+  const { leagueAdmin, leagueAdminLoading } = useAuthLeagueAdmin();
 
   return (
     <Sidebar collapsible="icon" {...props}>
