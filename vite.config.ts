@@ -12,7 +12,8 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ["basketball.bogoballers.site"],
+    allowedHosts: ["basketball.bogoballers.site","dev.bogoballers.site"],
     host: true,
+    port:5173
   },
 })

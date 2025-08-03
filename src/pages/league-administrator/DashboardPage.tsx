@@ -1,14 +1,16 @@
 import ContentHeader from "@/components/content-header";
+import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-
 export default function DashboardPage() {
-    return (
-        <ContentShell>
-            <ContentHeader title="Dashboard">
-            </ContentHeader>
-
-            <ContentBody className="grid place-content-center">
-            </ContentBody>
-        </ContentShell>
-    )
+  const { leagueAdmin } = useAuthLeagueAdmin();
+  return (
+    <ContentShell>
+      <ContentHeader title="Dashboard" />
+      <ContentBody>
+        <pre>
+          {leagueAdmin ? JSON.stringify(leagueAdmin, null, 2) : "No Admin"}
+        </pre>
+      </ContentBody>
+    </ContentShell>
+  );
 }

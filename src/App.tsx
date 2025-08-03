@@ -1,9 +1,9 @@
-import { Routes, Route } from 'react-router-dom'
-import LeagueAdminLayout from './layouts/LeagueAdminLayout'
-import ProtectedRoute from './components/ProtectedRoute'
-import { leagueAdminRoutes } from './routes/leagueAdminRoutes'
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
+import { Routes, Route } from "react-router-dom";
+import LeagueAdminLayout from "./layouts/LeagueAdminLayout";
+import { leagueAdminRoutes } from "./routes/leagueAdminRoutes";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 export default function App() {
   return (
@@ -28,5 +28,5 @@ export default function App() {
         </Route>
       </Routes>
     </>
-  )
+  );
 }

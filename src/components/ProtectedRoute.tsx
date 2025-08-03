@@ -1,45 +1,83 @@
-import { Outlet, useNavigate } from "react-router-dom"
-import { useEffect, useState } from "react"
-import { Button } from "./ui/button"
+import { Outlet, useNavigate } from "react-router-dom";
+import { useAuthLeagueAdmin } from "@/hooks/useAuth";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { getErrorMessage } from "@/lib/error";
 
-// 🔐 TEMPORARY AUTH OBJECT (replace with real auth state later)
-const access_token = {
-    token: "abc123",
-    expires_at: Date.now() + 60 * 60 * 1000, // expires in 1 hour
-    account_type: "LEAGUE_ADMIN", // valid roles: LEAGUE_ADMIN
+function hasAuthCookies(): boolean {
+  const cookies = document.cookie;
+  return cookies.includes("access_token") || cookies.includes("QUART_AUTH");
 }
 
-export default function ProtectedRoute() {
-    const [error, setError] = useState<string | null>(null)
-    const navigate = useNavigate()
+export function ProtectedRoute() {
+  const navigate = useNavigate();
+  const { leagueAdmin, leagueAdminLoading, leagueAdminError } =
+    useAuthLeagueAdmin();
 
-    useEffect(() => {
-        if (!access_token?.token) {
-            setError("🔒 You must be logged in.")
-        } else if (Date.now() > access_token.expires_at) {
-            setError("⏰ Session expired. Please login again.")
-        } else if (access_token.account_type !== "LEAGUE_ADMIN") {
-            setError("🚫 Access denied. League Administrator only.")
-        }
-    }, [])
+  if (leagueAdminLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-    if (error) {
-        return (
-            <main className="flex items-center justify-center h-screen text-center px-4 text-red-600 text-lg font-medium">
-                <section>
-                    <p>{error}</p>
-                    <p className="mt-2 text-sm text-gray-500">You are not allowed to access this page.</p>
-                    <Button
-                        onClick={() => navigate("/")}
-                        className="mt-4"
-                        variant="outline"
-                    >
-                        Go to Home
-                    </Button>
-                </section>
-            </main>
-        )
+  if (leagueAdminError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen px-4 text-center space-y-4">
+        <p className="text-sm text-muted-foreground">
+          {getErrorMessage(leagueAdminError)}
+        </p>
+        <Button
+          onClick={() => navigate("/auth/login")}
+          variant="destructive"
+          size="sm"
+        >
+          Go to Login
+        </Button>
+      </div>
+    );
+  }
+
+  if (!leagueAdmin) {
+    if (!hasAuthCookies()) {
+      navigate("/auth/login", { replace: true });
+      return null;
     }
 
-    return <Outlet />
+    return (
+      <div className="flex flex-col items-center justify-center h-screen px-4 text-center space-y-4">
+        <p className="text-sm text-muted-foreground">
+          You must be logged in to access this page.
+        </p>
+        <Button
+          onClick={() => navigate("/auth/login")}
+          variant="destructive"
+          size="sm"
+        >
+          Go to Login
+        </Button>
+      </div>
+    );
+  }
+
+  if (!leagueAdmin.user.is_verified) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen px-4 text-center space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Your account is <strong>not yet verified</strong>. Please wait for
+          approval from the system administrator.
+        </p>
+        <Button
+          onClick={() => navigate("/auth/login")}
+          variant="destructive"
+          size="sm"
+        >
+          Go to Login
+        </Button>
+      </div>
+    );
+  }
+
+  return <Outlet />;
 }
