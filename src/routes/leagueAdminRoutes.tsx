@@ -8,8 +8,9 @@ import {
   TeamSubmissionPage,
   BracketStructurePage,
   SettingsPage,
-  AnalyticsPage
-} from '@/pages'
+  AnalyticsPage,
+} from "@/pages";
+import LeagueCategoryPage from "@/pages/league-administrator/league/LeagueCategoryPage";
 
 export const leagueAdminRoutes: RouteObject[] = [
   {
@@ -17,35 +18,39 @@ export const leagueAdminRoutes: RouteObject[] = [
     element: <DashboardPage />,
   },
   {
-    path: 'pages/league/new',
+    path: "pages/league/new",
     element: <LeagueCreationPage />,
   },
   {
-    path: 'pages/league/resource',
+    path: "pages/league/resource",
     element: <LeagueResourcePage />,
   },
   {
-    path: 'pages/set/round',
+    path: "pages/set/round",
     element: <SetRoundPage />,
   },
   {
-    path: 'pages/league/player/submission',
+    path: "pages/league/player/submission",
     element: <PlayerSubmissionPage />,
   },
   {
-    path: 'pages/league/team/submission',
+    path: "pages/league/team/submission",
     element: <TeamSubmissionPage />,
   },
   {
-    path: 'pages/league/bracket/structure',
+    path: "pages/league/bracket/structure",
     element: <BracketStructurePage />,
   },
   {
-    path: 'pages/settings',
+    path: "pages/settings",
     element: <SettingsPage />,
   },
   {
-    path: 'pages/analytics',
+    path: "pages/analytics",
     element: <AnalyticsPage />,
   },
-]
+  {
+    path: "pages/league/categories",
+    element: <LeagueCategoryPage />,
+  },
+];

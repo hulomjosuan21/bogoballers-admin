@@ -14,6 +14,9 @@ import {
   FileBox,
   CalendarArrowUp,
   FlagTriangleRight,
+  FolderKanban,
+  Icon,
+  GitBranchPlus,
 } from "lucide-react";
 
 import {
@@ -89,9 +92,25 @@ const data = {
       icon: Book,
     },
     {
-      title: "Resource",
-      url: "/league-administrator/pages/league/resource",
-      icon: FileBox,
+      title: "Categories",
+      url: "/league-administrator/pages/league/categories",
+      icon: GitBranchPlus,
+    },
+    {
+      title: "Manage",
+      url: "#",
+      icon: FolderKanban,
+      isActive: true,
+      items: [
+        {
+          title: "Officials & Courts",
+          url: "#",
+        },
+        {
+          title: "Sponsors & Partners",
+          url: "#",
+        },
+      ],
     },
     {
       title: "Bracket",

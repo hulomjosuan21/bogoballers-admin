@@ -47,13 +47,6 @@ import { toast } from "sonner";
 
 const formSchema = z
   .object({
-    organization_logo: z.union([z.instanceof(File), z.string().url()]).refine(
-      (val) => {
-        if (val instanceof File) return val.size > 0;
-        return typeof val === "string" && val.trim().length > 0;
-      },
-      { message: "Organization logo is required" }
-    ),
     organization_name: z
       .string()
       .min(4, "Organization name must be at least 4 characters")
@@ -78,11 +71,11 @@ export default function RegisterForm() {
   const [addressOpen, setAddressOpen] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const handleError = useErrorToast();
+  const [orgLogo, setOrgLogo] = useState<File | string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      organization_logo: undefined,
       organization_name: "",
       organization_type: "",
       organization_address: "",
@@ -95,7 +88,11 @@ export default function RegisterForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const formData = new FormData();
-    formData.append("organization_logo", values.organization_logo);
+    if (orgLogo instanceof File) {
+      formData.append("organization_logo", orgLogo);
+    } else if (typeof orgLogo === "string") {
+      formData.append("organization_logo", orgLogo);
+    }
     formData.append("organization_name", values.organization_name);
     formData.append("organization_type", values.organization_type);
     formData.append("organization_address", values.organization_address);
@@ -117,8 +114,11 @@ export default function RegisterForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <ImageUploadField
-          name="organization_logo"
-          label="Organization Logo"
+          value={orgLogo}
+          onChange={setOrgLogo}
+          allowUpload
+          allowEmbed
+          iconOnly={false}
           aspect={1}
         />
 

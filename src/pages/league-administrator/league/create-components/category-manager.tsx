@@ -159,7 +159,6 @@ export default function LeagueCategoryManager({
         <DialogTrigger asChild>
           <Button
             size={"sm"}
-            variant={"secondary"}
             onClick={() => {
               resetForm();
               setDialogOpen(true);
