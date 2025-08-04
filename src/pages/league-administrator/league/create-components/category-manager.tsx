@@ -158,6 +158,8 @@ export default function LeagueCategoryManager({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
           <Button
+            size={"sm"}
+            variant={"secondary"}
             onClick={() => {
               resetForm();
               setDialogOpen(true);
@@ -196,21 +198,21 @@ export default function LeagueCategoryManager({
             <Label>Max Teams</Label>
             <Input
               type="number"
-              value={maxTeam}
+              defaultValue={maxTeam}
               onChange={(e) => setMaxTeam(Number(e.target.value))}
             />
 
             <Label>Team Entrance Fee</Label>
             <Input
               type="number"
-              value={teamFee}
+              defaultValue={teamFee}
               onChange={(e) => setTeamFee(Number(e.target.value))}
             />
 
             <Label>Individual Entrance Fee</Label>
             <Input
               type="number"
-              value={individualFee}
+              defaultValue={individualFee}
               onChange={(e) => setIndividualFee(Number(e.target.value))}
             />
 
@@ -312,49 +314,59 @@ export default function LeagueCategoryManager({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {categories.map((cat, index) => (
-              <TableRow key={index}>
-                <TableCell>{cat.category_name}</TableCell>
-                <TableCell>{cat.max_team}</TableCell>
-                <TableCell>{cat.accept_teams ? "Yes" : "No"}</TableCell>
-                <TableCell>
-                  {formatPeso(cat.team_entrance_fee_amount)}
-                </TableCell>
-                <TableCell>
-                  {formatPeso(cat.individual_player_entrance_fee_amount)}
-                </TableCell>
-                <TableCell>
-                  <div className="line-clamp-2">
-                    {cat.category_format
-                      .map((f) => `${f.format_round} - ${f.format}`)
-                      .join(", ")}
-                  </div>
-                </TableCell>
-
-                <TableCell className="text-end">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleEditCategory(index)}
-                      >
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleRemoveCategory(index)}
-                      >
-                        Remove
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {categories.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="text-center text-muted-foreground"
+                >
+                  No categories added.
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              categories.map((cat, index) => (
+                <TableRow key={index}>
+                  <TableCell>{cat.category_name}</TableCell>
+                  <TableCell>{cat.max_team}</TableCell>
+                  <TableCell>{cat.accept_teams ? "Yes" : "No"}</TableCell>
+                  <TableCell>
+                    {formatPeso(cat.team_entrance_fee_amount)}
+                  </TableCell>
+                  <TableCell>
+                    {formatPeso(cat.individual_player_entrance_fee_amount)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="line-clamp-2">
+                      {cat.category_format
+                        .map((f) => `${f.format_round} - ${f.format}`)
+                        .join(", ")}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleEditCategory(index)}
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleRemoveCategory(index)}
+                        >
+                          Remove
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

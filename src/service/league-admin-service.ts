@@ -4,7 +4,6 @@ import type { LeagueAdminType } from "@/types/league-admin";
 
 class LeagueAdministratorService {
   static async auth(): Promise<LeagueAdminType> {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
     const response = await axiosClient.get("/league-administrator/auth", {
       withCredentials: true,
     });
