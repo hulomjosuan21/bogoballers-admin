@@ -63,6 +63,53 @@
   @apply text-xs text-muted-foreground mt-1 ml-1;
 }
 
+@keyframes dash-finish {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+@keyframes dash-ongoing {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+
+@keyframes dash-upcoming {
+  to {
+    stroke-dashoffset: -15;
+  }
+}
+
+/* Change the control buttons' icon/text color */
+.react-flow__controls button {
+  color: white; /* text/icon color */
+  fill: white; /* icon color for SVG */
+}
+
+/* Optional: change background */
+.react-flow__controls button {
+  background-color: #333; /* dark background */
+}
+
+/* Optional: change hover style */
+.react-flow__controls button:hover {
+  background-color: #555;
+  color: yellow;
+}
+
+.node-menu-button {
+  & > button {
+    @apply bg-white text-gray-900 fill-gray-900 hover:opacity-80;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    & > button {
+      @apply bg-gray-800 text-white fill-white;
+    }
+  }
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

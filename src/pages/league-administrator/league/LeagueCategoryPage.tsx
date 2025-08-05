@@ -11,250 +11,304 @@ import {
   type Node,
   type Edge,
   type Connection,
+  type NodeChange,
+  type EdgeChange,
+  useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
+import { Maximize } from "lucide-react";
+import { ContentBody, ContentShell } from "@/layouts/ContentShell";
+import ContentHeader from "@/components/content-header";
+import {
+  CATEGORY_HEIGHT,
+  CATEGORY_WIDTH,
+  type CategoryNodeData,
+  type RoundDetails,
+  type RoundMenuItem,
+  type RoundNodeData,
+  type RoundType,
+  type StatusMap,
+} from "./category/category-types";
+import { RoundNodeDialog } from "./category/category-components";
 
-const roundsData = [
-  { id: "1", label: "Elimination" },
-  { id: "2", label: "Quarterfinals" },
-  { id: "3", label: "Semifinals" },
-  { id: "4", label: "Finals" },
-];
+function CategoryNode({ data }: { data: CategoryNodeData }) {
+  return (
+    <div
+      className={`border-2 rounded-md flex flex-col overflow-hidden w-[${CATEGORY_WIDTH}px] h-[${CATEGORY_HEIGHT}px]`}
+    >
+      <div className="bg-primary font-semibold text-sm p-3">
+        {data.categoryName}
+      </div>
+      <div className="flex-1 p-2 overflow-auto">
+        <p className="text-helper italic text-sm">Drop round nodes here...</p>
+      </div>
+    </div>
+  );
+}
 
-function RoundNode({ data }: any) {
-  const { label, status, setStatus, formats, states, test } = data;
+function RoundNode({ data }: { data: RoundNodeData }) {
+  const { label, onOpen, icon: Icon } = data;
+
+  const borderColors: Record<RoundType, string> = {
+    Elimination: "border-cyan-500",
+    Quarterfinals: "border-sky-500",
+    Semifinals: "border-amber-500",
+    Finals: "border-purple-500",
+  };
 
   return (
-    <div className="bg-accent border rounded-md min-w-[150px] text-center shadow-sm overflow-hidden">
-      <div className="drag-handle cursor-grab font-bold bg-primary px-2 py-1">
-        {label}
-      </div>
-
-      <div className="p-2 grid space-y-2">
-        {/* First select: Formats */}
-        <Select
-          defaultValue={status}
-          onValueChange={(value) => setStatus(label, value)}
-        >
-          <SelectTrigger className="mt-2 p-1 text-xs w-full">
-            <SelectValue placeholder="Select format" />
-          </SelectTrigger>
-          <SelectContent>
-            {formats.map((f: string) => (
-              <SelectItem key={f} value={f}>
-                {f}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Second select: Statuses */}
-        <Select
-          defaultValue={status}
-          onValueChange={(value) => setStatus(label, value)}
-        >
-          <SelectTrigger className="mt-2 p-1 text-xs w-full">
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            {states.map((s: string) => (
-              <SelectItem key={s} value={s}>
-                {s}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {test}
-      </div>
-
+    <div
+      onClick={onOpen}
+      className={`bg-muted rounded-md p-3 cursor-pointer flex items-center gap-2 shadow-sm hover:opacity-90 transition border-2 ${borderColors[label]}`}
+    >
+      <Icon className="w-4 h-4" />
+      <span className="font-medium">{label}</span>
       <Handle type="source" position={Position.Right} />
       <Handle type="target" position={Position.Left} />
+      <Handle type="target" position={Position.Bottom} />
     </div>
   );
 }
 
 export default function LeagueCategoryPage() {
-  const [statuses, setStatuses] = useState<Record<string, string>>({
+  const reactFlowInstance = useReactFlow();
+
+  const fakeCategories = [
+    { category_id: "cat1", category_name: "Open League Men" },
+    { category_id: "cat2", category_name: "Under-13 Midget" },
+    { category_id: "cat3", category_name: "PWD Women" },
+    { category_id: "cat4", category_name: "24-Below Young Adult" },
+  ];
+
+  const [nodes, setNodes] = useState<Node[]>(() =>
+    fakeCategories.map((cat, index) => ({
+      id: cat.category_id,
+      type: "categoryNode",
+      position: { x: 50, y: index * 800 },
+      data: { categoryId: cat.category_id, categoryName: cat.category_name },
+      draggable: true,
+      selectable: true,
+    }))
+  );
+
+  const [edges, setEdges] = useState<Edge[]>([]);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedRound, setSelectedRound] = useState<RoundDetails | null>(null);
+
+  const [statuses, setStatuses] = useState<StatusMap>({
     Elimination: "Upcoming",
     Quarterfinals: "Upcoming",
     Semifinals: "Upcoming",
     Finals: "Upcoming",
   });
 
-  const setStatus = (label: string, status: string) => {
+  const setStatus = (label: RoundType, status: string) => {
     setStatuses((prev) => ({ ...prev, [label]: status }));
   };
-  const CustomMessage = () => (
-    <div className="text-xs bg-green-100 p-1 rounded">
-      ✅ All matches scheduled
-    </div>
-  );
-  const [nodes, setNodes] = useState<Node[]>([
-    {
-      id: "1",
-      type: "roundNode",
-      position: { x: 0, y: 100 },
-      data: {
-        label: "Elimination",
-        status: statuses["Elimination"],
-        setStatus,
-        formats: ["Round Robin", "Knock Out", "Test"],
-        states: ["Upcoming", "Ongoing", "Finished"],
-      },
-      dragHandle: ".drag-handle",
-    },
-    {
-      id: "2",
-      type: "roundNode",
-      position: { x: 250, y: 100 },
-      data: {
-        label: "Quarterfinals",
-        status: statuses["Quarterfinals"],
-        setStatus,
-        formats: ["Swiss System", "Double Elimination"],
-        states: ["Upcoming", "Ongoing", "Finished"],
-      },
-      dragHandle: ".drag-handle",
-    },
-    {
-      id: "3",
-      type: "roundNode",
-      position: { x: 500, y: 100 },
-      data: {
-        label: "Semifinals",
-        status: statuses["Semifinals"],
-        setStatus,
-        formats: ["Knock Out Only"],
-        states: ["Upcoming", "Ongoing", "Finished"],
-      },
-      dragHandle: ".drag-handle",
-    },
-    {
-      id: "4",
-      type: "roundNode",
-      position: { x: 750, y: 100 },
-      data: {
-        label: "Finals",
-        status: statuses["Finals"],
-        setStatus,
-        formats: ["Best of 3", "Best of 5"],
-        states: ["Upcoming", "Ongoing", "Finished"],
-        test: <CustomMessage />,
-      },
-      dragHandle: ".drag-handle",
-    },
-  ]);
 
-  const [edges, setEdges] = useState<Edge[]>([]);
-
-  const onNodesChange = useCallback(
-    (changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-
-  const onEdgesChange = useCallback(
-    (changes: any) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
-
-  const onEdgesDelete = useCallback((deletedEdges: Edge[]) => {
-    toast.success("Removed!");
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setNodes((nds) => applyNodeChanges(changes, nds));
   }, []);
 
-  const onConnect = useCallback(
-    (connection: Connection) => {
-      const { source, target } = connection;
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+    setEdges((eds) => applyEdgeChanges(changes, eds));
+  }, []);
 
-      const sourceExists = edges.some((e) => e.source === source);
-      const targetExists = edges.some((e) => e.target === target);
+  const onConnect = useCallback((connection: Connection) => {
+    setEdges((eds) => addEdge(connection, eds));
+  }, []);
 
-      if (sourceExists || targetExists) {
-        toast.error("This node is already connected!");
+  const onDragStart = (event: React.DragEvent, roundType: RoundType) => {
+    event.dataTransfer.setData("application/reactflow", roundType);
+    event.dataTransfer.effectAllowed = "move";
+  };
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+
+      const roundType = event.dataTransfer.getData(
+        "application/reactflow"
+      ) as RoundType;
+      if (!roundType) return;
+
+      const mousePosition = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      const categoryWidth = CATEGORY_WIDTH;
+      const categoryHeight = CATEGORY_HEIGHT;
+
+      const targetCategory = nodes.find((node) => {
+        if (node.type !== "categoryNode") return false;
+        return (
+          mousePosition.x >= node.position.x &&
+          mousePosition.x <= node.position.x + categoryWidth &&
+          mousePosition.y >= node.position.y &&
+          mousePosition.y <= node.position.y + categoryHeight
+        );
+      });
+
+      if (!targetCategory) {
+        toast.error("You must drop inside a category!");
         return;
       }
 
-      setEdges((eds) =>
-        addEdge(
-          {
-            ...connection,
-            style: {
-              stroke: "#f39c12",
-              strokeWidth: 2,
-              strokeDasharray: "10,5",
-            },
+      const hasDuplicate = nodes.some((n) => {
+        if (n.type !== "roundNode" || n.parentId !== targetCategory.id)
+          return false;
+        const nodeData = n.data as RoundNodeData;
+        return nodeData.label === roundType;
+      });
+
+      if (hasDuplicate) {
+        toast.error("This round type already exists in this category!");
+        return;
+      }
+
+      const newRoundNode: Node<RoundNodeData> = {
+        id: `round-${nodes.length + 1}`,
+        type: "roundNode",
+        position: {
+          x: mousePosition.x - targetCategory.position.x - 50,
+          y: mousePosition.y - targetCategory.position.y - 50,
+        },
+        draggable: true,
+        parentId: targetCategory.id,
+        extent: "parent",
+        data: {
+          label: roundType,
+          icon: Maximize,
+          onOpen: () => {
+            setSelectedRound({
+              label: roundType,
+              formats: ["Format A", "Format B"],
+              states: ["Upcoming", "Ongoing", "Finished"],
+            });
+            setDialogOpen(true);
           },
-          eds
-        )
-      );
+        },
+      };
+
+      setNodes((prev) => prev.concat(newRoundNode));
     },
-    [edges] // dependency so it checks updated edges
+    [nodes, reactFlowInstance]
   );
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
 
   useEffect(() => {
     setEdges((prevEdges) =>
       prevEdges.map((edge) => {
-        const sourceLabel = roundsData.find((r) => r.id === edge.source)?.label;
+        const sourceNode = nodes.find((n) => n.id === edge.source);
+        const sourceLabel = (sourceNode?.data as RoundNodeData)?.label;
         const sourceStatus = sourceLabel ? statuses[sourceLabel] : "";
 
-        const isFinished = sourceStatus === "Finished";
+        let style: React.CSSProperties = {};
 
-        return {
-          ...edge,
-          style: {
-            stroke: isFinished ? "#4caf50" : "#f39c12",
-            strokeWidth: 2,
-            strokeDasharray: isFinished ? "5,5" : "10,5",
-            animation: isFinished
-              ? "dash-finish 2s linear infinite"
-              : "dash-unfinished 1s linear infinite",
-          },
-        };
+        switch (sourceStatus) {
+          case "Finished":
+            style = {
+              stroke: "#4caf50",
+              strokeWidth: 2,
+              strokeDasharray: "4,4",
+              animation: "dash-finish 1.5s linear infinite",
+            };
+            break;
+          case "Ongoing":
+            style = {
+              stroke: "#2196f3",
+              strokeWidth: 2,
+              strokeDasharray: "8,4",
+              animation: "dash-ongoing 1s linear infinite",
+            };
+            break;
+          case "Upcoming":
+          default:
+            style = {
+              stroke: "#f39c12",
+              strokeWidth: 2,
+              strokeDasharray: "12,6",
+              animation: "dash-upcoming 2s linear infinite",
+            };
+            break;
+        }
+
+        return { ...edge, style };
       })
     );
-  }, [statuses]);
+  }, [statuses, nodes]);
 
   return (
-    <>
-      <style>
-        {`
-            @keyframes dash-unfinished {
-                to {
-                stroke-dashoffset: -15;
-                }
-            }
-            @keyframes dash-finish {
-                to {
-                stroke-dashoffset: -10;
-                }
-            }
-        `}
-      </style>
-      <div className="h-full w-full">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onEdgesDelete={onEdgesDelete} // ✅ Now edges can be deleted
-          onConnect={onConnect}
-          nodeTypes={{ roundNode: RoundNode }}
-          fitView
-          nodesDraggable
-          nodesConnectable
-          elementsSelectable // ✅ Needed so edges can be selected
+    <ContentShell>
+      <ContentHeader title="Category Management" />
+
+      <ContentBody className="flex-row">
+        <div className="h-full border rounded-md w-full">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            nodeTypes={{
+              categoryNode: CategoryNode,
+              roundNode: RoundNode,
+            }}
+            fitView
+          >
+            <Background />
+            <Controls className="node-menu-button" />
+          </ReactFlow>
+        </div>
+
+        <RoundNodeMenu onDragStart={onDragStart} />
+      </ContentBody>
+
+      <RoundNodeDialog
+        round={selectedRound}
+        status={selectedRound ? statuses[selectedRound.label] : ""}
+        setStatus={setStatus}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
+    </ContentShell>
+  );
+}
+
+function RoundNodeMenu({
+  onDragStart,
+}: {
+  onDragStart: (event: React.DragEvent, nodeType: RoundType) => void;
+}) {
+  const menuItems: RoundMenuItem[] = [
+    { label: "Elimination", icon: Maximize, border: "border-cyan-500" },
+    { label: "Quarterfinals", icon: Maximize, border: "border-sky-500" },
+    { label: "Semifinals", icon: Maximize, border: "border-amber-500" },
+    { label: "Finals", icon: Maximize, border: "border-purple-500" },
+  ];
+
+  return (
+    <div className="w-48 p-2 border rounded-md flex flex-col gap-2">
+      {menuItems.map(({ label, icon: Icon, border }) => (
+        <div
+          key={label}
+          draggable
+          onDragStart={(event) => onDragStart(event, label)}
+          className={`flex items-center gap-2 p-2 rounded-md border-2 ${border} bg-background cursor-grab hover:opacity-80`}
         >
-          <Background />
-          <Controls className="text-foreground" />
-        </ReactFlow>
-      </div>
-    </>
+          <Icon className="w-4 h-4" />
+          <span className="text-sm font-medium">{label}</span>
+        </div>
+      ))}
+    </div>
   );
 }
