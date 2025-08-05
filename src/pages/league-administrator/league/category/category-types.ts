@@ -14,6 +14,7 @@ export type RoundType =
 export interface RoundNodeData extends Record<string, unknown> {
   icon: LucideIcon;
   label: RoundType;
+  status: string;
   onOpen: () => void;
 }
 
@@ -37,5 +38,4 @@ export type RoundBorderColor =
 export type RoundMenuItem = {
   label: RoundType;
   icon: LucideIcon;
-  border: RoundBorderColor;
 };
