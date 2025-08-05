@@ -139,16 +139,13 @@ export default function LeagueCategoryPage() {
         y: event.clientY,
       });
 
-      const categoryWidth = CATEGORY_WIDTH;
-      const categoryHeight = CATEGORY_HEIGHT;
-
       const targetCategory = nodes.find((node) => {
         if (node.type !== "categoryNode") return false;
         return (
           mousePosition.x >= node.position.x &&
-          mousePosition.x <= node.position.x + categoryWidth &&
+          mousePosition.x <= node.position.x + CATEGORY_WIDTH &&
           mousePosition.y >= node.position.y &&
-          mousePosition.y <= node.position.y + categoryHeight
+          mousePosition.y <= node.position.y + CATEGORY_HEIGHT
         );
       });
 
