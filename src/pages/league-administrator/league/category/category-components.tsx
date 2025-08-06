@@ -1,4 +1,8 @@
-import type { RoundDetails, RoundType } from "./category-types";
+import {
+  RoundTypeEnum,
+  RoundFormatEnum,
+  RoundStateEnum,
+} from "./category-types";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState } from "react";
+
+const defaultFormat = Object.values(RoundFormatEnum)[0];
 
 export function RoundNodeDialog({
   round,
@@ -20,13 +27,16 @@ export function RoundNodeDialog({
   open,
   onOpenChange,
 }: {
-  round: RoundDetails | null;
-  status: string;
-  setStatus: (label: RoundType, status: string) => void;
+  round: { label: RoundTypeEnum } | null;
+  status: RoundStateEnum;
+  setStatus: (label: RoundTypeEnum, status: RoundStateEnum) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   if (!round) return null;
+
+  const [selectedFormat, setSelectedFormat] =
+    useState<RoundFormatEnum>(defaultFormat);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -34,17 +44,19 @@ export function RoundNodeDialog({
         <DialogHeader>
           <DialogTitle>Edit Round: {round.label}</DialogTitle>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
-          {/* Format Select */}
           <Select
-            defaultValue={status}
-            onValueChange={(value) => setStatus(round.label, value)}
+            value={selectedFormat}
+            onValueChange={(value) =>
+              setSelectedFormat(value as RoundFormatEnum)
+            }
           >
             <SelectTrigger className="mt-2 p-1 text-xs w-full">
               <SelectValue placeholder="Select format" />
             </SelectTrigger>
             <SelectContent>
-              {round.formats.map((f) => (
+              {Object.values(RoundFormatEnum).map((f) => (
                 <SelectItem key={f} value={f}>
                   {f}
                 </SelectItem>
@@ -53,14 +65,16 @@ export function RoundNodeDialog({
           </Select>
 
           <Select
-            defaultValue={status}
-            onValueChange={(value) => setStatus(round.label, value)}
+            value={status}
+            onValueChange={(value) =>
+              setStatus(round.label, value as RoundStateEnum)
+            }
           >
             <SelectTrigger className="mt-2 p-1 text-xs w-full">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
-              {round.states.map((s) => (
+              {Object.values(RoundStateEnum).map((s) => (
                 <SelectItem key={s} value={s}>
                   {s}
                 </SelectItem>

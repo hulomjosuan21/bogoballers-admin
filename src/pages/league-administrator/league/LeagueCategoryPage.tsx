@@ -3,8 +3,6 @@ import {
   ReactFlow,
   Background,
   Controls,
-  Handle,
-  Position,
   applyNodeChanges,
   applyEdgeChanges,
   addEdge,
@@ -21,60 +19,21 @@ import { Maximize } from "lucide-react";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ContentHeader from "@/components/content-header";
 import {
-  CATEGORY_HEIGHT,
-  CATEGORY_WIDTH,
-  type CategoryNodeData,
-  type RoundDetails,
-  type RoundMenuItem,
-  type RoundNodeData,
-  type RoundType,
+  RoundTypeEnum,
+  RoundStateEnum,
   type StatusMap,
+  type RoundDetails,
+  type RoundNodeData,
 } from "./category/category-types";
 import { RoundNodeDialog } from "./category/category-components";
-
-function CategoryNode({ data }: { data: CategoryNodeData }) {
-  return (
-    <div
-      className={`border-2 rounded-md flex flex-col overflow-hidden w-[${CATEGORY_WIDTH}px] h-[${CATEGORY_HEIGHT}px]`}
-    >
-      <div className="bg-primary font-semibold text-sm p-3">
-        {data.categoryName}
-      </div>
-      <div className="flex-1 p-2 overflow-auto">
-        <p className="text-helper italic text-sm">
-          Drop round & format nodes here...
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function RoundNode({ data }: { data: RoundNodeData }) {
-  const { label, onOpen, icon: Icon } = data;
-
-  return (
-    <div
-      onClick={onOpen}
-      className={`bg-muted rounded-md p-3 cursor-pointer flex items-center gap-2 shadow-sm hover:opacity-90 transition border-2`}
-    >
-      <Icon className="w-4 h-4" />
-      <span className="font-medium">{label}</span>
-      <Handle type="source" position={Position.Right} />
-      <Handle type="target" position={Position.Left} />
-      {/* Bottom handle for connecting to format nodes */}
-      <Handle id="bottom" type="source" position={Position.Bottom} />
-    </div>
-  );
-}
-
-function FormatNode({ data }: { data: { label: string } }) {
-  return (
-    <div className="bg-muted rounded-md p-2 cursor-pointer flex items-center gap-2 shadow-sm hover:opacity-90 transition border-1">
-      <span className="text-xs">{data.label}</span>
-      <Handle id="top" type="target" position={Position.Top} />
-    </div>
-  );
-}
+import { FormatNodeMenu, RoundNodeMenu } from "./category/category-node-menus";
+import {
+  CATEGORY_HEIGHT,
+  CATEGORY_WIDTH,
+  CategoryNode,
+  FormatNode,
+  RoundNode,
+} from "./category/category-nodes";
 
 export default function LeagueCategoryPage() {
   const reactFlowInstance = useReactFlow();
@@ -102,13 +61,13 @@ export default function LeagueCategoryPage() {
   const [selectedRound, setSelectedRound] = useState<RoundDetails | null>(null);
 
   const [statuses, setStatuses] = useState<StatusMap>({
-    Elimination: "Upcoming",
-    Quarterfinals: "Upcoming",
-    Semifinals: "Upcoming",
-    Finals: "Upcoming",
+    [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,
+    [RoundTypeEnum.QuarterFinal]: RoundStateEnum.Upcoming,
+    [RoundTypeEnum.SemiFinal]: RoundStateEnum.Upcoming,
+    [RoundTypeEnum.Final]: RoundStateEnum.Upcoming,
   });
 
-  const setStatus = (label: RoundType, status: string) => {
+  const setStatus = (label: RoundTypeEnum, status: RoundStateEnum) => {
     setStatuses((prev) => ({ ...prev, [label]: status }));
   };
 
@@ -120,9 +79,37 @@ export default function LeagueCategoryPage() {
     setEdges((eds) => applyEdgeChanges(changes, eds));
   }, []);
 
-  const onConnect = useCallback((connection: Connection) => {
-    setEdges((eds) => addEdge(connection, eds));
-  }, []);
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      const sourceNode = nodes.find((n) => n.id === connection.source);
+      const targetNode = nodes.find((n) => n.id === connection.target);
+
+      if (
+        sourceNode?.type === "formatNode" &&
+        !(
+          targetNode?.type === "roundNode" &&
+          connection.targetHandle === "bottom"
+        )
+      ) {
+        toast.error(
+          "Format nodes can only connect to the bottom of a round node!"
+        );
+        return;
+      }
+
+      if (
+        sourceNode?.type === "roundNode" &&
+        connection.sourceHandle === "bottom" &&
+        targetNode?.type !== "formatNode"
+      ) {
+        toast.error("Bottom handle can only connect to format nodes!");
+        return;
+      }
+
+      setEdges((eds) => addEdge(connection, eds));
+    },
+    [nodes]
+  );
 
   const onDragStart = (
     event: React.DragEvent,
@@ -162,7 +149,6 @@ export default function LeagueCategoryPage() {
         return;
       }
 
-      // Prevent duplicate round nodes of same type in same category
       if (nodeType === "round") {
         const hasDuplicate = nodes.some(
           (n) =>
@@ -189,13 +175,11 @@ export default function LeagueCategoryPage() {
         data:
           nodeType === "round"
             ? {
-                label,
+                label: label as RoundTypeEnum,
                 icon: Maximize,
                 onOpen: () => {
                   setSelectedRound({
-                    label: label as RoundType,
-                    formats: ["Format A", "Format B"],
-                    states: ["Upcoming", "Ongoing", "Finished"],
+                    label: label as RoundTypeEnum,
                   });
                   setDialogOpen(true);
                 },
@@ -219,7 +203,7 @@ export default function LeagueCategoryPage() {
         const sourceNode = nodes.find((n) => n.id === edge.source);
         const targetNode = nodes.find((n) => n.id === edge.target);
 
-        // If this edge goes to a format node → fixed green edge
+        // Special style for formatNode target
         if (targetNode?.type === "formatNode") {
           return {
             ...edge,
@@ -230,13 +214,16 @@ export default function LeagueCategoryPage() {
           };
         }
 
-        // Otherwise, style based on round status
         const sourceLabel = (sourceNode?.data as RoundNodeData)?.label;
-        const sourceStatus = sourceLabel ? statuses[sourceLabel] : "";
+
+        const sourceStatus = sourceLabel
+          ? statuses[sourceLabel] ?? RoundStateEnum.Upcoming
+          : RoundStateEnum.Upcoming;
 
         let style: React.CSSProperties = {};
+
         switch (sourceStatus) {
-          case "Finished":
+          case RoundStateEnum.Finished:
             style = {
               stroke: "#4caf50",
               strokeWidth: 2,
@@ -244,7 +231,8 @@ export default function LeagueCategoryPage() {
               animation: "dash-finish 1.5s linear infinite",
             };
             break;
-          case "Ongoing":
+
+          case RoundStateEnum.Ongoing:
             style = {
               stroke: "#2196f3",
               strokeWidth: 2,
@@ -252,7 +240,8 @@ export default function LeagueCategoryPage() {
               animation: "dash-ongoing 1s linear infinite",
             };
             break;
-          case "Upcoming":
+
+          case RoundStateEnum.Upcoming:
           default:
             style = {
               stroke: "#f39c12",
@@ -306,71 +295,15 @@ export default function LeagueCategoryPage() {
 
       <RoundNodeDialog
         round={selectedRound}
-        status={selectedRound ? statuses[selectedRound.label] : ""}
+        status={
+          selectedRound
+            ? statuses[selectedRound.label]
+            : RoundStateEnum.Upcoming
+        }
         setStatus={setStatus}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
       />
     </ContentShell>
-  );
-}
-
-function RoundNodeMenu({
-  onDragStart,
-}: {
-  onDragStart: (event: React.DragEvent, label: RoundType) => void;
-}) {
-  const menuItems: RoundMenuItem[] = [
-    { label: "Elimination", icon: Maximize },
-    { label: "Quarterfinals", icon: Maximize },
-    { label: "Semifinals", icon: Maximize },
-    { label: "Finals", icon: Maximize },
-  ];
-
-  return (
-    <div className="w-48 p-2 border rounded-md flex flex-col gap-2">
-      {menuItems.map(({ label, icon: Icon }) => (
-        <div
-          key={label}
-          draggable
-          onDragStart={(event) => onDragStart(event, label as RoundType)}
-          className={`flex items-center gap-2 p-2 rounded-md border-2 bg-background cursor-grab hover:opacity-80`}
-        >
-          <Icon className="w-4 h-4" />
-          <span className="text-sm font-medium">{label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function FormatNodeMenu({
-  onDragStart,
-}: {
-  onDragStart: (event: React.DragEvent, label: string) => void;
-}) {
-  const menuItems = [
-    "Round Robin",
-    "Knockout",
-    "Double Elimination",
-    "Twice-to-Beat",
-    "Best-of-3",
-    "Best-of-5",
-    "Best-of-7",
-  ];
-
-  return (
-    <div className="w-48 p-2 border rounded-md flex flex-col gap-2">
-      {menuItems.map((label) => (
-        <div
-          key={label}
-          draggable
-          onDragStart={(event) => onDragStart(event, label)}
-          className="flex items-center gap-2 p-2 rounded-md border-2 bg-background cursor-grab hover:opacity-80"
-        >
-          <span className="text-xs text-center font-medium">{label}</span>
-        </div>
-      ))}
-    </div>
   );
 }

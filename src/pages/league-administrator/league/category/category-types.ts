@@ -1,19 +1,25 @@
-import type { LucideIcon } from "lucide-react";
+export type StatusMap = Record<RoundTypeEnum, RoundStateEnum>;
 
-export const CATEGORY_WIDTH = 1280;
-export const CATEGORY_HEIGHT = 720;
+export enum RoundTypeEnum {
+  Elimination = "Elimination",
+  QuarterFinal = "Quarter Final",
+  SemiFinal = "Semi Final",
+  Final = "Final",
+}
 
-export type StatusMap = Record<RoundType, string>;
+export enum RoundFormatEnum {
+  RoundRobin = "Round Robin",
+  Knockout = "Knockout",
+}
 
-export type RoundType =
-  | "Elimination"
-  | "Quarterfinals"
-  | "Semifinals"
-  | "Finals";
+export enum RoundStateEnum {
+  Upcoming = "Upcoming",
+  Ongoing = "Ongoing",
+  Finished = "Finished",
+}
 
 export interface RoundNodeData extends Record<string, unknown> {
-  icon: LucideIcon;
-  label: RoundType;
+  label: RoundTypeEnum;
   status: string;
   onOpen: () => void;
 }
@@ -23,19 +29,10 @@ export interface CategoryNodeData {
   categoryName: string;
 }
 
-export interface RoundDetails {
-  label: RoundType;
-  formats: string[];
-  states: string[];
-}
-
-export type RoundBorderColor =
-  | "border-cyan-500"
-  | "border-sky-500"
-  | "border-amber-500"
-  | "border-purple-500";
+export type RoundDetails = {
+  label: RoundTypeEnum;
+};
 
 export type RoundMenuItem = {
-  label: RoundType;
-  icon: LucideIcon;
+  label: RoundTypeEnum;
 };
