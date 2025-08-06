@@ -1,20 +1,25 @@
-import { Handle, Position, type Connection, type Edge } from "@xyflow/react";
+import {
+  Handle,
+  Position,
+  type Connection,
+  type Edge,
+  type Node,
+} from "@xyflow/react";
+import { Button } from "@/components/ui/button";
+import { Settings2 } from "lucide-react";
 import {
   RoundTypeEnum,
   type CategoryNodeData,
   type RoundNodeData,
 } from "./category-types";
-import { Settings2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from "react";
 
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   return (
-    <div
-      className={`border-2 rounded-md flex flex-col overflow-hidden w-[${CATEGORY_WIDTH}px] h-[${CATEGORY_HEIGHT}px]`}
-    >
+    <div className="border-2 rounded-md flex flex-col overflow-hidden w-[1280px] h-[720px]">
       <div className="bg-primary font-semibold text-sm p-3">
         {data.categoryName}
       </div>
@@ -27,61 +32,198 @@ export function CategoryNode({ data }: { data: CategoryNodeData }) {
   );
 }
 
-export function RoundNode({ data }: { data: RoundNodeData }) {
-  const { label, onOpen } = data;
-
-  const hideLeftHandle = label === RoundTypeEnum.Elimination;
-  const hideRightHandle = label === RoundTypeEnum.Final;
-
+function BaseRoundNode({
+  label,
+  onOpen,
+  children,
+}: {
+  label: string;
+  onOpen: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="bg-muted rounded-md p-3 cursor-pointer flex items-center justify-between gap-2 shadow-sm hover:opacity-90 transition border-2 group">
+    <div className="bg-muted rounded-md p-3 flex items-center justify-between gap-2 shadow-sm border-2 group">
       <span className="font-medium">{label}</span>
-
       <Button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
           onOpen();
         }}
-        size={"icon"}
-        variant={"outline"}
+        size="icon"
+        variant="outline"
       >
         <Settings2 className="w-4 h-4" />
       </Button>
+      {children}
+    </div>
+  );
+}
 
-      {!hideRightHandle && <Handle type="source" position={Position.Right} />}
+type NodesRef = React.RefObject<Node<any>[]>;
 
-      {!hideLeftHandle && <Handle type="target" position={Position.Left} />}
-
+export function EliminationRoundNode({
+  data,
+  allNodesRef,
+}: {
+  data: RoundNodeData;
+  allNodesRef: NodesRef;
+}) {
+  const allNodes = allNodesRef.current ?? [];
+  return (
+    <BaseRoundNode label={RoundTypeEnum.Elimination} onOpen={data.onOpen}>
+      <Handle
+        type="source"
+        position={Position.Right}
+        isValidConnection={(conn: Connection | Edge) => {
+          const targetNode = allNodes.find((n) => n.id === conn.target);
+          const targetLabel = (targetNode?.data as any)?.label || "";
+          return (
+            targetLabel === RoundTypeEnum.QuarterFinal ||
+            targetLabel === RoundTypeEnum.SemiFinal
+          );
+        }}
+      />
       <Handle
         id="bottom"
         type="source"
         position={Position.Bottom}
+        isValidConnection={(conn: Connection | Edge) =>
+          conn.targetHandle === "top"
+        }
+      />
+    </BaseRoundNode>
+  );
+}
+
+export function QuarterFinalRoundNode({
+  data,
+  allNodesRef,
+}: {
+  data: RoundNodeData;
+  allNodesRef: NodesRef;
+}) {
+  const allNodes = allNodesRef.current ?? [];
+  return (
+    <BaseRoundNode label={RoundTypeEnum.QuarterFinal} onOpen={data.onOpen}>
+      <Handle
+        type="target"
+        position={Position.Left}
         isValidConnection={(conn: Connection | Edge) => {
-          if ("sourceHandle" in conn) {
-            return conn.targetHandle === "top";
-          }
-          return false;
+          const sourceNode = allNodes.find((n) => n.id === conn.source);
+          const sourceLabel = (sourceNode?.data as any)?.label || "";
+          return (
+            sourceLabel !== RoundTypeEnum.SemiFinal &&
+            sourceLabel !== RoundTypeEnum.Final
+          );
         }}
       />
-    </div>
+      <Handle
+        type="source"
+        position={Position.Right}
+        isValidConnection={(conn: Connection | Edge) => {
+          const targetNode = allNodes.find((n) => n.id === conn.target);
+          const targetLabel = (targetNode?.data as any)?.label || "";
+          return (
+            targetLabel === RoundTypeEnum.SemiFinal ||
+            targetLabel === RoundTypeEnum.Final
+          );
+        }}
+      />
+      <Handle
+        id="bottom"
+        type="source"
+        position={Position.Bottom}
+        isValidConnection={(conn: Connection | Edge) =>
+          conn.targetHandle === "top"
+        }
+      />
+    </BaseRoundNode>
+  );
+}
+
+export function SemiFinalRoundNode({
+  data,
+  allNodesRef,
+}: {
+  data: RoundNodeData;
+  allNodesRef: NodesRef;
+}) {
+  const allNodes = allNodesRef.current ?? [];
+  return (
+    <BaseRoundNode label={RoundTypeEnum.SemiFinal} onOpen={data.onOpen}>
+      <Handle
+        type="target"
+        position={Position.Left}
+        isValidConnection={(conn: Connection | Edge) => {
+          const sourceNode = allNodes.find((n) => n.id === conn.source);
+          const sourceLabel = (sourceNode?.data as any)?.label || "";
+          return sourceLabel !== RoundTypeEnum.Final;
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        isValidConnection={(conn: Connection | Edge) => {
+          const targetNode = allNodes.find((n) => n.id === conn.target);
+          const targetLabel = (targetNode?.data as any)?.label || "";
+          return targetLabel === RoundTypeEnum.Final;
+        }}
+      />
+      <Handle
+        id="bottom"
+        type="source"
+        position={Position.Bottom}
+        isValidConnection={(conn: Connection | Edge) =>
+          conn.targetHandle === "top"
+        }
+      />
+    </BaseRoundNode>
+  );
+}
+
+export function FinalRoundNode({
+  data,
+  allNodesRef,
+}: {
+  data: RoundNodeData;
+  allNodesRef: NodesRef;
+}) {
+  const allNodes = allNodesRef.current ?? [];
+  return (
+    <BaseRoundNode label={RoundTypeEnum.Final} onOpen={data.onOpen}>
+      <Handle
+        type="target"
+        position={Position.Left}
+        isValidConnection={(conn: Connection | Edge) => {
+          const sourceNode = allNodes.find((n) => n.id === conn.source);
+          const sourceLabel = (sourceNode?.data as any)?.label || "";
+          return sourceLabel === RoundTypeEnum.SemiFinal;
+        }}
+      />
+      <Handle
+        id="bottom"
+        type="source"
+        position={Position.Bottom}
+        isValidConnection={(conn: Connection | Edge) =>
+          conn.targetHandle === "top"
+        }
+      />
+    </BaseRoundNode>
   );
 }
 
 export function FormatNode({ data }: { data: { label: string } }) {
   return (
-    <div className="bg-muted rounded-md p-2 cursor-pointer flex items-center gap-2 shadow-sm hover:opacity-90 transition border-1">
+    <div className="bg-muted rounded-md p-2 flex items-center gap-2 shadow-sm border">
       <span className="text-xs">{data.label}</span>
       <Handle
         id="top"
         type="target"
         position={Position.Top}
-        isValidConnection={(conn: Connection | Edge) => {
-          if ("sourceHandle" in conn) {
-            return conn.sourceHandle === "bottom";
-          }
-          return false;
-        }}
+        isValidConnection={(conn: Connection | Edge) =>
+          conn.sourceHandle === "bottom"
+        }
       />
     </div>
   );

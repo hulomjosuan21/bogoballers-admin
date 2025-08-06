@@ -1,4 +1,4 @@
-import { GripVertical } from "lucide-react"; // Drag handle icon
+import { GripVertical } from "lucide-react";
 import { RoundTypeEnum } from "./category-types";
 
 export function RoundNodeMenu({
@@ -18,13 +18,12 @@ export function RoundNodeMenu({
       <h3 className="text-xs font-semibold text-muted-foreground mb-2 tracking-wide">
         Rounds
       </h3>
-
       <div className="flex flex-col gap-2">
         {menuItems.map(({ label }) => (
           <div
             key={label}
             draggable
-            onDragStart={(event) => onDragStart(event, label as RoundTypeEnum)}
+            onDragStart={(event) => onDragStart(event, label)}
             className="flex items-center gap-2 p-2 rounded-md border-2 bg-background cursor-grab hover:opacity-80"
           >
             <GripVertical className="w-4 h-4 text-muted-foreground" />
@@ -56,7 +55,6 @@ export function FormatNodeMenu({
       <h3 className="text-xs font-semibold text-muted-foreground mb-2 tracking-wide">
         Formats
       </h3>
-
       <div className="flex flex-col gap-2">
         {menuItems.map((label) => (
           <div

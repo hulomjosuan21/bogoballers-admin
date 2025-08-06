@@ -18,16 +18,25 @@ export enum RoundStateEnum {
   Finished = "Finished",
 }
 
-export interface RoundNodeData extends Record<string, unknown> {
-  label: RoundTypeEnum;
-  status: string;
-  onOpen: () => void;
-}
-
 export interface CategoryNodeData {
   categoryId: string;
   categoryName: string;
+  [key: string]: unknown;
 }
+
+export interface RoundNodeData {
+  label: RoundTypeEnum;
+  status: RoundStateEnum;
+  onOpen: () => void;
+  [key: string]: unknown;
+}
+
+export interface FormatNodeData {
+  label: string;
+  [key: string]: unknown;
+}
+
+export type NodeData = CategoryNodeData | RoundNodeData | FormatNodeData;
 
 export type RoundDetails = {
   label: RoundTypeEnum;
