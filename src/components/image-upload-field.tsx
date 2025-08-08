@@ -153,7 +153,7 @@ export function ImageUploadField({
                 value={typeof value === "string" ? value : ""}
                 onChange={(e) => handleEmbedChange(e.target.value)}
               />
-              {typeof value === "string" && (
+              {typeof value === "string" && value.trim() !== "" && (
                 <img
                   src={value}
                   alt="Preview"

@@ -10,6 +10,8 @@ import {
   AnalyticsPage,
   LeagueCreationPage,
   LeagueCategoryPage,
+  LeagueAffiliatePage,
+  LeagueOfficialsPage,
 } from "@/pages";
 
 export const leagueAdminRoutes: RouteObject[] = [
@@ -52,5 +54,13 @@ export const leagueAdminRoutes: RouteObject[] = [
   {
     path: "pages/league/categories",
     element: <LeagueCategoryPage />,
+  },
+  {
+    path: "pages/league/officials",
+    element: <LeagueOfficialsPage />,
+  },
+  {
+    path: "pages/league/affiliates",
+    element: <LeagueAffiliatePage />,
   },
 ];

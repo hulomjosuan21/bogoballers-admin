@@ -102,12 +102,12 @@ export default function CreateLeagueForm({}: CreateLeagueFormProps) {
   });
   const [categories, setCategories] = useState<CreateLeagueCategory[]>([]);
   const [rules, setRules] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [isProcessing, setProcessing] = useState(false);
 
   const handleError = useErrorToast();
 
   const handleSubmit = async () => {
-    setLoading(true);
+    setProcessing(true);
     try {
       validateLeagueForm({
         leagueTitle,
@@ -153,7 +153,7 @@ export default function CreateLeagueForm({}: CreateLeagueFormProps) {
         handleError(`Unexpected error: ${err}`);
       }
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
 
@@ -161,7 +161,7 @@ export default function CreateLeagueForm({}: CreateLeagueFormProps) {
     <section className="space-y-4">
       <div
         className={disableOnLoading({
-          condition: loading,
+          condition: isProcessing,
           baseClass: "grid grid-cols-1 md:grid-cols-2 gap-6 items-start",
         })}
       >
@@ -247,7 +247,7 @@ export default function CreateLeagueForm({}: CreateLeagueFormProps) {
 
       <div
         className={disableOnLoading({
-          condition: loading,
+          condition: isProcessing,
           baseClass: "grid space-y-2",
         })}
       >
@@ -266,7 +266,7 @@ export default function CreateLeagueForm({}: CreateLeagueFormProps) {
 
       <div
         className={disableOnLoading({
-          condition: loading,
+          condition: isProcessing,
           baseClass: "grid space-y-2",
         })}
       >
@@ -285,11 +285,15 @@ export default function CreateLeagueForm({}: CreateLeagueFormProps) {
         </p>
       </div>
 
-      <Separator />
+      <AddCategories
+        loading={isProcessing}
+        categories={categories}
+        setCategories={setCategories}
+      />
 
       <p
         className={disableOnLoading({
-          condition: loading,
+          condition: isProcessing,
           baseClass: "text-helper",
         })}
       >
@@ -297,15 +301,10 @@ export default function CreateLeagueForm({}: CreateLeagueFormProps) {
         will register under these categories.
       </p>
 
-      <AddCategories
-        loading={loading}
-        categories={categories}
-        setCategories={setCategories}
-      />
-
       <Separator />
+
       <ButtonLoading
-        loading={loading}
+        loading={isProcessing}
         onClick={handleSubmit}
         className="w-full"
       >

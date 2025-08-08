@@ -6,5 +6,7 @@ export { default as SetRoundPage } from "./league-administrator/match/SetRoundPa
 export { default as PlayerSubmissionPage } from "./league-administrator/player/PlayerSubmissionPage";
 export { default as TeamSubmissionPage } from "./league-administrator/team/TeamSubmissionPage";
 export { default as BracketStructurePage } from "./league-administrator/bracket/structurePage";
-export { default as SettingsPage } from "./settingPage";
-export { default as AnalyticsPage } from "./AnalyticsPage";
+export { default as SettingsPage } from "./league-administrator/SettingPage";
+export { default as AnalyticsPage } from "./league-administrator/AnalyticsPage";
+export { default as LeagueAffiliatePage } from "./league-administrator/manage/LeagueAffiliate";
+export { default as LeagueOfficialsPage } from "./league-administrator/manage/OfficialsPage";

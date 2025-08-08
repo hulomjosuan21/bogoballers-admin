@@ -17,3 +17,24 @@ export interface LeagueCategory extends CreateLeagueCategory {
     format: RoundFormatEnum;
   }[];
 }
+
+export type LeagueOfficial = {
+  full_name: string;
+  role: string;
+  contact_info: string;
+  photo_url: string;
+};
+
+export type LeagueReferees = {
+  full_name: string;
+  contact_info: string;
+  photo_url: string;
+  is_available: boolean;
+};
+
+export type LeagueAffiliate = {
+  name: string;
+  value: string;
+  photo_url: string;
+  contact_info: string;
+};

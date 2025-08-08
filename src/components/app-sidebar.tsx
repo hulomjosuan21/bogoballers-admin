@@ -104,11 +104,11 @@ const data = {
       items: [
         {
           title: "Officials & Courts",
-          url: "#",
+          url: "/league-administrator/pages/league/officials",
         },
         {
           title: "Sponsors & Partners",
-          url: "#",
+          url: "/league-administrator/pages/league/affiliates",
         },
       ],
     },
