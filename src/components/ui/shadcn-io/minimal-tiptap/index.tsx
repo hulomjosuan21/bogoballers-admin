@@ -11,8 +11,6 @@ import {
   Heading3,
   Quote,
   Minus,
-  Undo,
-  Redo,
 } from "lucide-react";
 import { Toggle } from "../../toggle";
 import { cn } from "@/lib/utils";
@@ -172,7 +170,7 @@ function MinimalTiptap({
 
         <Separator orientation="vertical" className="h-6" />
 
-        <Button
+        {/* <Button
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().undo().run()}
@@ -188,7 +186,7 @@ function MinimalTiptap({
           disabled={!editor.can().chain().focus().redo().run()}
         >
           <Redo className="h-4 w-4" />
-        </Button>
+        </Button> */}
       </div>
 
       <EditorContent editor={editor} placeholder={placeholder} />

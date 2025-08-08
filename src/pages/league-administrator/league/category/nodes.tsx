@@ -7,12 +7,9 @@ import {
 } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
 import { Settings2 } from "lucide-react";
-import {
-  RoundTypeEnum,
-  type CategoryNodeData,
-  type RoundNodeData,
-} from "./category-types";
+import { type CategoryNodeData, type RoundNodeData } from "./types";
 import React from "react";
+import { RoundTypeEnum } from "@/enums/enums";
 
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;

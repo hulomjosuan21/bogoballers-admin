@@ -1,7 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 import {
   DashboardPage,
-  LeagueCreationPage,
   LeagueResourcePage,
   SetRoundPage,
   PlayerSubmissionPage,
@@ -9,8 +8,9 @@ import {
   BracketStructurePage,
   SettingsPage,
   AnalyticsPage,
+  LeagueCreationPage,
+  LeagueCategoryPage,
 } from "@/pages";
-import LeagueCategoryPage from "@/pages/league-administrator/league/LeagueCategoryPage";
 
 export const leagueAdminRoutes: RouteObject[] = [
   {

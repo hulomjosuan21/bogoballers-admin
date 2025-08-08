@@ -1,9 +1,4 @@
 import {
-  RoundTypeEnum,
-  RoundFormatEnum,
-  RoundStateEnum,
-} from "./category-types";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -16,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RoundFormatEnum, RoundStateEnum, RoundTypeEnum } from "@/enums/enums";
 import { useState } from "react";
 
 const defaultFormat = Object.values(RoundFormatEnum)[0];
@@ -35,9 +31,6 @@ export function RoundNodeDialog({
 }) {
   if (!round) return null;
 
-  const [selectedFormat, setSelectedFormat] =
-    useState<RoundFormatEnum>(defaultFormat);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -45,25 +38,7 @@ export function RoundNodeDialog({
           <DialogTitle>Edit Round: {round.label}</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <Select
-            value={selectedFormat}
-            onValueChange={(value) =>
-              setSelectedFormat(value as RoundFormatEnum)
-            }
-          >
-            <SelectTrigger className="mt-2 p-1 text-xs w-full">
-              <SelectValue placeholder="Select format" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.values(RoundFormatEnum).map((f) => (
-                <SelectItem key={f} value={f}>
-                  {f}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
+        <div>
           <Select
             value={status}
             onValueChange={(value) =>

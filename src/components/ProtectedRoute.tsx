@@ -1,6 +1,5 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getErrorMessage } from "@/lib/error";
 import { Progress } from "@/components/ui/progress";

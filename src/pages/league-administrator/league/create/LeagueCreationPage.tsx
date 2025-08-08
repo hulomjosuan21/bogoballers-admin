@@ -1,6 +1,6 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import CreateLeagueForm from "./create/create-league-form";
+import CreateLeagueForm from "./form";
 
 export default function LeagueCreationPage() {
   return (

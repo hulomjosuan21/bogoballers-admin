@@ -1,22 +1,6 @@
+import type { RoundStateEnum, RoundTypeEnum } from "@/enums/enums";
+
 export type StatusMap = Record<RoundTypeEnum, RoundStateEnum>;
-
-export enum RoundTypeEnum {
-  Elimination = "Elimination",
-  QuarterFinal = "Quarter Final",
-  SemiFinal = "Semi Final",
-  Final = "Final",
-}
-
-export enum RoundFormatEnum {
-  RoundRobin = "Round Robin",
-  Knockout = "Knockout",
-}
-
-export enum RoundStateEnum {
-  Upcoming = "Upcoming",
-  Ongoing = "Ongoing",
-  Finished = "Finished",
-}
 
 export interface CategoryNodeData {
   categoryId: string;

@@ -13,15 +13,14 @@ import {
   type Connection,
   useReactFlow,
 } from "@xyflow/react";
+import { RoundStateEnum, RoundTypeEnum } from "@/enums/enums";
 import {
-  RoundStateEnum,
-  RoundTypeEnum,
   type FormatNodeData,
   type NodeData,
   type RoundDetails,
   type RoundNodeData,
   type StatusMap,
-} from "./category/category-types";
+} from "./types";
 import { toast } from "sonner";
 import {
   CATEGORY_HEIGHT,
@@ -32,14 +31,14 @@ import {
   FormatNode,
   QuarterFinalRoundNode,
   SemiFinalRoundNode,
-} from "./category/category-nodes";
+} from "./nodes";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ContentHeader from "@/components/content-header";
-import { FormatNodeMenu, RoundNodeMenu } from "./category/category-node-menus";
-import { RoundNodeDialog } from "./category/category-components";
+import { FormatNodeMenu, RoundNodeMenu } from "./menus";
+import { RoundNodeDialog } from "./components";
 import { Button } from "@/components/ui/button";
 
-export default function LeagueCategoryPage() {
+export default function LeagueCategoryCanvas() {
   const reactFlowInstance = useReactFlow();
 
   const fakeCategories: { category_id: string; category_name: string }[] = [
@@ -65,7 +64,6 @@ export default function LeagueCategoryPage() {
     )
   );
 
-  // keep a ref to nodes so nodeTypes can be stable
   const nodesRef = useRef<Node<NodeData>[]>(nodes);
   useEffect(() => {
     nodesRef.current = nodes;
@@ -86,7 +84,6 @@ export default function LeagueCategoryPage() {
     setStatuses((prev) => ({ ...prev, [label]: status }));
   };
 
-  // nodeTypes created only once — stable reference
   const nodeTypes = useMemo(
     () => ({
       categoryNode: CategoryNode,
@@ -104,7 +101,7 @@ export default function LeagueCategoryPage() {
       ),
       formatNode: FormatNode,
     }),
-    [] // intentionally empty so React Flow sees a stable object
+    []
   );
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
