@@ -1,14 +1,29 @@
 import ContentHeader from "@/components/content-header";
-import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
+import {
+  getActiveLeagueQueryOptions,
+  getActiveLeagueResourceQueryOptions,
+} from "@/queries/league";
+import { authLeagueAdminQueryOptions } from "@/queries/league-admin";
+import { useQueries } from "@tanstack/react-query";
+
 export default function DashboardPage() {
-  const { leagueAdmin } = useAuthLeagueAdmin();
+  const [authLeagueAdmin, activeLeague, activeLeagueResource] = useQueries({
+    queries: [
+      authLeagueAdminQueryOptions,
+      getActiveLeagueQueryOptions,
+      getActiveLeagueResourceQueryOptions,
+    ],
+  });
   return (
     <ContentShell>
       <ContentHeader title="Dashboard" />
       <ContentBody>
         <pre>
-          {leagueAdmin ? JSON.stringify(leagueAdmin, null, 2) : "No Admin"}
+          <code>{JSON.stringify(activeLeague.data, null, 2)}</code>
+        </pre>
+        <pre>
+          <code>{JSON.stringify(activeLeagueResource.data, null, 2)}</code>
         </pre>
       </ContentBody>
     </ContentShell>

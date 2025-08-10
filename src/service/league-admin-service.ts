@@ -8,13 +8,7 @@ class LeagueAdministratorService {
       withCredentials: true,
     });
 
-    const apiResponse = ApiResponse.fromJson<LeagueAdminType>(response.data);
-
-    if (!apiResponse.payload) {
-      throw new Error("No authenticated user found");
-    }
-
-    return apiResponse.payload;
+    return response.data as LeagueAdminType;
   }
 
   static async logout() {

@@ -48,6 +48,8 @@ import {
 } from "@/components/ui/select";
 import { ButtonLoading } from "@/components/custom-buttons";
 import { disableOnLoading } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { getActiveLeagueQueryOptions } from "@/queries/league";
 
 interface CreateLeagueFormProps {
   hasLeague: boolean;
@@ -90,6 +92,9 @@ function validateLeagueForm({
 }
 
 export default function CreateLeagueForm({}: CreateLeagueFormProps) {
+  const { refetch: refetchActiveLeague } = useQuery(
+    getActiveLeagueQueryOptions
+  );
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [leagueTitle, setLeagueTitle] = useState("");
   const [leagueDescription, setLeagueDescription] = useState("");
@@ -144,6 +149,7 @@ export default function CreateLeagueForm({}: CreateLeagueFormProps) {
 
       const res = await LeagueService.createNewLeague(formData);
 
+      await refetchActiveLeague();
       toast.success(res.message);
     } catch (err) {
       if (err instanceof Error) {

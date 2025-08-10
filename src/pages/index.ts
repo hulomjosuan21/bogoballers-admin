@@ -9,4 +9,4 @@ export { default as BracketStructurePage } from "./league-administrator/bracket/
 export { default as SettingsPage } from "./league-administrator/SettingPage";
 export { default as AnalyticsPage } from "./league-administrator/AnalyticsPage";
 export { default as LeagueAffiliatePage } from "./league-administrator/manage/LeagueAffiliate";
-export { default as LeagueOfficialsPage } from "./league-administrator/manage/OfficialsPage";
+export { default as LeagueOfficialsPage } from "./league-administrator/manage/OfficialsAndCourtsPage";

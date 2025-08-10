@@ -87,11 +87,6 @@ const data = {
       icon: Plus,
     },
     {
-      title: "Current",
-      url: "/league-administrator/pages/league/current",
-      icon: Book,
-    },
-    {
       title: "Categories",
       url: "/league-administrator/pages/league/categories",
       icon: GitBranchPlus,
@@ -104,7 +99,7 @@ const data = {
       items: [
         {
           title: "Officials & Courts",
-          url: "/league-administrator/pages/league/officials",
+          url: "/league-administrator/pages/league/officials&courts",
         },
         {
           title: "Sponsors & Partners",

@@ -56,7 +56,7 @@ export const leagueAdminRoutes: RouteObject[] = [
     element: <LeagueCategoryPage />,
   },
   {
-    path: "pages/league/officials",
+    path: "pages/league/officials&courts",
     element: <LeagueOfficialsPage />,
   },
   {

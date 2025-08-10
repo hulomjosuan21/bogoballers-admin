@@ -22,19 +22,49 @@ export type LeagueOfficial = {
   full_name: string;
   role: string;
   contact_info: string;
-  photo_url: string;
+  photo: string;
 };
 
-export type LeagueReferees = {
+export type LeagueReferee = {
   full_name: string;
   contact_info: string;
-  photo_url: string;
+  photo: string;
   is_available: boolean;
 };
 
 export type LeagueAffiliate = {
   name: string;
   value: string;
-  photo_url: string;
+  image: string;
   contact_info: string;
 };
+
+export type LeagueCourt = {
+  name: string;
+  location: string;
+  is_available: boolean;
+};
+export interface LeagueResource {
+  league_id: string;
+  league_courts: LeagueCourt[];
+  league_officials: LeagueOfficial[];
+  league_referees: LeagueReferee[];
+  league_affiliates: LeagueAffiliate[];
+}
+
+export interface League {
+  league_id: string;
+  league_administrator_id: string;
+  league_title: string;
+  league_description: string;
+  league_budget: number;
+  registration_deadline: string;
+  opening_date: string;
+  league_schedule: [string, string];
+  banner_url: string;
+  status: string;
+  season_year: number;
+  sportsmanship_rules: string[];
+  created_at: string;
+  updated_at: string;
+}
