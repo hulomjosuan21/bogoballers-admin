@@ -12,7 +12,6 @@ export interface RoundNodeData {
   round_id: string;
   label: RoundTypeEnum;
   status: RoundStateEnum;
-  onOpen: () => void;
   [key: string]: unknown;
 }
 

@@ -39,25 +39,15 @@ export function CategoryNode({ data }: { data: CategoryNodeData }) {
 
 function BaseRoundNode({
   label,
-  onOpen,
   children,
 }: {
   label: string;
-  onOpen: () => void;
   children: React.ReactNode;
 }) {
   return (
     <div className="bg-muted rounded-md p-3 flex items-center justify-between gap-2 shadow-sm border-2 group">
       <span className="font-medium">{label}</span>
-      <Button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpen();
-        }}
-        size="icon"
-        variant="outline"
-      >
+      <Button type="button" size="icon" variant="outline">
         <Settings2 className="w-4 h-4" />
       </Button>
       {children}
@@ -76,7 +66,7 @@ export function EliminationRoundNode({
 }) {
   const allNodes = allNodesRef.current ?? [];
   return (
-    <BaseRoundNode label={RoundTypeEnum.Elimination} onOpen={data.onOpen}>
+    <BaseRoundNode label={RoundTypeEnum.Elimination}>
       <Handle
         type="source"
         position={Position.Right}
@@ -110,7 +100,7 @@ export function QuarterFinalRoundNode({
 }) {
   const allNodes = allNodesRef.current ?? [];
   return (
-    <BaseRoundNode label={RoundTypeEnum.QuarterFinal} onOpen={data.onOpen}>
+    <BaseRoundNode label={RoundTypeEnum.QuarterFinal}>
       <Handle
         type="target"
         position={Position.Left}
@@ -156,7 +146,7 @@ export function SemiFinalRoundNode({
 }) {
   const allNodes = allNodesRef.current ?? [];
   return (
-    <BaseRoundNode label={RoundTypeEnum.SemiFinal} onOpen={data.onOpen}>
+    <BaseRoundNode label={RoundTypeEnum.SemiFinal}>
       <Handle
         type="target"
         position={Position.Left}
@@ -196,7 +186,7 @@ export function FinalRoundNode({
 }) {
   const allNodes = allNodesRef.current ?? [];
   return (
-    <BaseRoundNode label={RoundTypeEnum.Final} onOpen={data.onOpen}>
+    <BaseRoundNode label={RoundTypeEnum.Final}>
       <Handle
         type="target"
         position={Position.Left}

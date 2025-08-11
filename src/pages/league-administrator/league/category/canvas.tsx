@@ -17,9 +17,7 @@ import { RoundStateEnum, RoundTypeEnum } from "@/enums/enums";
 import {
   type FormatNodeData,
   type NodeData,
-  type RoundDetails,
   type RoundNodeData,
-  type StatusMap,
 } from "./types";
 import { toast } from "sonner";
 import {
@@ -35,13 +33,19 @@ import {
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ContentHeader from "@/components/content-header";
 import { FormatNodeMenu, RoundNodeMenu } from "./menus";
-import { AddCategoryDialog, RoundNodeDialog } from "./components";
+import { AddCategoryDialog } from "./components";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { Loader2 } from "lucide-react";
 import { SmallButton } from "@/components/custom-buttons";
 import LeagueService from "@/service/league-service";
 import { generateUUIDWithPrefix } from "@/lib/utils";
+const STATUSES = {
+  [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,
+  [RoundTypeEnum.QuarterFinal]: RoundStateEnum.Upcoming,
+  [RoundTypeEnum.SemiFinal]: RoundStateEnum.Upcoming,
+  [RoundTypeEnum.Final]: RoundStateEnum.Upcoming,
+};
 
 export default function LeagueCategoryCanvas() {
   const reactFlowInstance = useReactFlow();
@@ -111,12 +115,6 @@ export default function LeagueCategoryCanvas() {
             round_id: round.round_id,
             label: round.round_name as RoundTypeEnum,
             status: round.round_status as RoundStateEnum,
-            onOpen: () => {
-              setSelectedRound({
-                label: round.round_name as RoundTypeEnum,
-              });
-              setDialogOpen(true);
-            },
           } satisfies RoundNodeData,
         });
       });
@@ -196,20 +194,7 @@ export default function LeagueCategoryCanvas() {
     []
   );
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedRound, setSelectedRound] = useState<RoundDetails | null>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-
-  const [statuses, setStatuses] = useState<StatusMap>({
-    [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,
-    [RoundTypeEnum.QuarterFinal]: RoundStateEnum.Upcoming,
-    [RoundTypeEnum.SemiFinal]: RoundStateEnum.Upcoming,
-    [RoundTypeEnum.Final]: RoundStateEnum.Upcoming,
-  });
-
-  const setStatus = (label: RoundTypeEnum, status: RoundStateEnum) => {
-    setStatuses((prev) => ({ ...prev, [label]: status }));
-  };
 
   const nodeTypes = useMemo(
     () => ({
@@ -425,13 +410,7 @@ export default function LeagueCategoryCanvas() {
               data: {
                 round_id: roundId,
                 label: label as RoundTypeEnum,
-                status: statuses[label as RoundTypeEnum],
-                onOpen: () => {
-                  setSelectedRound({
-                    label: label as RoundTypeEnum,
-                  });
-                  setDialogOpen(true);
-                },
+                status: STATUSES[label as RoundTypeEnum],
               } satisfies RoundNodeData,
             }
           : {
@@ -455,7 +434,7 @@ export default function LeagueCategoryCanvas() {
         }));
       }
     },
-    [nodes, reactFlowInstance, statuses]
+    [nodes, reactFlowInstance, STATUSES]
   );
 
   useEffect(() => {
@@ -486,7 +465,7 @@ export default function LeagueCategoryCanvas() {
           isRoundNodeData(sourceNode.data)
         ) {
           const sourceLabel = sourceNode.data.label;
-          const sourceStatus = statuses[sourceLabel] ?? RoundStateEnum.Upcoming;
+          const sourceStatus = STATUSES[sourceLabel] ?? RoundStateEnum.Upcoming;
 
           switch (sourceStatus) {
             case RoundStateEnum.Finished:
@@ -519,7 +498,7 @@ export default function LeagueCategoryCanvas() {
         return { ...edge, style };
       })
     );
-  }, [statuses, nodes]);
+  }, [STATUSES, nodes]);
 
   const categoryCanvas = (
     <>
@@ -561,17 +540,6 @@ export default function LeagueCategoryCanvas() {
           onDragStart={(e, label) => onDragStart(e, "format", label)}
         />
       </div>
-      <RoundNodeDialog
-        round={selectedRound}
-        status={
-          selectedRound
-            ? statuses[selectedRound.label]
-            : RoundStateEnum.Upcoming
-        }
-        setStatus={setStatus}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
     </>
   );
 
