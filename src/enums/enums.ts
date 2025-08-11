@@ -8,8 +8,8 @@ export enum AccountTypeEnum {
 
 export enum RoundTypeEnum {
   Elimination = "Elimination",
-  QuarterFinal = "Quarter Final",
-  SemiFinal = "Semi Final",
+  QuarterFinal = "Quarterfinal",
+  SemiFinal = "Semifinal",
   Final = "Final",
 }
 

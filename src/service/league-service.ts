@@ -1,4 +1,5 @@
 import type {
+  CreateLeagueCategory,
   League,
   LeagueAffiliate,
   LeagueCourt,
@@ -11,6 +12,7 @@ import axiosClient from "@/lib/axiosClient";
 import type { LeagueCreateOfficialCreate } from "@/pages/league-administrator/manage/manage-officials";
 import type { LeagueRefereeCreate } from "@/pages/league-administrator/manage/manage-referees";
 import type { LeagueAffiliateCreate } from "@/pages/league-administrator/manage/manange-affiliate";
+import type { RoundTypeEnum } from "@/enums/enums";
 
 type FieldKeyMap = {
   league_courts: LeagueCourt;
@@ -30,7 +32,38 @@ const IMAGE_KEY_MAP: ImageKeyMap = {
   league_affiliates: "image",
 };
 
+interface CreateCategoryRoundPayload {
+  roundId: string;
+  categoryId: string;
+  roundName: RoundTypeEnum;
+  roundStatus: string;
+  position: { x: number; y: number };
+}
+
 export default class LeagueService {
+  static async updateRoundPosition(
+    categoryId: string,
+    roundId: string,
+    position: { x: number; y: number }
+  ) {
+    await axiosClient.post(
+      `/league/category/${categoryId}/round/${roundId}/update-position`,
+      {
+        position,
+      }
+    );
+  }
+
+  static async createCategoryRound(payload: CreateCategoryRoundPayload) {
+    const { roundId, categoryId, roundName, roundStatus, position } = payload;
+    await axiosClient.post(`/league/category/${categoryId}/add-round`, {
+      round_id: roundId,
+      round_name: roundName,
+      round_status: roundStatus,
+      position,
+    });
+  }
+
   static async updateSingleLeagueResourceField<K extends keyof FieldKeyMap>(
     league_id: string,
     field: K,
@@ -83,22 +116,39 @@ export default class LeagueService {
   }
 
   static async fetchActiveLeague(): Promise<League | null> {
-    const response = await axiosClient.get("/league/active");
+    const response = await axiosClient.get<League>("/league/active");
 
     if (!response.data || Object.keys(response.data).length === 0) {
       return null;
     }
 
-    return response.data as League;
+    return response.data;
   }
 
   static async fetchActiveLeagueResource(): Promise<LeagueResource | null> {
-    const response = await axiosClient.get("/league/active?resource=true");
+    const response = await axiosClient.get<LeagueResource>(
+      "/league/active?resource=true"
+    );
 
     if (!response.data || Object.keys(response.data).length === 0) {
       return null;
     }
 
-    return response.data as LeagueResource;
+    return response.data;
+  }
+
+  static async createCategory({
+    leagueId,
+    data,
+  }: {
+    leagueId: string;
+    data: CreateLeagueCategory;
+  }) {
+    const response = await axiosClient.post<LeagueResource>(
+      `/league/${leagueId}/add-category`,
+      data
+    );
+
+    return ApiResponse.fromJsonNoPayload(response.data);
   }
 }

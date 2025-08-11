@@ -67,4 +67,33 @@ export interface League {
   sportsmanship_rules: string[];
   created_at: string;
   updated_at: string;
+  categories: LeagueCategory[];
+}
+
+export interface LeagueCategory {
+  category_id: string;
+  league_id: string;
+  category_name: string;
+  max_team: number;
+  accept_teams: boolean;
+  team_entrance_fee_amount: number;
+  individual_player_entrance_fee_amount: number;
+  created_at: string;
+  updated_at: string;
+  rounds: LeagueCategoryRound[];
+}
+
+export interface LeagueCategoryRound {
+  round_id: string;
+  category_id: string;
+  round_name: string;
+  round_order: string;
+  round_status: string;
+  round_format: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  created_at: string;
+  updated_at: string;
 }

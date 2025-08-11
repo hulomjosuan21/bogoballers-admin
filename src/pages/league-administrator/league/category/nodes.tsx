@@ -15,15 +15,23 @@ export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
+  const { category } = data;
   return (
     <div className="border-2 rounded-md flex flex-col overflow-hidden w-[1280px] h-[720px]">
       <div className="bg-primary font-semibold text-sm p-3">
-        {data.categoryName}
+        {category.category_name}
       </div>
-      <div className="flex-1 p-2 overflow-auto">
-        <p className="text-helper italic text-sm">
+      <div className="flex-1 p-2 overflow-auto flex flex-col">
+        <p className="text-helper italic text-xs mb-4">
           Drop round & format nodes here...
         </p>
+        <div className="flex-grow" />
+        <div className="text-helper flex items-center">
+          <p>Max Teams: {category.max_team}</p>
+          <p className="border-l px-2 ml-2">
+            Team Entrance Fee: {category.team_entrance_fee_amount}
+          </p>
+        </div>
       </div>
     </div>
   );
