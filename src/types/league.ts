@@ -52,6 +52,11 @@ export interface LeagueResource {
   league_affiliates: LeagueAffiliate[];
 }
 
+export interface LeagueOption {
+  player_residency_certificate_valid_until: string;
+  player_residency_certificate_required: boolean;
+}
+
 export interface League {
   league_id: string;
   league_administrator_id: string;
@@ -68,6 +73,7 @@ export interface League {
   created_at: string;
   updated_at: string;
   categories: LeagueCategory[];
+  option: LeagueOption;
 }
 
 export interface LeagueCategory {
@@ -87,13 +93,11 @@ export interface LeagueCategoryRound {
   round_id: string;
   category_id: string;
   round_name: string;
-  round_order: string;
+  round_order: number;
   round_status: string;
-  round_format: string;
+  round_format?: string | null;
   position: {
     x: number;
     y: number;
   };
-  created_at: string;
-  updated_at: string;
 }

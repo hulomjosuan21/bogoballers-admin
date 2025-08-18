@@ -48,8 +48,9 @@ import LeagueService from "@/service/league-service";
 import { useErrorToast } from "@/components/error-toast";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
-import { ButtonLoading } from "@/components/custom-buttons";
+import { ButtonLoading, SmallButton } from "@/components/custom-buttons";
 import { StaticData } from "@/data";
+import { cn } from "@/lib/utils";
 
 export type LeagueCreateOfficialCreate = {
   full_name: string;
@@ -280,7 +281,9 @@ export default function ManageOfficialsComponent({
             }}
           >
             <DialogTrigger asChild>
-              <Button size={"sm"}>Add League Official</Button>
+              <SmallButton className={cn(editIndex !== null && "hidden")}>
+                Add League Official
+              </SmallButton>
             </DialogTrigger>
             <DialogContent className="max-w-md" aria-describedby={undefined}>
               <DialogHeader>
@@ -347,14 +350,13 @@ export default function ManageOfficialsComponent({
             </DialogContent>
           </Dialog>
           {hasChanges && (
-            <ButtonLoading
-              size={"sm"}
-              variant={"secondary"}
+            <SmallButton
+              variant={"outline"}
               onClick={handleSaveChanges}
-              loading={isProcessing}
+              disabled={isProcessing}
             >
               Save Changes
-            </ButtonLoading>
+            </SmallButton>
           )}
         </div>
       </div>

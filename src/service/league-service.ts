@@ -4,6 +4,7 @@ import type {
   LeagueAffiliate,
   LeagueCourt,
   LeagueOfficial,
+  LeagueOption,
   LeagueReferee,
   LeagueResource,
 } from "@/types/league";
@@ -12,7 +13,6 @@ import axiosClient from "@/lib/axiosClient";
 import type { LeagueCreateOfficialCreate } from "@/pages/league-administrator/manage/manage-officials";
 import type { LeagueRefereeCreate } from "@/pages/league-administrator/manage/manage-referees";
 import type { LeagueAffiliateCreate } from "@/pages/league-administrator/manage/manange-affiliate";
-import type { RoundTypeEnum } from "@/enums/enums";
 
 type FieldKeyMap = {
   league_courts: LeagueCourt;
@@ -33,14 +33,61 @@ const IMAGE_KEY_MAP: ImageKeyMap = {
 };
 
 interface CreateCategoryRoundPayload {
-  roundId: string;
   categoryId: string;
-  roundName: RoundTypeEnum;
+  roundId: string;
+  roundName: string;
   roundStatus: string;
   position: { x: number; y: number };
 }
 
 export default class LeagueService {
+  static async updateOption({
+    leagueId,
+    data,
+  }: {
+    leagueId: string;
+    data: Partial<LeagueOption>;
+  }) {
+    const res = await axiosClient.put(`/league/${leagueId}/option`, {
+      option: data,
+    });
+
+    return ApiResponse.fromJsonNoPayload(res.data);
+  }
+
+  static async exportLeaguePDF(leagueId: string) {
+    const res = await axiosClient.get(`/league/${leagueId}/export-pdf`, {
+      responseType: "blob",
+    });
+
+    const blob = res.data as Blob;
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `league_${leagueId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    window.URL.revokeObjectURL(url);
+  }
+
+  static async createCategoryRound({
+    categoryId,
+    roundId,
+    roundName,
+    roundStatus,
+    position,
+  }: CreateCategoryRoundPayload) {
+    await axiosClient.post(`/league/category/${categoryId}/add-round`, {
+      round_id: roundId,
+      round_name: roundName,
+      round_status: roundStatus,
+      position,
+    });
+  }
+
   static async updateRoundPosition(
     categoryId: string,
     roundId: string,
@@ -52,16 +99,6 @@ export default class LeagueService {
         position,
       }
     );
-  }
-
-  static async createCategoryRound(payload: CreateCategoryRoundPayload) {
-    const { roundId, categoryId, roundName, roundStatus, position } = payload;
-    await axiosClient.post(`/league/category/${categoryId}/add-round`, {
-      round_id: roundId,
-      round_name: roundName,
-      round_status: roundStatus,
-      position,
-    });
   }
 
   static async updateSingleLeagueResourceField<K extends keyof FieldKeyMap>(

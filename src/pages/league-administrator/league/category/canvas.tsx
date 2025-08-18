@@ -13,7 +13,7 @@ import {
   type Connection,
   useReactFlow,
 } from "@xyflow/react";
-import { RoundStateEnum, RoundTypeEnum } from "@/enums/enums";
+import { getRoundOrder, RoundStateEnum, RoundTypeEnum } from "@/enums/enums";
 import {
   type FormatNodeData,
   type NodeData,
@@ -39,7 +39,7 @@ import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { Loader2 } from "lucide-react";
 import { SmallButton } from "@/components/custom-buttons";
 import LeagueService from "@/service/league-service";
-import { generateUUIDWithPrefix } from "@/lib/utils";
+import { generateUUIDWithPrefix } from "@/lib/app_utils";
 const STATUSES = {
   [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,
   [RoundTypeEnum.QuarterFinal]: RoundStateEnum.Upcoming,
@@ -112,9 +112,7 @@ export default function LeagueCategoryCanvas() {
           parentId: cat.category_id,
           extent: "parent",
           data: {
-            round_id: round.round_id,
-            label: round.round_name as RoundTypeEnum,
-            status: round.round_status as RoundStateEnum,
+            round: round,
           } satisfies RoundNodeData,
         });
       });
@@ -255,19 +253,22 @@ export default function LeagueCategoryCanvas() {
             const originalNode = originalNodesRef.current.find(
               (n) => n.id === node.id
             );
+
+            const { round } = node.data as RoundNodeData;
+
             if (!originalNode) {
               await LeagueService.createCategoryRound({
-                roundId: (node.data as RoundNodeData).round_id,
+                roundId: round.round_id,
                 categoryId: node.parentId,
-                roundName: (node.data as RoundNodeData).label,
-                roundStatus: (node.data as RoundNodeData).status,
-                position: node.position,
+                roundName: round.round_name,
+                roundStatus: round.round_status,
+                position: round.position,
               });
             } else {
               await LeagueService.updateRoundPosition(
                 node.parentId,
-                node.id,
-                node.position
+                round.round_id,
+                round.position
               );
             }
           }
@@ -395,31 +396,35 @@ export default function LeagueCategoryCanvas() {
         .toString(36)
         .slice(2, 11)}`;
       const roundId = generateUUIDWithPrefix("round");
+      const dropPosition = {
+        x: mousePosition.x - targetCategory.position.x - 50,
+        y: mousePosition.y - targetCategory.position.y - 50,
+      };
+
       const newNode: Node<NodeData> =
         nodeType === "round"
           ? {
               id: newNodeId,
               type: roundNodeType,
-              position: {
-                x: mousePosition.x - targetCategory.position.x - 50,
-                y: mousePosition.y - targetCategory.position.y - 50,
-              },
+              position: dropPosition,
               draggable: true,
               parentId: targetCategory.id,
               extent: "parent",
               data: {
-                round_id: roundId,
-                label: label as RoundTypeEnum,
-                status: STATUSES[label as RoundTypeEnum],
+                round: {
+                  round_id: roundId,
+                  round_name: label as RoundTypeEnum,
+                  round_status: STATUSES[label as RoundTypeEnum],
+                  category_id: targetCategory.id,
+                  round_order: getRoundOrder(label as RoundTypeEnum),
+                  position: dropPosition,
+                },
               } satisfies RoundNodeData,
             }
           : {
               id: newNodeId,
               type: roundNodeType,
-              position: {
-                x: mousePosition.x - targetCategory.position.x - 50,
-                y: mousePosition.y - targetCategory.position.y - 50,
-              },
+              position: dropPosition,
               draggable: true,
               parentId: targetCategory.id,
               extent: "parent",
@@ -464,8 +469,7 @@ export default function LeagueCategoryCanvas() {
           sourceNode?.type?.includes("Round") &&
           isRoundNodeData(sourceNode.data)
         ) {
-          const sourceLabel = sourceNode.data.label;
-          const sourceStatus = STATUSES[sourceLabel] ?? RoundStateEnum.Upcoming;
+          const sourceStatus = sourceNode.data.label ?? RoundStateEnum.Upcoming;
 
           switch (sourceStatus) {
             case RoundStateEnum.Finished:
@@ -550,7 +554,7 @@ export default function LeagueCategoryCanvas() {
           Add Category
         </SmallButton>
         {Object.keys(changedNodes).length > 0 && (
-          <SmallButton variant="ghost" onClick={saveChanges}>
+          <SmallButton variant="outline" onClick={saveChanges}>
             Save Changes
           </SmallButton>
         )}
@@ -561,17 +565,17 @@ export default function LeagueCategoryCanvas() {
           onOpenChange={setAddDialogOpen}
         />
         {isLoading ? (
-          <div className="flex justify-center items-center min-h-[300px] w-full">
+          <div className="centered-container">
             <Loader2 className="animate-spin text-primary" />
           </div>
         ) : error ? (
-          <div className="flex justify-center items-center min-h-[300px] w-full">
+          <div className="centered-container">
             <p className="text-primary">{error.message}</p>
           </div>
         ) : data?.categories && data.categories.length > 0 ? (
           categoryCanvas
         ) : (
-          <div className="flex justify-center items-center min-h-[300px] w-full">
+          <div className="centered-container">
             <p className="text-muted-foreground">No categories available</p>
           </div>
         )}

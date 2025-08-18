@@ -4,19 +4,17 @@ import {
   ChartSpline,
   UsersRound,
   UserRound,
-  Book,
   Plus,
   GitFork,
   LifeBuoy,
   Send,
   Settings,
   CalendarCheck,
-  FileBox,
   CalendarArrowUp,
   FlagTriangleRight,
   FolderKanban,
-  Icon,
   GitBranchPlus,
+  Trophy,
 } from "lucide-react";
 
 import {
@@ -46,6 +44,18 @@ const data = {
       title: "Analytics",
       url: "/league-administrator/pages/analytics",
       icon: ChartSpline,
+    },
+  ],
+  league: [
+    {
+      title: "Start new",
+      url: "/league-administrator/pages/league/new",
+      icon: Trophy,
+    },
+    {
+      title: "Categories",
+      url: "/league-administrator/pages/league/categories",
+      icon: GitBranchPlus,
     },
     {
       title: "Player",
@@ -78,18 +88,6 @@ const data = {
           url: "/league-administrator/pages/league/team/submission",
         },
       ],
-    },
-  ],
-  league: [
-    {
-      title: "Create",
-      url: "/league-administrator/pages/league/new",
-      icon: Plus,
-    },
-    {
-      title: "Categories",
-      url: "/league-administrator/pages/league/categories",
-      icon: GitBranchPlus,
     },
     {
       title: "Manage",
@@ -149,13 +147,15 @@ const data = {
     },
     {
       title: "Support",
-      url: "#",
+      url: "https://github.com/hulomjosuan21",
       icon: LifeBuoy,
+      target: "_blank",
     },
     {
       title: "Feedback",
-      url: "#",
+      url: "https://mail.google.com/mail/?view=cm&fs=1&to=hulomjosuan@gmail.com&su=Your%20Subject&body=Your%20message",
       icon: Send,
+      target: "_blank",
     },
   ],
 };
@@ -164,7 +164,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { leagueAdmin, leagueAdminLoading } = useAuthLeagueAdmin();
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" {...props} variant="floating">
       <SidebarHeader>
         <AppSidebarHeader />
       </SidebarHeader>
@@ -186,17 +186,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <NavMenu label="Platform" items={data.platform} />
               <NavMenu label="League" items={data.league} />
               <NavMenu label="Match" items={data.match} />
+              <NavSecondaryMenu items={data.navSecondary} />
             </>
           )}
         </SidebarContent>
       </ScrollArea>
       <SidebarFooter>
-        <div className="border-t border-muted" />
-
-        {!leagueAdminLoading && (
-          <NavSecondaryMenu items={data.navSecondary} className="mt-auto" />
-        )}
-
         {leagueAdminLoading || !leagueAdmin ? (
           <NavUserSkeleton />
         ) : (

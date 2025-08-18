@@ -13,6 +13,17 @@ export enum RoundTypeEnum {
   Final = "Final",
 }
 
+const roundOrderMap: Record<RoundTypeEnum, number> = {
+  [RoundTypeEnum.Elimination]: 0,
+  [RoundTypeEnum.QuarterFinal]: 1,
+  [RoundTypeEnum.SemiFinal]: 2,
+  [RoundTypeEnum.Final]: 3,
+};
+
+export function getRoundOrder(round: RoundTypeEnum): number {
+  return roundOrderMap[round];
+}
+
 export enum RoundFormatEnum {
   RoundRobin = "Round Robin",
   Knockout = "Knockout",

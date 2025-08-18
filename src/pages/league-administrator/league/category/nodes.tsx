@@ -10,6 +10,7 @@ import { Settings2 } from "lucide-react";
 import { type CategoryNodeData, type RoundNodeData } from "./types";
 import React from "react";
 import { RoundTypeEnum } from "@/enums/enums";
+import { RoundNodeSheet } from "./components";
 
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
@@ -38,18 +39,16 @@ export function CategoryNode({ data }: { data: CategoryNodeData }) {
 }
 
 function BaseRoundNode({
-  label,
+  data,
   children,
 }: {
-  label: string;
+  data: RoundNodeData;
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-muted rounded-md p-3 flex items-center justify-between gap-2 shadow-sm border-2 group">
-      <span className="font-medium">{label}</span>
-      <Button type="button" size="icon" variant="outline">
-        <Settings2 className="w-4 h-4" />
-      </Button>
+    <div className="rounded-md p-3 flex items-center justify-between gap-2 border-2 group">
+      <span className="font-medium">{data.round.round_name}</span>
+      <RoundNodeSheet data={data} />
       {children}
     </div>
   );
@@ -66,7 +65,7 @@ export function EliminationRoundNode({
 }) {
   const allNodes = allNodesRef.current ?? [];
   return (
-    <BaseRoundNode label={RoundTypeEnum.Elimination}>
+    <BaseRoundNode data={data}>
       <Handle
         type="source"
         position={Position.Right}
@@ -100,7 +99,7 @@ export function QuarterFinalRoundNode({
 }) {
   const allNodes = allNodesRef.current ?? [];
   return (
-    <BaseRoundNode label={RoundTypeEnum.QuarterFinal}>
+    <BaseRoundNode data={data}>
       <Handle
         type="target"
         position={Position.Left}
@@ -146,7 +145,7 @@ export function SemiFinalRoundNode({
 }) {
   const allNodes = allNodesRef.current ?? [];
   return (
-    <BaseRoundNode label={RoundTypeEnum.SemiFinal}>
+    <BaseRoundNode data={data}>
       <Handle
         type="target"
         position={Position.Left}
@@ -186,7 +185,7 @@ export function FinalRoundNode({
 }) {
   const allNodes = allNodesRef.current ?? [];
   return (
-    <BaseRoundNode label={RoundTypeEnum.Final}>
+    <BaseRoundNode data={data}>
       <Handle
         type="target"
         position={Position.Left}
@@ -210,7 +209,7 @@ export function FinalRoundNode({
 
 export function FormatNode({ data }: { data: { label: string } }) {
   return (
-    <div className="bg-muted rounded-md p-2 flex items-center gap-2 shadow-sm border">
+    <div className="rounded-md p-2 flex items-center gap-2 border-2">
       <span className="text-xs">{data.label}</span>
       <Handle
         id="top"

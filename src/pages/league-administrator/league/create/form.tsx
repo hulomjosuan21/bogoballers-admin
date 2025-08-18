@@ -47,13 +47,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ButtonLoading } from "@/components/custom-buttons";
-import { disableOnLoading } from "@/lib/utils";
+import { disableOnLoading } from "@/lib/app_utils";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
-
-interface CreateLeagueFormProps {
-  hasLeague: boolean;
-}
+import { Textarea } from "@/components/ui/textarea";
 
 function validateLeagueForm({
   leagueTitle,
@@ -91,7 +88,7 @@ function validateLeagueForm({
   if (!categories.length) throw new Error("At least one category is required.");
 }
 
-export default function CreateLeagueForm({}: CreateLeagueFormProps) {
+export default function CreateLeagueForm() {
   const { refetch: refetchActiveLeague } = useQuery(
     getActiveLeagueQueryOptions
   );
@@ -257,12 +254,18 @@ export default function CreateLeagueForm({}: CreateLeagueFormProps) {
           baseClass: "grid space-y-2",
         })}
       >
-        <Label htmlFor="rules">League Description</Label>
-        <MinimalTiptap
+        <Label htmlFor="description">League Description</Label>
+        {/* <MinimalTiptap
           onChange={setLeagueDescription}
           placeholder="Start typing your leagueDescription here..."
           className="min-h-[400px]"
+        /> */}
+        <Textarea
+          onChange={(e) => setLeagueDescription(e.target.value)}
+          id="description"
+          className="h-24"
         />
+
         <p className="text-helper">
           Briefly describe the league’s purpose, scope, and any notable
           information that participants should know. This will be visible on the
@@ -390,9 +393,7 @@ function AddCategories({
         <Label>League Categories</Label>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="secondary" size="sm">
-              Add Category
-            </Button>
+            <Button size="sm">Add Category</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -488,43 +489,51 @@ function AddCategories({
               <TableHead>Accept Teams</TableHead>
               <TableHead>Team Fee</TableHead>
               <TableHead>Individual Fee</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {categories.map((cat, idx) => (
-              <TableRow key={idx}>
-                <TableCell>{cat.category_name}</TableCell>
-                <TableCell>{cat.max_team}</TableCell>
-                <TableCell>{cat.accept_teams ? "Yes" : "No"}</TableCell>
-                <TableCell>
-                  ₱{cat.team_entrance_fee_amount.toFixed(2)}
-                </TableCell>
-                <TableCell>
-                  ₱{cat.individual_player_entrance_fee_amount.toFixed(2)}
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="icon" variant="ghost">
-                        <MoreVertical className="w-5 h-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleEdit(idx)}>
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleDelete(idx)}
-                        className="text-red-500"
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {categories.length > 0 ? (
+              categories.map((cat, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{cat.category_name}</TableCell>
+                  <TableCell>{cat.max_team}</TableCell>
+                  <TableCell>{cat.accept_teams ? "Yes" : "No"}</TableCell>
+                  <TableCell>
+                    ₱{cat.team_entrance_fee_amount.toFixed(2)}
+                  </TableCell>
+                  <TableCell>
+                    ₱{cat.individual_player_entrance_fee_amount.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="icon" variant="ghost">
+                          <MoreVertical className="w-5 h-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEdit(idx)}>
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(idx)}
+                          className="text-red-500"
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  No data.
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>

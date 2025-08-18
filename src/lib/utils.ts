@@ -1,29 +1,12 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export function cn(...inputs: ClassValue[]) {
+/**
+ * Merges Tailwind class names, resolving any conflicts.
+ *
+ * @param inputs - An array of class names to merge.
+ * @returns A string of merged and optimized class names.
+ */
+export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
-}
-
-export function disableOnLoading({
-  condition,
-  baseClass = "",
-  opacity = 10,
-}: {
-  condition: boolean;
-  baseClass?: string;
-  opacity?: number;
-}): string {
-  return [
-    baseClass,
-    `transition-opacity duration-300 ease-in-out`,
-    condition && `disable-on-loading-${opacity}`,
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-export function generateUUIDWithPrefix(prefix: string): string {
-  const uuid = crypto.randomUUID();
-  return `${prefix}-${uuid}`;
 }

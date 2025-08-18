@@ -19,11 +19,11 @@ export default function LeagueOfficialsPage() {
 
       <ContentBody className="">
         {isLoading ? (
-          <div className="flex items-center justify-center min-h-[300px]">
-            <Loader2 className="animate-spin text-primary" />
+          <div className="centered-container">
+            <Loader2 className="spinner-primary" />
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center min-h-[300px]">
+          <div className="centered-container">
             <p className="text-primary">{error.message}</p>
           </div>
         ) : (

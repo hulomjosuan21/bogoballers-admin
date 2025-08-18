@@ -1,5 +1,5 @@
 import type { RoundStateEnum, RoundTypeEnum } from "@/enums/enums";
-import type { LeagueCategory } from "@/types/league";
+import type { LeagueCategory, LeagueCategoryRound } from "@/types/league";
 
 export type StatusMap = Record<RoundTypeEnum, RoundStateEnum>;
 
@@ -9,12 +9,9 @@ export interface CategoryNodeData {
 }
 
 export interface RoundNodeData {
-  round_id: string;
-  label: RoundTypeEnum;
-  status: RoundStateEnum;
+  round: LeagueCategoryRound;
   [key: string]: unknown;
 }
-
 export interface FormatNodeData {
   label: string;
   [key: string]: unknown;

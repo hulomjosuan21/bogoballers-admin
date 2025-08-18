@@ -46,7 +46,8 @@ import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useErrorToast } from "@/components/error-toast";
 import LeagueService from "@/service/league-service";
 import { toast } from "sonner";
-import { ButtonLoading } from "@/components/custom-buttons";
+import { ButtonLoading, SmallButton } from "@/components/custom-buttons";
+import { cn } from "@/lib/utils";
 
 export type LeagueAffiliateCreate = {
   name: string;
@@ -177,7 +178,7 @@ export default function ManageAffiliates({
     },
     {
       accessorKey: "contact_info",
-      header: "Contact Info",
+      header: "Contact",
     },
     {
       id: "actions",
@@ -232,7 +233,9 @@ export default function ManageAffiliates({
         <div className="flex gap-2 items-center">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button size={"sm"}>Add Affiliate</Button>
+              <SmallButton className={cn(editingIndex !== null && "hidden")}>
+                Add Affiliate
+              </SmallButton>
             </DialogTrigger>
             <DialogContent aria-describedby={undefined}>
               <DialogHeader>
@@ -258,8 +261,9 @@ export default function ManageAffiliates({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contact_info">Contact Info</Label>
+                  <Label htmlFor="contact_info">Contact</Label>
                   <Input
+                    placeholder="Enter phone, email, or website"
                     id="contact_info"
                     value={form.contact_info}
                     onChange={(e) =>
@@ -281,14 +285,13 @@ export default function ManageAffiliates({
             </DialogContent>
           </Dialog>
           {hasChanges && (
-            <ButtonLoading
-              size={"sm"}
-              variant={"secondary"}
+            <SmallButton
+              variant={"outline"}
               onClick={handleSaveChanges}
-              loading={isProcessing}
+              disabled={isProcessing}
             >
               Save Changes
-            </ButtonLoading>
+            </SmallButton>
           )}
         </div>
       </div>

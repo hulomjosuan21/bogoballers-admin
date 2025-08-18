@@ -18,57 +18,51 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StaticData } from "@/data";
-import { RoundStateEnum, RoundTypeEnum } from "@/enums/enums";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import LeagueService from "@/service/league-service";
 import type { CreateLeagueCategory } from "@/types/league";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  Sheet,
+  SheetBody,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Settings2 } from "lucide-react";
+import type { RoundNodeData } from "./types";
 
-export function RoundNodeDialog({
-  round,
-  status,
-  setStatus,
-  open,
-  onOpenChange,
-}: {
-  round: { label: RoundTypeEnum } | null;
-  status: RoundStateEnum;
-  setStatus: (label: RoundTypeEnum, status: RoundStateEnum) => void;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  if (!round) return null;
-
+export function RoundNodeSheet({ data }: { data: RoundNodeData }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Round: {round.label}</DialogTitle>
-        </DialogHeader>
-
-        <div>
-          <Select
-            value={status}
-            onValueChange={(value) =>
-              setStatus(round.label, value as RoundStateEnum)
-            }
-          >
-            <SelectTrigger className="mt-2 p-1 text-xs w-full">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.values(RoundStateEnum).map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button type="button" size="icon" variant="outline">
+          <Settings2 className="w-4 h-4" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side={"bottom"} aria-describedby={undefined}>
+        <SheetHeader>
+          <SheetTitle>Quick Feedback</SheetTitle>
+        </SheetHeader>
+        <SheetBody>
+          <pre>{JSON.stringify(data.round, null, 2)}</pre>
+        </SheetBody>
+        <SheetFooter>
+          <SheetClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </SheetClose>
+          <SheetClose asChild>
+            <Button type="submit">Submit Feedback</Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 

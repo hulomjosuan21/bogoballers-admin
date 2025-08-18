@@ -9,7 +9,7 @@ export function RoundNodeMenu({
   const menuItems = Object.values(RoundTypeEnum);
 
   return (
-    <div className="w-48 p-2 border rounded-md bg-card shadow-sm">
+    <div className="w-48 p-2 border rounded-md bg-card">
       <h3 className="text-xs font-semibold text-muted-foreground mb-2 tracking-wide">
         Rounds
       </h3>
@@ -19,7 +19,7 @@ export function RoundNodeMenu({
             key={value}
             draggable
             onDragStart={(event) => onDragStart(event, value)}
-            className="flex items-center gap-2 p-2 rounded-md border-2 bg-background cursor-grab hover:opacity-80"
+            className="flex items-center gap-2 p-2 rounded-md border bg-background cursor-grab hover:opacity-80"
           >
             <GripVertical className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm font-medium">{value}</span>
@@ -38,7 +38,7 @@ export function FormatNodeMenu({
   const menuItems = Object.values(RoundFormatEnum);
 
   return (
-    <div className="w-48 p-2 border rounded-md bg-card shadow-sm">
+    <div className="w-48 p-2 border rounded-md bg-card">
       <h3 className="text-xs font-semibold text-muted-foreground mb-2 tracking-wide">
         Formats
       </h3>
@@ -48,7 +48,7 @@ export function FormatNodeMenu({
             key={value}
             draggable
             onDragStart={(event) => onDragStart(event, value)}
-            className="flex items-center gap-2 p-2 rounded-md border-2 bg-background cursor-grab hover:opacity-80"
+            className="flex items-center gap-2 p-2 rounded-md border bg-background cursor-grab hover:opacity-80"
           >
             <GripVertical className="w-4 h-4 text-muted-foreground" />
             <span className="text-xs text-center font-medium">{value}</span>

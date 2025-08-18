@@ -1,4 +1,5 @@
 import ContentHeader from "@/components/content-header";
+import LeagueExportButton from "@/components/leagueDocxGenerator";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import {
   getActiveLeagueQueryOptions,
@@ -18,14 +19,7 @@ export default function DashboardPage() {
   return (
     <ContentShell>
       <ContentHeader title="Dashboard" />
-      <ContentBody>
-        <pre>
-          <code>{JSON.stringify(activeLeague.data, null, 2)}</code>
-        </pre>
-        <pre>
-          <code>{JSON.stringify(activeLeagueResource.data, null, 2)}</code>
-        </pre>
-      </ContentBody>
+      <ContentBody></ContentBody>
     </ContentShell>
   );
 }

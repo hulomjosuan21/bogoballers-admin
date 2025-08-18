@@ -46,7 +46,8 @@ import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useQuery } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
 import LeagueService from "@/service/league-service";
-import { ButtonLoading } from "@/components/custom-buttons";
+import { ButtonLoading, SmallButton } from "@/components/custom-buttons";
+import { cn } from "@/lib/utils";
 
 export default function ManageCourts({ data }: { data: LeagueCourt[] }) {
   const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
@@ -232,7 +233,9 @@ export default function ManageCourts({ data }: { data: LeagueCourt[] }) {
             }}
           >
             <DialogTrigger asChild>
-              <Button size="sm">Add Court</Button>
+              <SmallButton className={cn(editIndex !== null && "hidden")}>
+                Add Court
+              </SmallButton>
             </DialogTrigger>
             <DialogContent className="max-w-md" aria-describedby={undefined}>
               <DialogHeader>
@@ -267,14 +270,13 @@ export default function ManageCourts({ data }: { data: LeagueCourt[] }) {
             </DialogContent>
           </Dialog>
           {hasChanges && (
-            <ButtonLoading
-              size={"sm"}
-              variant={"secondary"}
+            <SmallButton
+              variant={"outline"}
               onClick={handleSaveChanges}
-              loading={isProcessing}
+              disabled={isProcessing}
             >
               Save Changes
-            </ButtonLoading>
+            </SmallButton>
           )}
         </div>
       </div>
