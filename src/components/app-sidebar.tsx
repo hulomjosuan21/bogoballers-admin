@@ -136,7 +136,7 @@ const data = {
     },
     {
       title: "Set Schedule",
-      url: "/league-administrator/pages/match/unscheduled",
+      url: "/league-administrator/pages/set/unscheduled",
       icon: CalendarArrowUp,
     },
     {

@@ -12,6 +12,7 @@ import {
   LeagueCategoryPage,
   LeagueAffiliatePage,
   LeagueOfficialsPage,
+  SetSchedulePage,
 } from "@/pages";
 
 export const leagueAdminRoutes: RouteObject[] = [
@@ -30,6 +31,10 @@ export const leagueAdminRoutes: RouteObject[] = [
   {
     path: "pages/set/round",
     element: <SetRoundPage />,
+  },
+  {
+    path: "pages/set/unscheduled",
+    element: <SetSchedulePage />,
   },
   {
     path: "pages/league/player/submission",
