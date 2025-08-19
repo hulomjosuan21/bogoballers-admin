@@ -142,10 +142,33 @@ export function RoundNode({
   );
 }
 
-export function FormatNode({ data }: { data: { label: string } }) {
+export interface FormatNodeData {
+  label: string;
+  round_format?: {
+    format_type: string;
+    pairing_method: string;
+    position: { x: number; y: number };
+    round_id: string;
+  };
+}
+
+export function FormatNode({ data }: { data: FormatNodeData }) {
   return (
-    <div className="rounded-md p-2 flex items-center gap-2 border-2">
-      <span className="text-xs">{data.label}</span>
+    <div className="rounded-md p-2 flex flex-col gap-1 border-2">
+      <span className="text-xs font-semibold">{data.label}</span>
+
+      {data.round_format ? (
+        <div className="text-[10px] leading-tight">
+          <div>Type: {data.round_format.format_type}</div>
+          <div>Pairing: {data.round_format.pairing_method}</div>
+          <div>Round: {data.round_format.round_id}</div>
+        </div>
+      ) : (
+        <span className="text-[10px] italic text-gray-400">
+          No format linked
+        </span>
+      )}
+
       <Handle
         id="top"
         type="target"

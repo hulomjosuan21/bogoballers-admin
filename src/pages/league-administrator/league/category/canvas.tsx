@@ -17,10 +17,12 @@ import {
 import {
   type FormatNodeData,
   type LeagueCategoryRound,
+  type LeagueRoundFormat,
   type NodeData,
   type RoundNodeData,
   getRoundOrder,
   isValidOrderTransition,
+  RoundFormatTypesEnum,
   RoundStateEnum,
   RoundTypeEnum,
 } from "./types";
@@ -275,32 +277,52 @@ export default function LeagueCategoryCanvas() {
   );
 
   const onConnect = useCallback(
-    (connection: Connection) => {
+    async (connection: Connection) => {
       const sourceNode = nodes.find((n) => n.id === connection.source);
       const targetNode = nodes.find((n) => n.id === connection.target);
 
+      // ✅ round -> format connection
       if (
         sourceNode?.type === "roundNode" &&
-        connection.sourceHandle === "bottom"
+        targetNode?.type === "formatNode" &&
+        connection.sourceHandle === "bottom" &&
+        connection.targetHandle === "top"
       ) {
-        if (
-          targetNode?.type !== "formatNode" ||
-          connection.targetHandle !== "top"
-        ) {
-          toast.error(
-            "Bottom handle can only connect to a Format node's top handle."
+        const round = (sourceNode.data as RoundNodeData).round;
+        const formatLabel = (targetNode.data as FormatNodeData).label;
+
+        const roundFormat: LeagueRoundFormat = {
+          format_type: formatLabel as RoundFormatTypesEnum,
+          pairing_method: "random", // default, can extend later
+          round_id: round.round_id,
+          position: targetNode.position,
+        };
+
+        try {
+          await LeagueCategoryService.updateRoundFormat({
+            categoryId: sourceNode.parentId!,
+            roundId: round.round_id,
+            roundFormat,
+          });
+
+          toast.success(
+            `Format '${formatLabel}' assigned to ${round.round_name}`
           );
-          return;
+          setEdges((eds) => addEdge(connection, eds));
+        } catch (err) {
+          toast.error("Failed to update round format");
+          console.error(err);
         }
-        setEdges((eds) => addEdge(connection, eds));
         return;
       }
 
+      // ❌ format as source not allowed
       if (sourceNode?.type === "formatNode") {
         toast.error("Format nodes cannot be sources of connections.");
         return;
       }
 
+      // ✅ round -> round connection
       if (
         sourceNode?.type === "roundNode" &&
         targetNode?.type === "roundNode"
@@ -321,6 +343,7 @@ export default function LeagueCategoryCanvas() {
           toast.error("Invalid connection for round order.");
           return;
         }
+
         setEdges((eds) => addEdge(connection, eds));
         return;
       }

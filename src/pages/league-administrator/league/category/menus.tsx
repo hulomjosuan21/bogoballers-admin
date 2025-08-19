@@ -1,5 +1,5 @@
 import { GripVertical } from "lucide-react";
-import { RoundFormatEnum, RoundTypeEnum } from "./types";
+import { RoundFormatTypesEnum, RoundTypeEnum } from "./types";
 
 export function RoundNodeMenu({
   onDragStart,
@@ -35,7 +35,7 @@ export function FormatNodeMenu({
 }: {
   onDragStart: (event: React.DragEvent, label: string) => void;
 }) {
-  const menuItems = Object.values(RoundFormatEnum);
+  const menuItems = Object.values(RoundFormatTypesEnum);
 
   return (
     <div className="w-48 p-2 border rounded-md bg-card">

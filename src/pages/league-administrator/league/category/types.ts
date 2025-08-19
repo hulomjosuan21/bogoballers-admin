@@ -13,13 +13,19 @@ export interface LeagueCategoryRound {
 }
 
 export interface LeagueRoundFormat {
-  format_type: RoundFormatEnum;
+  format_type: RoundFormatTypesEnum;
   pairing_method: string;
   round_id: string;
   position: {
     x: number;
     y: number;
   };
+}
+
+export interface RoundNodeData {
+  round: LeagueCategoryRound;
+  _isNew?: boolean;
+  [key: string]: unknown;
 }
 
 export enum RoundTypeEnum {
@@ -42,7 +48,7 @@ const roundOrderMap: Record<RoundTypeEnum, number> = {
   [RoundTypeEnum.Final]: 3,
 };
 
-export enum RoundFormatEnum {
+export enum RoundFormatTypesEnum {
   RoundRobin = "Round Robin",
   Knockout = "Knockout",
   DoubleElimination = "Double Elimination",
@@ -101,12 +107,6 @@ export type StatusMap = Record<RoundTypeEnum, RoundStateEnum>;
 
 export interface CategoryNodeData {
   category: LeagueCategory;
-  [key: string]: unknown;
-}
-
-export interface RoundNodeData {
-  round: LeagueCategoryRound;
-  _isNew?: boolean;
   [key: string]: unknown;
 }
 

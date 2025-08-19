@@ -1,4 +1,5 @@
 import axiosClient from "@/lib/axiosClient";
+import type { LeagueRoundFormat } from "./types";
 
 interface CreateCategoryRoundPayload {
   categoryId: string;
@@ -50,29 +51,18 @@ export class LeagueCategoryService {
     );
   }
 
-  static async createRoundFormat({
+  static async updateRoundFormat({
+    categoryId,
     roundId,
-    formatType,
-    pairingMethod,
-    position,
-  }: CreateRoundFormatPayload) {
-    await axiosClient.post(`/league/round/${roundId}/add-format`, {
-      round_id: roundId,
-      format_type: formatType,
-      pairing_method: pairingMethod ?? "default",
-      position,
-    });
-  }
-
-  static async updateFormatPosition({
-    roundId,
-    position,
+    roundFormat,
   }: {
+    categoryId: string;
     roundId: string;
-    position: { x: number; y: number };
+    roundFormat: LeagueRoundFormat;
   }) {
-    await axiosClient.post(`/league/round/${roundId}/update-format-position`, {
-      position,
-    });
+    await axiosClient.post(
+      `/league/category/${categoryId}/round/${roundId}/update-format`,
+      { round_format: roundFormat }
+    );
   }
 }
