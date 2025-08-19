@@ -4,7 +4,7 @@ export interface LeagueCategoryRound {
   round_name: string;
   round_order: number;
   round_status: string;
-  round_format?: string | null;
+  round_format?: LeagueRoundFormat | null;
   position: {
     x: number;
     y: number;

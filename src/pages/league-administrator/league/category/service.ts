@@ -6,7 +6,6 @@ interface CreateCategoryRoundPayload {
   roundId: string;
   roundName: string;
   roundStatus: string;
-  roundFormat: string | null;
   roundOrder: number;
   position: { x: number; y: number };
 }

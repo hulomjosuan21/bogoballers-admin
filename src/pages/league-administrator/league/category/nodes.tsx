@@ -1,6 +1,7 @@
 import {
   Handle,
   Position,
+  useReactFlow,
   type Connection,
   type Edge,
   type Node,
@@ -10,8 +11,9 @@ import {
   type CategoryNodeData,
   type RoundNodeData,
 } from "./types";
-import React from "react";
+import React, { useRef } from "react";
 import { RoundNodeSheet } from "./components";
+import { toast } from "sonner";
 
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
@@ -153,29 +155,40 @@ export interface FormatNodeData {
 }
 
 export function FormatNode({ data }: { data: FormatNodeData }) {
+  const { getEdges } = useReactFlow();
+  const errorShownRef = useRef(false);
+
+  const validateConnection = (conn: Connection | Edge) => {
+    const edges = getEdges();
+    const alreadyConnected = edges.some(
+      (edge) =>
+        edge.target === conn.target && edge.targetHandle === conn.targetHandle
+    );
+
+    if (alreadyConnected) {
+      if (!errorShownRef.current) {
+        toast.error("This format is already connected!");
+        errorShownRef.current = true;
+      }
+      return false;
+    }
+
+    return conn.sourceHandle === "bottom";
+  };
+
   return (
-    <div className="rounded-md p-2 flex flex-col gap-1 border-2">
+    <div
+      className="rounded-md p-2 flex flex-col gap-1 border-2"
+      onMouseUp={() => {
+        errorShownRef.current = false;
+      }}
+    >
       <span className="text-xs font-semibold">{data.label}</span>
-
-      {data.round_format ? (
-        <div className="text-[10px] leading-tight">
-          <div>Type: {data.round_format.format_type}</div>
-          <div>Pairing: {data.round_format.pairing_method}</div>
-          <div>Round: {data.round_format.round_id}</div>
-        </div>
-      ) : (
-        <span className="text-[10px] italic text-gray-400">
-          No format linked
-        </span>
-      )}
-
       <Handle
         id="top"
         type="target"
         position={Position.Top}
-        isValidConnection={(conn: Connection | Edge) =>
-          conn.sourceHandle === "bottom"
-        }
+        isValidConnection={validateConnection}
       />
     </div>
   );

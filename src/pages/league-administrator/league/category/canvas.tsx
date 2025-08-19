@@ -137,8 +137,14 @@ export default function LeagueCategoryCanvas() {
             parentId: cat.category_id,
             extent: "parent",
             draggable: true,
-            position: { x: pos.x, y: pos.y + 120 },
-            data: { label: round.round_format } satisfies FormatNodeData,
+            position: round.round_format.position ?? {
+              x: pos.x,
+              y: pos.y + 120,
+            },
+            data: {
+              label: round.round_format.format_type, // <-- display name
+              round_format: round.round_format, // <-- full object for details
+            } satisfies FormatNodeData,
           });
 
           newEdges.push({
@@ -531,9 +537,6 @@ export default function LeagueCategoryCanvas() {
           if (node.type !== "roundNode" || !node.parentId) return;
 
           const { round, _isNew } = node.data as RoundNodeData;
-          if (formatByRound[node.id] !== undefined) {
-            round.round_format = formatByRound[node.id];
-          }
 
           if (_isNew) {
             await LeagueCategoryService.createCategoryRound({
@@ -542,7 +545,6 @@ export default function LeagueCategoryCanvas() {
               roundName: round.round_name,
               roundStatus: round.round_status,
               position: round.position,
-              roundFormat: round.round_format ?? null,
               roundOrder: round.round_order,
             });
           } else {
