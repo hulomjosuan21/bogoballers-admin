@@ -11,13 +11,6 @@ interface CreateCategoryRoundPayload {
   position: { x: number; y: number };
 }
 
-interface CreateRoundFormatPayload {
-  roundId: string;
-  formatType: string;
-  pairingMethod?: string;
-  position: { x: number; y: number };
-}
-
 export class LeagueCategoryService {
   static async createCategoryRound({
     categoryId,
