@@ -12,23 +12,25 @@ import {
   type EdgeChange,
   type Connection,
   useReactFlow,
+  BezierEdge,
 } from "@xyflow/react";
-import { getRoundOrder, RoundStateEnum, RoundTypeEnum } from "@/enums/enums";
 import {
   type FormatNodeData,
+  type LeagueCategoryRound,
   type NodeData,
   type RoundNodeData,
+  getRoundOrder,
+  isValidOrderTransition,
+  RoundStateEnum,
+  RoundTypeEnum,
 } from "./types";
 import { toast } from "sonner";
 import {
   CATEGORY_HEIGHT,
   CATEGORY_WIDTH,
   CategoryNode,
-  EliminationRoundNode,
-  FinalRoundNode,
   FormatNode,
-  QuarterFinalRoundNode,
-  SemiFinalRoundNode,
+  RoundNode,
 } from "./nodes";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ContentHeader from "@/components/content-header";
@@ -38,9 +40,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { Loader2 } from "lucide-react";
 import { SmallButton } from "@/components/custom-buttons";
-import LeagueService from "@/service/league-service";
 import { generateUUIDWithPrefix } from "@/lib/app_utils";
-const STATUSES = {
+import { LeagueCategoryService } from "./service";
+
+const edgeTypes = {
+  bezier: BezierEdge,
+};
+const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
   [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,
   [RoundTypeEnum.QuarterFinal]: RoundStateEnum.Upcoming,
   [RoundTypeEnum.SemiFinal]: RoundStateEnum.Upcoming,
@@ -49,9 +55,12 @@ const STATUSES = {
 
 export default function LeagueCategoryCanvas() {
   const reactFlowInstance = useReactFlow();
-  const { data, isLoading, error } = useQuery(getActiveLeagueQueryOptions);
+  const { data, isLoading, error, refetch } = useQuery(
+    getActiveLeagueQueryOptions
+  );
 
   const [nodes, setNodes] = useState<Node<NodeData>[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
   const originalNodesRef = useRef<Node<NodeData>[]>([]);
 
   useEffect(() => {
@@ -61,9 +70,7 @@ export default function LeagueCategoryCanvas() {
           id: cat.category_id,
           type: "categoryNode",
           position: { x: 50, y: index * 800 },
-          data: {
-            category: cat,
-          },
+          data: { category: cat },
           draggable: true,
           selectable: true,
         })
@@ -71,61 +78,81 @@ export default function LeagueCategoryCanvas() {
 
       originalNodesRef.current = categoryNodes;
       setNodes(categoryNodes);
+      setEdges([]);
     }
-  }, [data]);
+  }, [data?.categories]);
 
   useEffect(() => {
     if (!data?.categories) return;
 
-    const roundNodes: Node<NodeData>[] = [];
+    const newNodes: Node<NodeData>[] = [];
+    const newEdges: Edge[] = [];
 
-    data.categories.forEach((cat) => {
+    data.categories.forEach((cat, catIndex) => {
+      newNodes.push({
+        id: cat.category_id,
+        type: "categoryNode",
+        position: { x: 50, y: catIndex * 800 },
+        data: { category: cat },
+        draggable: true,
+        selectable: true,
+      });
+
       cat.rounds.forEach((round) => {
-        let roundNodeType: Node["type"] = "formatNode";
-        switch (round.round_name) {
-          case RoundTypeEnum.Elimination:
-            roundNodeType = "eliminationRoundNode";
-            break;
-          case RoundTypeEnum.QuarterFinal:
-          case "Quarterfinal":
-            roundNodeType = "quarterFinalRoundNode";
-            break;
-          case RoundTypeEnum.SemiFinal:
-          case "Semifinal":
-            roundNodeType = "semiFinalRoundNode";
-            break;
-          case RoundTypeEnum.Final:
-            roundNodeType = "finalRoundNode";
-            break;
-          default:
-            roundNodeType = "formatNode";
-        }
-
-        roundNodes.push({
+        const pos = round.position ?? { x: 100, y: 100 };
+        newNodes.push({
           id: round.round_id,
-          type: roundNodeType,
-          position: {
-            x: round.position?.x ?? 100,
-            y: round.position?.y ?? 100,
-          },
-          draggable: true,
+          type: "roundNode",
           parentId: cat.category_id,
           extent: "parent",
-          data: {
-            round: round,
-          } satisfies RoundNodeData,
+          draggable: true,
+          position: pos,
+          data: { round, _isNew: false } satisfies RoundNodeData,
         });
+
+        if (round.next_round_id) {
+          const targetRound = cat.rounds.find(
+            (r) => r.round_id === round.next_round_id
+          );
+          if (targetRound) {
+            const targetHasLeft = targetRound.round_order > 0;
+
+            newEdges.push({
+              id: `edge-${round.round_id}-${targetRound.round_id}`,
+              source: round.round_id,
+              sourceHandle: "right",
+              target: targetRound.round_id,
+              targetHandle: targetHasLeft ? "left" : undefined,
+            });
+          }
+        }
+
+        if (round.round_format) {
+          const formatNodeId = `format-${round.round_id}`;
+          newNodes.push({
+            id: formatNodeId,
+            type: "formatNode",
+            parentId: cat.category_id,
+            extent: "parent",
+            draggable: true,
+            position: { x: pos.x, y: pos.y + 120 },
+            data: { label: round.round_format } satisfies FormatNodeData,
+          });
+
+          newEdges.push({
+            id: `edge-${round.round_id}-${formatNodeId}`,
+            source: round.round_id,
+            sourceHandle: "bottom",
+            target: formatNodeId,
+            targetHandle: "top",
+          });
+        }
       });
     });
 
-    setNodes((prevNodes) => {
-      const filteredNodes = prevNodes.filter(
-        (n) => !n.id.startsWith("league-round-")
-      );
-      const allNodes = [...filteredNodes, ...roundNodes];
-      originalNodesRef.current = allNodes;
-      return allNodes;
-    });
+    originalNodesRef.current = newNodes;
+    setNodes(newNodes);
+    setEdges(newEdges);
   }, [data]);
 
   const [changedNodes, setChangedNodes] = useState<
@@ -135,8 +162,17 @@ export default function LeagueCategoryCanvas() {
   const nodesAreEqual = (a: Node<NodeData>, b: Node<NodeData>) => {
     if (a.position.x !== b.position.x || a.position.y !== b.position.y)
       return false;
-    if (JSON.stringify(a.data) !== JSON.stringify(b.data)) return false;
     if (a.type !== b.type) return false;
+    const aRound = (a.data as any)?.round as LeagueCategoryRound | undefined;
+    const bRound = (b.data as any)?.round as LeagueCategoryRound | undefined;
+    if (aRound || bRound) {
+      return (
+        aRound?.round_status === bRound?.round_status &&
+        aRound?.round_format === bRound?.round_format &&
+        aRound?.position?.x === bRound?.position?.x &&
+        aRound?.position?.y === bRound?.position?.y
+      );
+    }
     return true;
   };
 
@@ -145,41 +181,31 @@ export default function LeagueCategoryCanvas() {
       setNodes((nds) => {
         const newNodes = applyNodeChanges(changes, nds) as Node<NodeData>[];
 
-        const newChangedNodes: Record<string, Node<NodeData>> = {
-          ...changedNodes,
-        };
-
+        const newChanged: Record<string, Node<NodeData>> = { ...changedNodes };
         newNodes.forEach((node) => {
           if (node.type === "categoryNode") {
-            if (newChangedNodes[node.id]) {
-              delete newChangedNodes[node.id];
-            }
+            if (newChanged[node.id]) delete newChanged[node.id];
             return;
           }
-
-          const originalNode = originalNodesRef.current.find(
+          const original = originalNodesRef.current.find(
             (n) => n.id === node.id
           );
-
-          if (!originalNode) {
-            newChangedNodes[node.id] = node;
-          } else if (!nodesAreEqual(node, originalNode)) {
-            newChangedNodes[node.id] = node;
+          if (!original) {
+            newChanged[node.id] = node;
+          } else if (!nodesAreEqual(node, original)) {
+            newChanged[node.id] = node;
           } else {
-            if (newChangedNodes[node.id]) {
-              delete newChangedNodes[node.id];
-            }
+            if (newChanged[node.id]) delete newChanged[node.id];
           }
         });
 
-        setChangedNodes(newChangedNodes);
+        setChangedNodes(newChanged);
         return newNodes;
       });
     },
     [changedNodes]
   );
 
-  const [edges, setEdges] = useState<Edge[]>([]);
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges((eds) => applyEdgeChanges(changes, eds));
   }, []);
@@ -197,17 +223,8 @@ export default function LeagueCategoryCanvas() {
   const nodeTypes = useMemo(
     () => ({
       categoryNode: CategoryNode,
-      eliminationRoundNode: (props: any) => (
-        <EliminationRoundNode {...props} allNodesRef={originalNodesRef} />
-      ),
-      quarterFinalRoundNode: (props: any) => (
-        <QuarterFinalRoundNode {...props} allNodesRef={originalNodesRef} />
-      ),
-      semiFinalRoundNode: (props: any) => (
-        <SemiFinalRoundNode {...props} allNodesRef={originalNodesRef} />
-      ),
-      finalRoundNode: (props: any) => (
-        <FinalRoundNode {...props} allNodesRef={originalNodesRef} />
+      roundNode: (props: any) => (
+        <RoundNode {...props} allNodesRef={originalNodesRef} />
       ),
       formatNode: FormatNode,
     }),
@@ -215,10 +232,8 @@ export default function LeagueCategoryCanvas() {
   );
 
   const onNodeDragStop = useCallback(
-    (_event: React.MouseEvent, node: Node<NodeData>) => {
-      if (node.type === "categoryNode") {
-        return;
-      }
+    (_e: React.MouseEvent, node: Node<NodeData>) => {
+      if (node.type === "categoryNode") return;
 
       setNodes((nds) =>
         nds.map((n) =>
@@ -234,7 +249,12 @@ export default function LeagueCategoryCanvas() {
           !originalNode ||
           !nodesAreEqual({ ...node, position: node.position }, originalNode)
         ) {
-          return { ...prev, [node.id]: { ...node, position: node.position } };
+          const next = { ...node };
+          const r = (next.data as any)?.round as
+            | LeagueCategoryRound
+            | undefined;
+          if (r) r.position = { ...node.position };
+          return { ...prev, [node.id]: next };
         } else {
           const copy = { ...prev };
           delete copy[node.id];
@@ -245,45 +265,14 @@ export default function LeagueCategoryCanvas() {
     []
   );
 
-  const saveChanges = async () => {
-    try {
-      await Promise.all(
-        Object.values(changedNodes).map(async (node) => {
-          if (node.type?.includes("Round") && node.parentId) {
-            const originalNode = originalNodesRef.current.find(
-              (n) => n.id === node.id
-            );
-
-            const { round } = node.data as RoundNodeData;
-
-            if (!originalNode) {
-              await LeagueService.createCategoryRound({
-                roundId: round.round_id,
-                categoryId: node.parentId,
-                roundName: round.round_name,
-                roundStatus: round.round_status,
-                position: round.position,
-              });
-            } else {
-              await LeagueService.updateRoundPosition(
-                node.parentId,
-                round.round_id,
-                round.position
-              );
-            }
-          }
-        })
+  const findCategoryRounds = useCallback(
+    (categoryId: string) => {
+      return nodes.filter(
+        (n) => n.type === "roundNode" && n.parentId === categoryId
       );
-
-      toast.success("All changes saved");
-
-      originalNodesRef.current = [...nodes];
-      setChangedNodes({});
-    } catch (error) {
-      toast.error("Failed to save changes");
-      console.error(error);
-    }
-  };
+    },
+    [nodes]
+  );
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -291,30 +280,54 @@ export default function LeagueCategoryCanvas() {
       const targetNode = nodes.find((n) => n.id === connection.target);
 
       if (
-        sourceNode?.type === "formatNode" &&
-        !(
-          targetNode?.type?.includes("Round") &&
-          connection.targetHandle === "bottom"
-        )
+        sourceNode?.type === "roundNode" &&
+        connection.sourceHandle === "bottom"
       ) {
-        toast.error(
-          "Format nodes can only connect to the bottom of a round node!"
-        );
+        if (
+          targetNode?.type !== "formatNode" ||
+          connection.targetHandle !== "top"
+        ) {
+          toast.error(
+            "Bottom handle can only connect to a Format node's top handle."
+          );
+          return;
+        }
+        setEdges((eds) => addEdge(connection, eds));
+        return;
+      }
+
+      if (sourceNode?.type === "formatNode") {
+        toast.error("Format nodes cannot be sources of connections.");
         return;
       }
 
       if (
-        sourceNode?.type?.includes("Round") &&
-        connection.sourceHandle === "bottom" &&
-        targetNode?.type !== "formatNode"
+        sourceNode?.type === "roundNode" &&
+        targetNode?.type === "roundNode"
       ) {
-        toast.error("Bottom handle can only connect to format nodes!");
+        const sRound = (sourceNode.data as RoundNodeData).round;
+        const tRound = (targetNode.data as RoundNodeData).round;
+        const categoryId = sourceNode.parentId as string;
+
+        const hasQuarterFinal = findCategoryRounds(categoryId).some(
+          (rn) => (rn.data as RoundNodeData).round.round_order === 1
+        );
+
+        if (
+          !isValidOrderTransition(sRound.round_order, tRound.round_order, {
+            categoryHasQuarterFinal: hasQuarterFinal,
+          })
+        ) {
+          toast.error("Invalid connection for round order.");
+          return;
+        }
+        setEdges((eds) => addEdge(connection, eds));
         return;
       }
 
-      setEdges((eds) => addEdge(connection, eds));
+      toast.error("Invalid connection.");
     },
-    [nodes]
+    [nodes, findCategoryRounds]
   );
 
   const onDragStart = (
@@ -325,10 +338,6 @@ export default function LeagueCategoryCanvas() {
     event.dataTransfer.setData("node-type", type);
     event.dataTransfer.setData("application/reactflow", label);
     event.dataTransfer.effectAllowed = "move";
-  };
-
-  const isRoundNodeData = (data: NodeData): data is RoundNodeData => {
-    return (data as RoundNodeData).label !== undefined;
   };
 
   const onDrop = useCallback(
@@ -361,12 +370,10 @@ export default function LeagueCategoryCanvas() {
 
       if (nodeType === "round") {
         const hasDuplicate = nodes.some((n) => {
-          if (!n.type?.includes("Round") || n.parentId !== targetCategory.id) {
+          if (n.type !== "roundNode" || n.parentId !== targetCategory.id)
             return false;
-          }
-          return (
-            isRoundNodeData(n.data) && n.data.label === (label as RoundTypeEnum)
-          );
+          const rd = (n.data as RoundNodeData).round;
+          return rd.round_name === label;
         });
         if (hasDuplicate) {
           toast.error(`Only one ${label} round is allowed per category!`);
@@ -374,72 +381,54 @@ export default function LeagueCategoryCanvas() {
         }
       }
 
-      let roundNodeType: Node["type"] = "formatNode";
-      if (nodeType === "round") {
-        switch (label) {
-          case RoundTypeEnum.Elimination:
-            roundNodeType = "eliminationRoundNode";
-            break;
-          case RoundTypeEnum.QuarterFinal:
-            roundNodeType = "quarterFinalRoundNode";
-            break;
-          case RoundTypeEnum.SemiFinal:
-            roundNodeType = "semiFinalRoundNode";
-            break;
-          case RoundTypeEnum.Final:
-            roundNodeType = "finalRoundNode";
-            break;
-        }
-      }
-
-      const newNodeId = `${nodeType}-${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2, 11)}`;
-      const roundId = generateUUIDWithPrefix("round");
+      let newNode: Node<NodeData> | null = null;
       const dropPosition = {
         x: mousePosition.x - targetCategory.position.x - 50,
         y: mousePosition.y - targetCategory.position.y - 50,
       };
 
-      const newNode: Node<NodeData> =
-        nodeType === "round"
-          ? {
-              id: newNodeId,
-              type: roundNodeType,
-              position: dropPosition,
-              draggable: true,
-              parentId: targetCategory.id,
-              extent: "parent",
-              data: {
-                round: {
-                  round_id: roundId,
-                  round_name: label as RoundTypeEnum,
-                  round_status: STATUSES[label as RoundTypeEnum],
-                  category_id: targetCategory.id,
-                  round_order: getRoundOrder(label as RoundTypeEnum),
-                  position: dropPosition,
-                },
-              } satisfies RoundNodeData,
-            }
-          : {
-              id: newNodeId,
-              type: roundNodeType,
-              position: dropPosition,
-              draggable: true,
-              parentId: targetCategory.id,
-              extent: "parent",
-              data: { label } satisfies FormatNodeData,
-            };
-
-      setNodes((prev) => prev.concat(newNode));
       if (nodeType === "round") {
-        setChangedNodes((prev) => ({
-          ...prev,
-          [newNode.id]: newNode,
-        }));
+        const roundId = generateUUIDWithPrefix("round");
+        const order = getRoundOrder(label as RoundTypeEnum);
+        const created: LeagueCategoryRound = {
+          round_id: roundId,
+          category_id: targetCategory.id,
+          round_name: label as RoundTypeEnum,
+          round_order: order,
+          round_status: STATUSES[label as RoundTypeEnum],
+          round_format: null,
+          position: dropPosition,
+        };
+
+        newNode = {
+          id: roundId,
+          type: "roundNode",
+          draggable: true,
+          parentId: targetCategory.id,
+          extent: "parent",
+          position: dropPosition,
+          data: { round: created, _isNew: true } satisfies RoundNodeData,
+        };
+
+        setNodes((prev) => prev.concat(newNode!));
+        setChangedNodes((prev) => ({ ...prev, [newNode!.id]: newNode! }));
+      } else {
+        const newNodeId = `format-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 9)}`;
+        newNode = {
+          id: newNodeId,
+          type: "formatNode",
+          draggable: true,
+          parentId: targetCategory.id,
+          extent: "parent",
+          position: dropPosition,
+          data: { label } satisfies FormatNodeData,
+        };
+        setNodes((prev) => prev.concat(newNode!));
       }
     },
-    [nodes, reactFlowInstance, STATUSES]
+    [nodes, reactFlowInstance]
   );
 
   useEffect(() => {
@@ -451,10 +440,7 @@ export default function LeagueCategoryCanvas() {
         if (targetNode?.type === "formatNode") {
           return {
             ...edge,
-            style: {
-              stroke: "#f39c12",
-              strokeWidth: 2,
-            },
+            style: { stroke: "#f39c12", strokeWidth: 2 },
           };
         }
 
@@ -465,30 +451,19 @@ export default function LeagueCategoryCanvas() {
           animation: "dash-upcoming 2s linear infinite",
         };
 
-        if (
-          sourceNode?.type?.includes("Round") &&
-          isRoundNodeData(sourceNode.data)
-        ) {
-          const sourceStatus = sourceNode.data.label ?? RoundStateEnum.Upcoming;
-
-          switch (sourceStatus) {
+        if (sourceNode?.type === "roundNode") {
+          const s = (sourceNode.data as RoundNodeData).round
+            .round_status as RoundStateEnum;
+          switch (s) {
             case RoundStateEnum.Finished:
               style = {
                 stroke: "#4caf50",
                 strokeWidth: 2,
-                strokeDasharray: "4,4",
-                animation: "dash-finish 1.5s linear infinite",
+                strokeDasharray: "12,6",
+                animation: "dash-upcoming 2s linear infinite",
               };
               break;
             case RoundStateEnum.Ongoing:
-              style = {
-                stroke: "#2196f3",
-                strokeWidth: 2,
-                strokeDasharray: "8,4",
-                animation: "dash-ongoing 1s linear infinite",
-              };
-              break;
-            case RoundStateEnum.Upcoming:
               style = {
                 stroke: "#f39c12",
                 strokeWidth: 2,
@@ -496,13 +471,76 @@ export default function LeagueCategoryCanvas() {
                 animation: "dash-upcoming 2s linear infinite",
               };
               break;
+            default:
+              style = {
+                stroke: "#2196f3",
+                strokeWidth: 2,
+                strokeDasharray: "12,6",
+                animation: "dash-upcoming 2s linear infinite",
+              };
           }
         }
 
         return { ...edge, style };
       })
     );
-  }, [STATUSES, nodes]);
+  }, [nodes]);
+
+  const saveChanges = async () => {
+    try {
+      const formatByRound: Record<string, string | null> = {};
+      edges.forEach((e) => {
+        const src = nodes.find((n) => n.id === e.source);
+        const tgt = nodes.find((n) => n.id === e.target);
+        if (
+          src?.type === "roundNode" &&
+          tgt?.type === "formatNode" &&
+          e.sourceHandle === "bottom" &&
+          e.targetHandle === "top"
+        ) {
+          const fmt = (tgt.data as FormatNodeData).label;
+          formatByRound[src.id] = fmt ?? null;
+        }
+      });
+
+      await Promise.all(
+        Object.values(changedNodes).map(async (node) => {
+          if (node.type !== "roundNode" || !node.parentId) return;
+
+          const { round, _isNew } = node.data as RoundNodeData;
+          if (formatByRound[node.id] !== undefined) {
+            round.round_format = formatByRound[node.id];
+          }
+
+          if (_isNew) {
+            await LeagueCategoryService.createCategoryRound({
+              roundId: round.round_id,
+              categoryId: node.parentId,
+              roundName: round.round_name,
+              roundStatus: round.round_status,
+              position: round.position,
+              roundFormat: round.round_format ?? null,
+              roundOrder: round.round_order,
+            });
+          } else {
+            await LeagueCategoryService.updateRoundPosition({
+              categoryId: node.parentId,
+              roundId: round.round_id,
+              position: round.position,
+            });
+          }
+        })
+      );
+
+      toast.success("All changes saved");
+      await refetch();
+      originalNodesRef.current = [...nodes];
+      setChangedNodes({});
+    } catch (error) {
+      toast.error("Failed to save changes");
+      console.error(error);
+    }
+  };
 
   const categoryCanvas = (
     <>
@@ -511,6 +549,7 @@ export default function LeagueCategoryCanvas() {
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
+          edgeTypes={edgeTypes}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onDrop={onDrop}
@@ -522,11 +561,11 @@ export default function LeagueCategoryCanvas() {
             e.dataTransfer.dropEffect = "move";
           }}
           fitView
-          panOnDrag={true}
-          zoomOnScroll={true}
-          zoomOnPinch={true}
-          panOnScroll={true}
-          selectionOnDrag={true}
+          panOnDrag
+          zoomOnScroll
+          zoomOnPinch
+          panOnScroll
+          selectionOnDrag
           minZoom={0.2}
           maxZoom={2}
           nodeTypes={nodeTypes}
@@ -570,7 +609,7 @@ export default function LeagueCategoryCanvas() {
           </div>
         ) : error ? (
           <div className="centered-container">
-            <p className="text-primary">{error.message}</p>
+            <p className="text-primary">{(error as any).message}</p>
           </div>
         ) : data?.categories && data.categories.length > 0 ? (
           categoryCanvas

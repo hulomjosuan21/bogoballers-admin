@@ -15,6 +15,7 @@ import {
   FolderKanban,
   GitBranchPlus,
   Trophy,
+  SquarePen,
 } from "lucide-react";
 
 import {
@@ -51,6 +52,11 @@ const data = {
       title: "Start new",
       url: "/league-administrator/pages/league/new",
       icon: Trophy,
+    },
+    {
+      title: "Current",
+      url: "#",
+      icon: SquarePen,
     },
     {
       title: "Categories",

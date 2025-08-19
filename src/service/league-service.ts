@@ -31,16 +31,7 @@ const IMAGE_KEY_MAP: ImageKeyMap = {
   league_referees: "photo",
   league_affiliates: "image",
 };
-
-interface CreateCategoryRoundPayload {
-  categoryId: string;
-  roundId: string;
-  roundName: string;
-  roundStatus: string;
-  position: { x: number; y: number };
-}
-
-export default class LeagueService {
+export class LeagueService {
   static async updateOption({
     leagueId,
     data,
@@ -71,34 +62,6 @@ export default class LeagueService {
     document.body.removeChild(a);
 
     window.URL.revokeObjectURL(url);
-  }
-
-  static async createCategoryRound({
-    categoryId,
-    roundId,
-    roundName,
-    roundStatus,
-    position,
-  }: CreateCategoryRoundPayload) {
-    await axiosClient.post(`/league/category/${categoryId}/add-round`, {
-      round_id: roundId,
-      round_name: roundName,
-      round_status: roundStatus,
-      position,
-    });
-  }
-
-  static async updateRoundPosition(
-    categoryId: string,
-    roundId: string,
-    position: { x: number; y: number }
-  ) {
-    await axiosClient.post(
-      `/league/category/${categoryId}/round/${roundId}/update-position`,
-      {
-        position,
-      }
-    );
   }
 
   static async updateSingleLeagueResourceField<K extends keyof FieldKeyMap>(

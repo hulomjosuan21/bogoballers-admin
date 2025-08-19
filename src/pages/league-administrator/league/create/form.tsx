@@ -1,6 +1,5 @@
 import { MultiSelect } from "@/components/multi-select";
 import { Label } from "@/components/ui/label";
-import { MinimalTiptap } from "@/components/ui/shadcn-io/minimal-tiptap";
 import { StaticData } from "@/data";
 import type { CreateLeagueCategory } from "@/types/league";
 import { useState } from "react";
@@ -13,7 +12,7 @@ import type { DateRange } from "react-day-picker";
 import dayjs from "dayjs";
 import { useErrorToast } from "@/components/error-toast";
 import { Separator } from "@/components/ui/separator";
-import LeagueService from "@/service/league-service";
+import { LeagueService } from "@/service/league-service";
 import { toast } from "sonner";
 import {
   Dialog,

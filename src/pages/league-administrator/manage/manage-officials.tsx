@@ -44,11 +44,11 @@ import {
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import type { LeagueOfficial } from "@/types/league";
-import LeagueService from "@/service/league-service";
+import { LeagueService } from "@/service/league-service";
 import { useErrorToast } from "@/components/error-toast";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
-import { ButtonLoading, SmallButton } from "@/components/custom-buttons";
+import { SmallButton } from "@/components/custom-buttons";
 import { StaticData } from "@/data";
 import { cn } from "@/lib/utils";
 

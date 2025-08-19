@@ -139,6 +139,42 @@
   }
 }
 
+.edge-formatNode {
+  stroke: #f39c12;
+  stroke-width: 2;
+}
+
+.edge-default {
+  stroke: #f39c12;
+  stroke-width: 2;
+  stroke-dasharray: 12, 6;
+  animation: dash-upcoming 2s linear infinite;
+}
+
+.edge-finished {
+  stroke: #4caf50;
+  stroke-width: 2;
+  stroke-dasharray: 12, 6;
+  animation: dash-upcoming 2s linear infinite;
+}
+
+.edge-ongoing {
+  stroke: #2196f3;
+  stroke-width: 2;
+  stroke-dasharray: 12, 6;
+  animation: dash-upcoming 2s linear infinite;
+}
+
+/* Your keyframe animation if not already defined */
+@keyframes dash-upcoming {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -18;
+  }
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

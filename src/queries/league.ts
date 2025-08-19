@@ -1,5 +1,5 @@
 import type { League, LeagueResource } from "@/types/league";
-import LeagueService from "@/service/league-service";
+import { LeagueService } from "@/service/league-service";
 import { queryOptions } from "@tanstack/react-query";
 
 export const getActiveLeagueQueryOptions = queryOptions<League | null, Error>({

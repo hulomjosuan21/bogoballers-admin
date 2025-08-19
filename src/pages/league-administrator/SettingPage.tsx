@@ -7,7 +7,7 @@ import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { SmallButton } from "@/components/custom-buttons";
-import LeagueService from "@/service/league-service";
+import { LeagueService } from "@/service/league-service";
 import { toast } from "sonner";
 import { useErrorToast } from "@/components/error-toast";
 import { Label } from "@/components/ui/label";

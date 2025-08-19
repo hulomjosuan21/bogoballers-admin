@@ -1,4 +1,4 @@
-import type { RoundFormatEnum, RoundTypeEnum } from "@/enums/enums";
+import type { LeagueCategoryRound } from "@/pages/league-administrator/league/category/types";
 
 export interface CreateLeagueCategory {
   category_name: string;
@@ -6,16 +6,6 @@ export interface CreateLeagueCategory {
   accept_teams: boolean;
   team_entrance_fee_amount: number;
   individual_player_entrance_fee_amount: number;
-}
-
-export interface LeagueCategory extends CreateLeagueCategory {
-  category_id: string;
-  created_at: string;
-  updated_at: string;
-  category_format: {
-    format_round: RoundTypeEnum;
-    format: RoundFormatEnum;
-  }[];
 }
 
 export type LeagueOfficial = {
@@ -87,17 +77,4 @@ export interface LeagueCategory {
   created_at: string;
   updated_at: string;
   rounds: LeagueCategoryRound[];
-}
-
-export interface LeagueCategoryRound {
-  round_id: string;
-  category_id: string;
-  round_name: string;
-  round_order: number;
-  round_status: string;
-  round_format?: string | null;
-  position: {
-    x: number;
-    y: number;
-  };
 }

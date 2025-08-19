@@ -44,9 +44,9 @@ import type { LeagueAffiliate } from "@/types/league";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useErrorToast } from "@/components/error-toast";
-import LeagueService from "@/service/league-service";
+import { LeagueService } from "@/service/league-service";
 import { toast } from "sonner";
-import { ButtonLoading, SmallButton } from "@/components/custom-buttons";
+import { SmallButton } from "@/components/custom-buttons";
 import { cn } from "@/lib/utils";
 
 export type LeagueAffiliateCreate = {

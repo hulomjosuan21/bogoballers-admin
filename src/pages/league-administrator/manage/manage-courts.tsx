@@ -45,8 +45,8 @@ import type { LeagueCourt } from "@/types/league";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useQuery } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
-import LeagueService from "@/service/league-service";
-import { ButtonLoading, SmallButton } from "@/components/custom-buttons";
+import { LeagueService } from "@/service/league-service";
+import { SmallButton } from "@/components/custom-buttons";
 import { cn } from "@/lib/utils";
 
 export default function ManageCourts({ data }: { data: LeagueCourt[] }) {

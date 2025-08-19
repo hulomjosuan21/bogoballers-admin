@@ -42,11 +42,11 @@ import {
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import type { LeagueReferee } from "@/types/league";
-import LeagueService from "@/service/league-service";
+import { LeagueService } from "@/service/league-service";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useErrorToast } from "@/components/error-toast";
-import { ButtonLoading, SmallButton } from "@/components/custom-buttons";
+import { SmallButton } from "@/components/custom-buttons";
 import { cn } from "@/lib/utils";
 
 export type LeagueRefereeCreate = {
