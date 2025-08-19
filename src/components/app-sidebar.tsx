@@ -4,7 +4,6 @@ import {
   ChartSpline,
   UsersRound,
   UserRound,
-  Plus,
   GitFork,
   LifeBuoy,
   Send,
