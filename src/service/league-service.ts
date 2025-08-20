@@ -1,5 +1,4 @@
 import type {
-  CreateLeagueCategory,
   League,
   LeagueAffiliate,
   LeagueCourt,
@@ -135,20 +134,5 @@ export class LeagueService {
     }
 
     return response.data;
-  }
-
-  static async createCategory({
-    leagueId,
-    data,
-  }: {
-    leagueId: string;
-    data: CreateLeagueCategory;
-  }) {
-    const response = await axiosClient.post<LeagueResource>(
-      `/league/${leagueId}/add-category`,
-      data
-    );
-
-    return ApiResponse.fromJsonNoPayload(response.data);
   }
 }

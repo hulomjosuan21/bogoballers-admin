@@ -4,6 +4,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { leagueAdminRoutes } from "./routes";
+import TestDndComponent from "./test/TestDndComponent";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/auth/register" element={<RegisterPage />} />
 
         <Route element={<ProtectedRoute />}>
+          <Route path="/test" element={<TestDndComponent />} />
           <Route path="/league-administrator" element={<LeagueAdminLayout />}>
             {leagueAdminRoutes.map((route, index) => (
               <Route

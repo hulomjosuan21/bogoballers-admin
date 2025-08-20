@@ -9,7 +9,7 @@ import {
   getActiveLeagueQueryOptions,
   Input,
   Label,
-  LeagueService,
+  LeagueCategoryService,
   NoteBox,
   RoundStateEnum,
   Select,
@@ -146,7 +146,7 @@ export function AddCategoryDialog({
       if (!activeLeague?.league_id) {
         throw new Error("No League Id");
       }
-      const res = await LeagueService.createCategory({
+      const res = await LeagueCategoryService.createCategory({
         leagueId: activeLeague.league_id,
         data: form,
       });

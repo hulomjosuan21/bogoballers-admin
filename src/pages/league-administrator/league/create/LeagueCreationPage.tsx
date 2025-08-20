@@ -45,7 +45,7 @@ export default function LeagueCreationPage() {
             </AlertToolbar>
           </Alert>
         )}
-        <CreateLeagueForm hasActive={!!activeLeague} />
+        <CreateLeagueForm hasActive={!!!activeLeague} />
       </ContentBody>
     </ContentShell>
   );

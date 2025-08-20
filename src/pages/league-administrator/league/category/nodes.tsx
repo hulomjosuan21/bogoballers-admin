@@ -1,3 +1,4 @@
+import { EllipsisVertical } from "lucide-react";
 import {
   getRoundTypeByOrder,
   Handle,
@@ -11,14 +12,31 @@ import {
   type Connection,
   type Edge,
   useReactFlow,
+  Button,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
 } from "./imports";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const { category } = data;
   return (
     <div className="border-2 rounded-md flex flex-col overflow-hidden w-[1280px] h-[720px]">
-      <div className="bg-primary text-sm p-3">
-        <strong>Category:</strong> {category.category_name}
+      <div className="bg-primary text-sm py-1 px-4 flex justify-between items-center gap-2">
+        <p>
+          <strong>Category:</strong> {category.category_name}
+        </p>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={"ghost"} size={"icon"}>
+              <EllipsisVertical className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Delete</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="flex-1 p-2 overflow-auto flex flex-col">
         <p className="text-helper italic text-xs mb-4">
