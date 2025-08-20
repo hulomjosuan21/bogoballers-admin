@@ -142,8 +142,8 @@ export default function LeagueCategoryCanvas() {
               y: pos.y + 120,
             },
             data: {
-              label: round.round_format.format_type, // <-- display name
-              round_format: round.round_format, // <-- full object for details
+              label: round.round_format.format_type,
+              round_format: round.round_format,
             } satisfies FormatNodeData,
           });
 

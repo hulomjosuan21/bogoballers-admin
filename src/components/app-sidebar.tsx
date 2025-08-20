@@ -38,11 +38,6 @@ const data = {
       url: "/league-administrator",
       icon: LayoutDashboard,
     },
-    {
-      title: "Analytics",
-      url: "/league-administrator/pages/analytics",
-      icon: ChartSpline,
-    },
   ],
   league: [
     {
