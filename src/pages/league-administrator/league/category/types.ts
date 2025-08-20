@@ -1,4 +1,15 @@
-import type { LeagueCategory } from "@/types/league";
+export interface LeagueCategory {
+  category_id: string;
+  league_id: string;
+  category_name: string;
+  max_team: number;
+  accept_teams: boolean;
+  team_entrance_fee_amount: number;
+  individual_player_entrance_fee_amount: number;
+  created_at: string;
+  updated_at: string;
+  rounds: LeagueCategoryRound[];
+}
 
 export interface LeagueCategoryRound {
   round_id: string;
@@ -12,6 +23,43 @@ export interface LeagueCategoryRound {
     y: number;
   };
   next_round_id?: string | null;
+}
+
+interface CreateRoundOperation {
+  type: "create_round";
+  data: {
+    round_id: string;
+    round_name: string;
+    round_status: RoundStateEnum;
+    round_order: number;
+    position: { x: number; y: number };
+  };
+}
+
+interface UpdatePositionOperation {
+  type: "update_position";
+  data: {
+    round_id: string;
+    position: { x: number; y: number };
+  };
+}
+
+interface UpdateFormatOperation {
+  type: "update_format";
+  data: {
+    round_id: string;
+    round_format: LeagueRoundFormat | null;
+  };
+}
+
+export type CategoryOperation =
+  | CreateRoundOperation
+  | UpdatePositionOperation
+  | UpdateFormatOperation;
+
+export interface SaveChangesPayload {
+  categoryId: string;
+  operations: CategoryOperation[];
 }
 
 export interface LeagueRoundFormat {

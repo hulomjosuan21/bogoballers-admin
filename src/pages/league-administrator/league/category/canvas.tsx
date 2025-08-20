@@ -1,5 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
   ReactFlow,
   addEdge,
   applyEdgeChanges,
@@ -13,8 +17,6 @@ import {
   type Connection,
   useReactFlow,
   BezierEdge,
-} from "@xyflow/react";
-import {
   type FormatNodeData,
   type LeagueCategoryRound,
   type LeagueRoundFormat,
@@ -25,26 +27,26 @@ import {
   RoundFormatTypesEnum,
   RoundStateEnum,
   RoundTypeEnum,
-} from "./types";
-import { toast } from "sonner";
-import {
+  type LeagueCategory,
+  toast,
   CATEGORY_HEIGHT,
   CATEGORY_WIDTH,
   CategoryNode,
   FormatNode,
   RoundNode,
-} from "./nodes";
-import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import ContentHeader from "@/components/content-header";
-import { FormatNodeMenu, RoundNodeMenu } from "./menus";
-import { AddCategoryDialog } from "./components";
-import { useQuery } from "@tanstack/react-query";
-import { getActiveLeagueQueryOptions } from "@/queries/league";
-import { Loader2 } from "lucide-react";
-import { SmallButton } from "@/components/custom-buttons";
-import { generateUUIDWithPrefix } from "@/lib/app_utils";
-import { LeagueCategoryService } from "./service";
-import type { LeagueCategory } from "@/types/league";
+  ContentBody,
+  ContentShell,
+  ContentHeader,
+  FormatNodeMenu,
+  RoundNodeMenu,
+  AddCategoryDialog,
+  useQuery,
+  getActiveLeagueQueryOptions,
+  Loader2,
+  SmallButton,
+  generateUUIDWithPrefix,
+  LeagueCategoryService,
+} from "./imports";
 
 const edgeTypes = {
   bezier: BezierEdge,

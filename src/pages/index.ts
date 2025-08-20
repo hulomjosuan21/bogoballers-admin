@@ -1,10 +1,9 @@
 export { default as DashboardPage } from "./league-administrator/DashboardPage";
-export { default as LeagueCategoryPage } from "./league-administrator/league/category/LeagueCategoryPage";
+export { default as LeagueCategoryPageWrapper } from "./league-administrator/league/category/CategoryPageWrapper";
 export { default as LeagueCreationPage } from "./league-administrator/league/create/LeagueCreationPage";
 export { default as LeagueResourcePage } from "./league-administrator/league/LeagueResourcePage";
 export { default as PlayerSubmissionPage } from "./league-administrator/league/player/PlayerSubmissionPage";
 export { default as TeamSubmissionPage } from "./league-administrator/league/team/TeamSubmissionPage";
-export { default as BracketStructurePage } from "./league-administrator/league/bracket/structurePage";
 export { default as SettingsPage } from "./league-administrator/SettingPage";
 export { default as AnalyticsPage } from "./league-administrator/AnalyticsPage";
 export { default as LeagueAffiliatePage } from "./league-administrator/league/manage/LeagueAffiliate";

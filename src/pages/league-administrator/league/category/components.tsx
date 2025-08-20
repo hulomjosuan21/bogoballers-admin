@@ -1,30 +1,24 @@
-import { ButtonLoading } from "@/components/custom-buttons";
-import { useErrorToast } from "@/components/error-toast";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Button,
+  ButtonLoading,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
+  getActiveLeagueQueryOptions,
+  Input,
+  Label,
+  LeagueService,
+  NoteBox,
+  RoundStateEnum,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { StaticData } from "@/data";
-import { getActiveLeagueQueryOptions } from "@/queries/league";
-import { LeagueService } from "@/service/league-service";
-import type { CreateLeagueCategory } from "@/types/league";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { toast } from "sonner";
-import {
+  Settings2,
   Sheet,
   SheetBody,
   SheetClose,
@@ -33,11 +27,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Settings2 } from "lucide-react";
-import { RoundStateEnum, type RoundNodeData } from "./types";
-import { NoteBox } from "@/components/nodebox";
+  StaticData,
+  toast,
+  useErrorToast,
+  useQuery,
+  useState,
+  type CreateLeagueCategory,
+  type RoundNodeData,
+} from "./imports";
 
 export function RoundNodeSheet({ data }: { data: RoundNodeData }) {
   const [status, setStatus] = useState<string>(data.round.round_status);

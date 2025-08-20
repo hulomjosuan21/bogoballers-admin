@@ -4,11 +4,10 @@ import {
   LeagueResourcePage,
   PlayerSubmissionPage,
   TeamSubmissionPage,
-  BracketStructurePage,
   SettingsPage,
   AnalyticsPage,
   LeagueCreationPage,
-  LeagueCategoryPage,
+  LeagueCategoryPageWrapper,
   LeagueAffiliatePage,
   LeagueOfficialsPage,
   LeagueMatchSetUnSchedulePage,
@@ -45,10 +44,6 @@ export const leagueAdminRoutes: RouteObject[] = [
     element: <TeamSubmissionPage />,
   },
   {
-    path: "pages/league/bracket/structure",
-    element: <BracketStructurePage />,
-  },
-  {
     path: "pages/settings",
     element: <SettingsPage />,
   },
@@ -58,7 +53,7 @@ export const leagueAdminRoutes: RouteObject[] = [
   },
   {
     path: "pages/league/categories",
-    element: <LeagueCategoryPage />,
+    element: <LeagueCategoryPageWrapper />,
   },
   {
     path: "pages/league/officials&courts",

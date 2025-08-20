@@ -1,22 +1,17 @@
 import {
+  getRoundTypeByOrder,
   Handle,
+  RoundNodeSheet,
+  toast,
+  useRef,
+  type CategoryNodeData,
+  type Node,
+  type RoundNodeData,
   Position,
-  useReactFlow,
   type Connection,
   type Edge,
-  type Node,
-} from "@xyflow/react";
-import {
-  getRoundTypeByOrder,
-  type CategoryNodeData,
-  type RoundNodeData,
-} from "./types";
-import React, { useRef } from "react";
-import { RoundNodeSheet } from "./components";
-import { toast } from "sonner";
-
-export const CATEGORY_WIDTH = 1280;
-export const CATEGORY_HEIGHT = 720;
+  useReactFlow,
+} from "./imports";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const { category } = data;

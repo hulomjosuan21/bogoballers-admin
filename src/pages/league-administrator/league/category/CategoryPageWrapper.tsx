@@ -1,5 +1,5 @@
 import LeagueCategoryCanvas from "./canvas";
 
-export default function LeagueCategoryPage() {
+export default function LeagueCategoryPageWrapper() {
   return <LeagueCategoryCanvas />;
 }

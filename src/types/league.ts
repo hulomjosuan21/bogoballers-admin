@@ -1,4 +1,4 @@
-import type { LeagueCategoryRound } from "@/pages/league-administrator/league/category/types";
+import type { LeagueCategory } from "@/pages/league-administrator/league/category/types";
 
 export interface CreateLeagueCategory {
   category_name: string;
@@ -64,17 +64,4 @@ export interface League {
   updated_at: string;
   categories: LeagueCategory[];
   option: LeagueOption;
-}
-
-export interface LeagueCategory {
-  category_id: string;
-  league_id: string;
-  category_name: string;
-  max_team: number;
-  accept_teams: boolean;
-  team_entrance_fee_amount: number;
-  individual_player_entrance_fee_amount: number;
-  created_at: string;
-  updated_at: string;
-  rounds: LeagueCategoryRound[];
 }
