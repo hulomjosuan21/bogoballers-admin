@@ -1,4 +1,9 @@
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -47,6 +52,10 @@ import {
   LeagueCategoryService,
   Button,
 } from "./imports";
+import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { MoreVertical } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const edgeTypes = {
   bezier: BezierEdge,
@@ -623,14 +632,34 @@ export default function LeagueCategoryCanvas() {
   return (
     <ContentShell>
       <ContentHeader title="Category Management">
-        <Button onClick={() => setAddDialogOpen(true)} size={"sm"}>
-          Add Category
-        </Button>
-        {hasUnsavedChanges && (
-          <Button variant="outline" onClick={saveChanges} size={"sm"}>
-            Save Changes ({getChangedNodes().length})
-          </Button>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" mode="icon" className="relative">
+              <MoreVertical className="h-5 w-5" />
+              <Badge
+                variant="primary"
+                shape="circle"
+                size="sm"
+                className={cn(
+                  "absolute top-0 right-0 translate-x-1/4 -translate-y-1/4",
+                  getChangedNodes().length === 0 && "hidden"
+                )}
+              >
+                {getChangedNodes().length}
+              </Badge>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" aria-describedby={undefined}>
+            <DropdownMenuItem onClick={() => setAddDialogOpen(true)}>
+              Add Category
+            </DropdownMenuItem>
+            {hasUnsavedChanges && (
+              <DropdownMenuItem onClick={saveChanges}>
+                Save Changes ({getChangedNodes().length})
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </ContentHeader>
       <ContentBody className="flex-row">
         <AddCategoryDialog
