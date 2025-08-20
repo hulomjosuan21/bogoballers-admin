@@ -1,3 +1,5 @@
+import type { LeagueCategory } from "@/types/league";
+
 export interface LeagueCategoryRound {
   round_id: string;
   category_id: string;
@@ -56,19 +58,6 @@ export enum RoundFormatTypesEnum {
   BestOfThree = "Best of Three",
   BestOfFive = "Best of Five",
   BestOfSeven = "Best of Seven",
-}
-
-export interface LeagueCategory {
-  category_id: string;
-  league_id: string;
-  category_name: string;
-  max_team: number;
-  accept_teams: boolean;
-  team_entrance_fee_amount: number;
-  individual_player_entrance_fee_amount: number;
-  created_at: string;
-  updated_at: string;
-  rounds: LeagueCategoryRound[];
 }
 
 export function getRoundOrder(round: RoundTypeEnum): number {

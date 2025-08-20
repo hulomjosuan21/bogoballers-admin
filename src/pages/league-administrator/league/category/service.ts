@@ -1,45 +1,48 @@
 import axiosClient from "@/lib/axiosClient";
-import type { LeagueRoundFormat } from "./types";
+import type { LeagueRoundFormat, RoundStateEnum } from "./types";
 
-interface CreateCategoryRoundPayload {
+interface CreateRoundOperation {
+  type: "create_round";
+  data: {
+    round_id: string;
+    round_name: string;
+    round_status: RoundStateEnum;
+    round_order: number;
+    position: { x: number; y: number };
+  };
+}
+
+interface UpdatePositionOperation {
+  type: "update_position";
+  data: {
+    round_id: string;
+    position: { x: number; y: number };
+  };
+}
+
+interface UpdateFormatOperation {
+  type: "update_format";
+  data: {
+    round_id: string;
+    round_format: LeagueRoundFormat | null;
+  };
+}
+
+export type CategoryOperation =
+  | CreateRoundOperation
+  | UpdatePositionOperation
+  | UpdateFormatOperation;
+
+export interface SaveChangesPayload {
   categoryId: string;
-  roundId: string;
-  roundName: string;
-  roundStatus: string;
-  roundOrder: number;
-  position: { x: number; y: number };
+  operations: CategoryOperation[];
 }
 
 export class LeagueCategoryService {
-  static async createCategoryRound({
-    categoryId,
-    roundId,
-    roundName,
-    roundStatus,
-    position,
-  }: CreateCategoryRoundPayload) {
-    await axiosClient.post(`/league/category/${categoryId}/add-round`, {
-      round_id: roundId,
-      round_name: roundName,
-      round_status: roundStatus,
-      position,
-    });
-  }
-
-  static async updateRoundPosition({
-    categoryId,
-    roundId,
-    position,
-  }: {
-    categoryId: string;
-    roundId: string;
-    position: { x: number; y: number };
-  }) {
-    await axiosClient.post(
-      `/league/category/${categoryId}/round/${roundId}/update-position`,
-      {
-        position,
-      }
+  static async saveChanges(payload: SaveChangesPayload) {
+    return axiosClient.post(
+      `/league/category/${payload.categoryId}/save-changes`,
+      payload
     );
   }
 

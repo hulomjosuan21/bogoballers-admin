@@ -44,10 +44,12 @@ import { Loader2 } from "lucide-react";
 import { SmallButton } from "@/components/custom-buttons";
 import { generateUUIDWithPrefix } from "@/lib/app_utils";
 import { LeagueCategoryService } from "./service";
+import type { LeagueCategory } from "@/types/league";
 
 const edgeTypes = {
   bezier: BezierEdge,
 };
+
 const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
   [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,
   [RoundTypeEnum.QuarterFinal]: RoundStateEnum.Upcoming,
@@ -63,34 +65,24 @@ export default function LeagueCategoryCanvas() {
 
   const [nodes, setNodes] = useState<Node<NodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+
+  // Store original data in refs
   const originalNodesRef = useRef<Node<NodeData>[]>([]);
+  const initialNodesRef = useRef<Node<NodeData>[]>([]);
+  const categoriesRef = useRef<LeagueCategory[]>([]);
 
-  useEffect(() => {
-    if (data?.categories) {
-      const categoryNodes: Node<NodeData>[] = data.categories.map(
-        (cat, index): Node<NodeData> => ({
-          id: cat.category_id,
-          type: "categoryNode",
-          position: { x: 50, y: index * 800 },
-          data: { category: cat },
-          draggable: true,
-          selectable: true,
-        })
-      );
-
-      originalNodesRef.current = categoryNodes;
-      setNodes(categoryNodes);
-      setEdges([]);
-    }
-  }, [data?.categories]);
-
+  // Single effect to handle data initialization
   useEffect(() => {
     if (!data?.categories) return;
+
+    const categories: LeagueCategory[] = data.categories;
+    categoriesRef.current = categories;
 
     const newNodes: Node<NodeData>[] = [];
     const newEdges: Edge[] = [];
 
-    data.categories.forEach((cat, catIndex) => {
+    categories.forEach((cat, catIndex) => {
+      // Add category node
       newNodes.push({
         id: cat.category_id,
         type: "categoryNode",
@@ -100,6 +92,7 @@ export default function LeagueCategoryCanvas() {
         selectable: true,
       });
 
+      // Add round nodes for this category
       cat.rounds.forEach((round) => {
         const pos = round.position ?? { x: 100, y: 100 };
         newNodes.push({
@@ -112,6 +105,7 @@ export default function LeagueCategoryCanvas() {
           data: { round, _isNew: false } satisfies RoundNodeData,
         });
 
+        // Add edges between rounds
         if (round.next_round_id) {
           const targetRound = cat.rounds.find(
             (r) => r.round_id === round.next_round_id
@@ -129,6 +123,7 @@ export default function LeagueCategoryCanvas() {
           }
         }
 
+        // Add format nodes and edges
         if (round.round_format) {
           const formatNodeId = `format-${round.round_id}`;
           newNodes.push({
@@ -158,61 +153,56 @@ export default function LeagueCategoryCanvas() {
       });
     });
 
-    originalNodesRef.current = newNodes;
+    // Store both original and initial state
+    originalNodesRef.current = [...newNodes];
+    initialNodesRef.current = [...newNodes];
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [data]);
+  }, [data?.categories]);
 
-  const [changedNodes, setChangedNodes] = useState<
-    Record<string, Node<NodeData>>
-  >({});
+  // Track changed nodes by comparing with initial state
+  const getChangedNodes = useCallback(() => {
+    const changed: Node<NodeData>[] = [];
 
-  const nodesAreEqual = (a: Node<NodeData>, b: Node<NodeData>) => {
-    if (a.position.x !== b.position.x || a.position.y !== b.position.y)
-      return false;
-    if (a.type !== b.type) return false;
-    const aRound = (a.data as any)?.round as LeagueCategoryRound | undefined;
-    const bRound = (b.data as any)?.round as LeagueCategoryRound | undefined;
-    if (aRound || bRound) {
-      return (
-        aRound?.round_status === bRound?.round_status &&
-        aRound?.round_format === bRound?.round_format &&
-        aRound?.position?.x === bRound?.position?.x &&
-        aRound?.position?.y === bRound?.position?.y
+    nodes.forEach((currentNode) => {
+      if (currentNode.type === "categoryNode") return;
+
+      const initialNode = initialNodesRef.current.find(
+        (n) => n.id === currentNode.id
       );
-    }
-    return true;
-  };
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => {
-      setNodes((nds) => {
-        const newNodes = applyNodeChanges(changes, nds) as Node<NodeData>[];
+      // New node (not in initial state)
+      if (!initialNode) {
+        changed.push(currentNode);
+        return;
+      }
 
-        const newChanged: Record<string, Node<NodeData>> = { ...changedNodes };
-        newNodes.forEach((node) => {
-          if (node.type === "categoryNode") {
-            if (newChanged[node.id]) delete newChanged[node.id];
-            return;
-          }
-          const original = originalNodesRef.current.find(
-            (n) => n.id === node.id
-          );
-          if (!original) {
-            newChanged[node.id] = node;
-          } else if (!nodesAreEqual(node, original)) {
-            newChanged[node.id] = node;
-          } else {
-            if (newChanged[node.id]) delete newChanged[node.id];
-          }
-        });
+      // Check for changes in position or round data
+      const hasPositionChange =
+        currentNode.position.x !== initialNode.position.x ||
+        currentNode.position.y !== initialNode.position.y;
 
-        setChangedNodes(newChanged);
-        return newNodes;
-      });
-    },
-    [changedNodes]
-  );
+      const currentRound = (currentNode.data as RoundNodeData)?.round;
+      const initialRound = (initialNode.data as RoundNodeData)?.round;
+
+      const hasRoundDataChange =
+        currentRound &&
+        initialRound &&
+        (currentRound.round_status !== initialRound.round_status ||
+          JSON.stringify(currentRound.round_format) !==
+            JSON.stringify(initialRound.round_format));
+
+      if (hasPositionChange || hasRoundDataChange) {
+        changed.push(currentNode);
+      }
+    });
+
+    return changed;
+  }, [nodes]);
+
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setNodes((nds) => applyNodeChanges(changes, nds) as Node<NodeData>[]);
+  }, []);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges((eds) => applyEdgeChanges(changes, eds));
@@ -243,32 +233,17 @@ export default function LeagueCategoryCanvas() {
     (_e: React.MouseEvent, node: Node<NodeData>) => {
       if (node.type === "categoryNode") return;
 
+      // Update position in the round data if it's a round node
+      if (node.type === "roundNode") {
+        const round = (node.data as RoundNodeData).round;
+        round.position = { ...node.position };
+      }
+
       setNodes((nds) =>
         nds.map((n) =>
           n.id === node.id ? { ...n, position: node.position } : n
         )
       );
-
-      setChangedNodes((prev) => {
-        const originalNode = originalNodesRef.current.find(
-          (n) => n.id === node.id
-        );
-        if (
-          !originalNode ||
-          !nodesAreEqual({ ...node, position: node.position }, originalNode)
-        ) {
-          const next = { ...node };
-          const r = (next.data as any)?.round as
-            | LeagueCategoryRound
-            | undefined;
-          if (r) r.position = { ...node.position };
-          return { ...prev, [node.id]: next };
-        } else {
-          const copy = { ...prev };
-          delete copy[node.id];
-          return copy;
-        }
-      });
     },
     []
   );
@@ -440,7 +415,6 @@ export default function LeagueCategoryCanvas() {
         };
 
         setNodes((prev) => prev.concat(newNode!));
-        setChangedNodes((prev) => ({ ...prev, [newNode!.id]: newNode! }));
       } else {
         const newNodeId = `format-${Date.now()}-${Math.random()
           .toString(36)
@@ -460,6 +434,7 @@ export default function LeagueCategoryCanvas() {
     [nodes, reactFlowInstance]
   );
 
+  // Update edge styles based on node states
   useEffect(() => {
     setEdges((prevEdges) =>
       prevEdges.map((edge) => {
@@ -517,55 +492,107 @@ export default function LeagueCategoryCanvas() {
 
   const saveChanges = async () => {
     try {
-      const formatByRound: Record<string, string | null> = {};
-      edges.forEach((e) => {
-        const src = nodes.find((n) => n.id === e.source);
-        const tgt = nodes.find((n) => n.id === e.target);
-        if (
-          src?.type === "roundNode" &&
-          tgt?.type === "formatNode" &&
-          e.sourceHandle === "bottom" &&
-          e.targetHandle === "top"
-        ) {
-          const fmt = (tgt.data as FormatNodeData).label;
-          formatByRound[src.id] = fmt ?? null;
-        }
-      });
+      const changedNodes = getChangedNodes();
 
-      await Promise.all(
-        Object.values(changedNodes).map(async (node) => {
-          if (node.type !== "roundNode" || !node.parentId) return;
+      if (changedNodes.length === 0) {
+        toast.info("No changes to save");
+        return;
+      }
 
-          const { round, _isNew } = node.data as RoundNodeData;
+      const promises: Promise<any>[] = [];
 
-          if (_isNew) {
-            await LeagueCategoryService.createCategoryRound({
-              roundId: round.round_id,
-              categoryId: node.parentId,
-              roundName: round.round_name,
-              roundStatus: round.round_status,
-              position: round.position,
-              roundOrder: round.round_order,
-            });
-          } else {
-            await LeagueCategoryService.updateRoundPosition({
-              categoryId: node.parentId,
-              roundId: round.round_id,
-              position: round.position,
-            });
+      for (const node of changedNodes) {
+        if (node.type !== "roundNode" || !node.parentId) continue;
+
+        const { round, _isNew } = node.data as RoundNodeData;
+        const categoryId = node.parentId;
+
+        if (_isNew) {
+          // Create new round
+          promises.push(
+            LeagueCategoryService.saveChanges({
+              categoryId,
+              operations: [
+                {
+                  type: "create_round",
+                  data: {
+                    round_id: round.round_id,
+                    round_name: round.round_name,
+                    round_status: round.round_status as RoundStateEnum,
+                    round_order: round.round_order,
+                    position: round.position,
+                  },
+                },
+              ],
+            })
+          );
+        } else {
+          const operations: any[] = [];
+
+          const initialNode = initialNodesRef.current.find(
+            (n) => n.id === node.id
+          );
+          if (initialNode) {
+            const initialRound = (initialNode.data as RoundNodeData).round;
+
+            // Position change
+            if (
+              round.position?.x !== initialRound.position?.x ||
+              round.position?.y !== initialRound.position?.y
+            ) {
+              operations.push({
+                type: "update_position",
+                data: {
+                  round_id: round.round_id,
+                  position: round.position,
+                },
+              });
+            }
+
+            // Format change
+            if (
+              JSON.stringify(round.round_format) !==
+              JSON.stringify(initialRound.round_format)
+            ) {
+              operations.push({
+                type: "update_format",
+                data: {
+                  round_id: round.round_id,
+                  round_format: round.round_format,
+                },
+              });
+            }
           }
-        })
-      );
 
-      toast.success("All changes saved");
+          if (operations.length > 0) {
+            promises.push(
+              LeagueCategoryService.saveChanges({
+                categoryId,
+                operations,
+              })
+            );
+          }
+        }
+      }
+
+      await Promise.all(promises);
+
+      toast.success("All changes saved successfully");
       await refetch();
+
+      // Update refs with current state
+      initialNodesRef.current = [...nodes];
       originalNodesRef.current = [...nodes];
-      setChangedNodes({});
     } catch (error) {
       toast.error("Failed to save changes");
       console.error(error);
     }
   };
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    return getChangedNodes().length > 0;
+  }, [getChangedNodes]);
 
   const categoryCanvas = (
     <>
@@ -617,9 +644,9 @@ export default function LeagueCategoryCanvas() {
         <SmallButton onClick={() => setAddDialogOpen(true)}>
           Add Category
         </SmallButton>
-        {Object.keys(changedNodes).length > 0 && (
+        {hasUnsavedChanges && (
           <SmallButton variant="outline" onClick={saveChanges}>
-            Save Changes
+            Save Changes ({getChangedNodes().length})
           </SmallButton>
         )}
       </ContentHeader>
@@ -636,7 +663,7 @@ export default function LeagueCategoryCanvas() {
           <div className="centered-container">
             <p className="text-primary">{(error as any).message}</p>
           </div>
-        ) : data?.categories && data.categories.length > 0 ? (
+        ) : categoriesRef.current && categoriesRef.current.length > 0 ? (
           categoryCanvas
         ) : (
           <div className="centered-container">
