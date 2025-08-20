@@ -10,11 +10,11 @@ import {
   Settings,
   CalendarCheck,
   CalendarArrowUp,
-  FlagTriangleRight,
   FolderKanban,
   GitBranchPlus,
   Trophy,
   SquarePen,
+  FileQuestionMark,
 } from "lucide-react";
 
 import {
@@ -27,8 +27,6 @@ import {
 import { ScrollArea } from "./ui/scroll-area";
 import { Skeleton } from "./ui/skeleton";
 import { NavMenu } from "./nav-menu";
-// import { NavUser } from "./nav-profile"
-import { NavSecondaryMenu } from "./nav-secondary-menu";
 import { AppSidebarHeader } from "./nav-header";
 import { NavProfile } from "./nav-profile";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
@@ -126,13 +124,24 @@ const data = {
         },
       ],
     },
+    {
+      title: "Match",
+      url: "#",
+      icon: FileQuestionMark,
+      isActive: true,
+      items: [
+        {
+          title: "Set Schedule",
+          url: "/league-administrator/pages/league/match/unscheduled",
+        },
+        {
+          title: "Scheduled Match",
+          url: "/league-administrator/pages/league/match/scheduled",
+        },
+      ],
+    },
   ],
   match: [
-    {
-      title: "Set Round",
-      url: "/league-administrator/pages/set/round",
-      icon: FlagTriangleRight,
-    },
     {
       title: "Set Schedule",
       url: "/league-administrator/pages/set/unscheduled",
@@ -144,7 +153,7 @@ const data = {
       icon: CalendarCheck,
     },
   ],
-  navSecondary: [
+  bottom: [
     {
       title: "Settings",
       url: "/league-administrator/pages/settings",
@@ -190,8 +199,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <>
               <NavMenu label="Platform" items={data.platform} />
               <NavMenu label="League" items={data.league} />
-              <NavMenu label="Match" items={data.match} />
-              <NavSecondaryMenu items={data.navSecondary} />
+              <NavMenu label="None League Match" items={data.match} />
+              <NavMenu label="" items={data.bottom} />
             </>
           )}
         </SidebarContent>

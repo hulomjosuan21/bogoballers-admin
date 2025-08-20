@@ -2,7 +2,6 @@ import type { RouteObject } from "react-router-dom";
 import {
   DashboardPage,
   LeagueResourcePage,
-  SetRoundPage,
   PlayerSubmissionPage,
   TeamSubmissionPage,
   BracketStructurePage,
@@ -12,7 +11,8 @@ import {
   LeagueCategoryPage,
   LeagueAffiliatePage,
   LeagueOfficialsPage,
-  SetSchedulePage,
+  LeagueMatchSetUnSchedulePage,
+  LeagueMatchScheduledPage,
 } from "@/pages";
 
 export const leagueAdminRoutes: RouteObject[] = [
@@ -29,12 +29,12 @@ export const leagueAdminRoutes: RouteObject[] = [
     element: <LeagueResourcePage />,
   },
   {
-    path: "pages/set/round",
-    element: <SetRoundPage />,
+    path: "pages/league/match/scheduled",
+    element: <LeagueMatchScheduledPage />,
   },
   {
-    path: "pages/set/unscheduled",
-    element: <SetSchedulePage />,
+    path: "pages/league/match/unscheduled",
+    element: <LeagueMatchSetUnSchedulePage />,
   },
   {
     path: "pages/league/player/submission",

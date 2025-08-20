@@ -50,6 +50,7 @@ import { disableOnLoading } from "@/lib/app_utils";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 function validateLeagueForm({
   leagueTitle,
@@ -87,7 +88,11 @@ function validateLeagueForm({
   if (!categories.length) throw new Error("At least one category is required.");
 }
 
-export default function CreateLeagueForm() {
+type Props = {
+  hasActive: boolean;
+};
+
+export default function CreateLeagueForm({ hasActive }: Props) {
   const { refetch: refetchActiveLeague } = useQuery(
     getActiveLeagueQueryOptions
   );
@@ -160,7 +165,9 @@ export default function CreateLeagueForm() {
   };
 
   return (
-    <section className="space-y-4">
+    <section
+      className={cn("space-y-4", hasActive && "pointer-events-none opacity-50")}
+    >
       <div
         className={disableOnLoading({
           condition: isProcessing,
