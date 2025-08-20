@@ -3,7 +3,6 @@ import type { LeagueCategory } from "@/pages/league-administrator/league/categor
 export interface CreateLeagueCategory {
   category_name: string;
   max_team: number;
-  accept_teams: boolean;
   team_entrance_fee_amount: number;
   individual_player_entrance_fee_amount: number;
 }

@@ -30,7 +30,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -261,11 +260,6 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         })}
       >
         <Label htmlFor="description">League Description</Label>
-        {/* <MinimalTiptap
-          onChange={setLeagueDescription}
-          placeholder="Start typing your leagueDescription here..."
-          className="min-h-[400px]"
-        /> */}
         <Textarea
           onChange={(e) => setLeagueDescription(e.target.value)}
           id="description"
@@ -344,7 +338,6 @@ function AddCategories({
   const [form, setForm] = useState<CreateLeagueCategory>({
     category_name: "",
     max_team: 0,
-    accept_teams: false,
     team_entrance_fee_amount: 0,
     individual_player_entrance_fee_amount: 0,
   });
@@ -357,7 +350,6 @@ function AddCategories({
     setForm({
       category_name: "",
       max_team: 0,
-      accept_teams: false,
       team_entrance_fee_amount: 0,
       individual_player_entrance_fee_amount: 0,
     });
@@ -439,15 +431,6 @@ function AddCategories({
                   }
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={form.accept_teams}
-                  onCheckedChange={(checked) =>
-                    handleChange("accept_teams", !!checked)
-                  }
-                />
-                <Label htmlFor="accept_teams">Accept Teams</Label>
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="team_fee">Team Entrance Fee</Label>
                 <Input
@@ -504,7 +487,6 @@ function AddCategories({
                 <TableRow key={idx}>
                   <TableCell>{cat.category_name}</TableCell>
                   <TableCell>{cat.max_team}</TableCell>
-                  <TableCell>{cat.accept_teams ? "Yes" : "No"}</TableCell>
                   <TableCell>
                     ₱{cat.team_entrance_fee_amount.toFixed(2)}
                   </TableCell>

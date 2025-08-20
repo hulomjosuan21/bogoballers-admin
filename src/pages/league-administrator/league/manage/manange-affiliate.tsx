@@ -46,7 +46,6 @@ import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useErrorToast } from "@/components/error-toast";
 import { LeagueService } from "@/service/league-service";
 import { toast } from "sonner";
-import { SmallButton } from "@/components/custom-buttons";
 import { cn } from "@/lib/utils";
 
 export type LeagueAffiliateCreate = {
@@ -233,9 +232,12 @@ export default function ManageAffiliates({
         <div className="flex gap-2 items-center">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <SmallButton className={cn(editingIndex !== null && "hidden")}>
+              <Button
+                className={cn(editingIndex !== null && "hidden")}
+                size={"sm"}
+              >
                 Add Affiliate
-              </SmallButton>
+              </Button>
             </DialogTrigger>
             <DialogContent aria-describedby={undefined}>
               <DialogHeader>
@@ -285,13 +287,14 @@ export default function ManageAffiliates({
             </DialogContent>
           </Dialog>
           {hasChanges && (
-            <SmallButton
+            <Button
+              size={"sm"}
               variant={"outline"}
               onClick={handleSaveChanges}
               disabled={isProcessing}
             >
               Save Changes
-            </SmallButton>
+            </Button>
           )}
         </div>
       </div>

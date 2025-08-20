@@ -1,7 +1,6 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import CreateLeagueForm from "./form";
-import { SmallButton } from "@/components/custom-buttons";
 import { Info } from "lucide-react";
 import {
   Alert,
@@ -18,9 +17,9 @@ export default function LeagueCreationPage() {
   return (
     <ContentShell>
       <ContentHeader title="Start new League">
-        <SmallButton variant={"ghost"}>
+        <Button variant={"ghost"} size={"sm"}>
           <Info />
-        </SmallButton>
+        </Button>
       </ContentHeader>
 
       <ContentBody>

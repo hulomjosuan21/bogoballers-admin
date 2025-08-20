@@ -1,7 +1,6 @@
 import * as React from "react";
 import {
   LayoutDashboard,
-  ChartSpline,
   UsersRound,
   UserRound,
   GitFork,
@@ -51,7 +50,7 @@ const data = {
       icon: SquarePen,
     },
     {
-      title: "Categories",
+      title: "Manage Categories",
       url: "/league-administrator/pages/league/categories",
       icon: GitBranchPlus,
     },

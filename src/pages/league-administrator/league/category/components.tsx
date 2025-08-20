@@ -1,7 +1,6 @@
 import {
   Button,
   ButtonLoading,
-  Checkbox,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -112,7 +111,6 @@ export function AddCategoryDialog({
   const [form, setForm] = useState<CreateLeagueCategory>({
     category_name: "",
     max_team: 0,
-    accept_teams: false,
     team_entrance_fee_amount: 0,
     individual_player_entrance_fee_amount: 0,
   });
@@ -160,7 +158,6 @@ export function AddCategoryDialog({
       setForm({
         category_name: "",
         max_team: 0,
-        accept_teams: false,
         team_entrance_fee_amount: 0,
         individual_player_entrance_fee_amount: 0,
       });
@@ -205,16 +202,6 @@ export function AddCategoryDialog({
                 handleChange("max_team", parseInt(e.target.value) || 0)
               }
             />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={form.accept_teams}
-              onCheckedChange={(checked) =>
-                handleChange("accept_teams", !!checked)
-              }
-            />
-            <Label htmlFor="accept_teams">Accept Teams</Label>
           </div>
 
           <div className="space-y-2">

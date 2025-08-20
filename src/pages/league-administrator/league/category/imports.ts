@@ -85,7 +85,7 @@ export { Loader2, Settings2, GripVertical } from "lucide-react";
 // --------------------
 // Custom UI
 // --------------------
-export { SmallButton, ButtonLoading } from "@/components/custom-buttons";
+export { ButtonLoading } from "@/components/custom-buttons";
 export { Button } from "@/components/ui/button";
 export { Checkbox } from "@/components/ui/checkbox";
 export { Input } from "@/components/ui/input";

@@ -46,7 +46,6 @@ import { LeagueService } from "@/service/league-service";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useErrorToast } from "@/components/error-toast";
-import { SmallButton } from "@/components/custom-buttons";
 import { cn } from "@/lib/utils";
 
 export type LeagueRefereeCreate = {
@@ -264,9 +263,9 @@ export default function ManageRefereesComponent({
             }}
           >
             <DialogTrigger asChild>
-              <SmallButton className={cn(editIndex !== null && "hidden")}>
+              <Button className={cn(editIndex !== null && "hidden")} size="sm">
                 Add Referee
-              </SmallButton>
+              </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md" aria-describedby={undefined}>
               <DialogHeader>
@@ -316,13 +315,14 @@ export default function ManageRefereesComponent({
             </DialogContent>
           </Dialog>
           {hasChanges && (
-            <SmallButton
+            <Button
               variant={"outline"}
               onClick={handleSaveChanges}
               disabled={isProcessing}
+              size={"sm"}
             >
               Save Changes
-            </SmallButton>
+            </Button>
           )}
         </div>
       </div>

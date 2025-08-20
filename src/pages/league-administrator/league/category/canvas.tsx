@@ -43,9 +43,9 @@ import {
   useQuery,
   getActiveLeagueQueryOptions,
   Loader2,
-  SmallButton,
   generateUUIDWithPrefix,
   LeagueCategoryService,
+  Button,
 } from "./imports";
 
 const edgeTypes = {
@@ -68,12 +68,10 @@ export default function LeagueCategoryCanvas() {
   const [nodes, setNodes] = useState<Node<NodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
-  // Store original data in refs
   const originalNodesRef = useRef<Node<NodeData>[]>([]);
   const initialNodesRef = useRef<Node<NodeData>[]>([]);
   const categoriesRef = useRef<LeagueCategory[]>([]);
 
-  // Single effect to handle data initialization
   useEffect(() => {
     if (!data?.categories) return;
 
@@ -84,7 +82,6 @@ export default function LeagueCategoryCanvas() {
     const newEdges: Edge[] = [];
 
     categories.forEach((cat, catIndex) => {
-      // Add category node
       newNodes.push({
         id: cat.category_id,
         type: "categoryNode",
@@ -94,7 +91,6 @@ export default function LeagueCategoryCanvas() {
         selectable: true,
       });
 
-      // Add round nodes for this category
       cat.rounds.forEach((round) => {
         const pos = round.position ?? { x: 100, y: 100 };
         newNodes.push({
@@ -107,7 +103,6 @@ export default function LeagueCategoryCanvas() {
           data: { round, _isNew: false } satisfies RoundNodeData,
         });
 
-        // Add edges between rounds
         if (round.next_round_id) {
           const targetRound = cat.rounds.find(
             (r) => r.round_id === round.next_round_id
@@ -125,7 +120,6 @@ export default function LeagueCategoryCanvas() {
           }
         }
 
-        // Add format nodes and edges
         if (round.round_format) {
           const formatNodeId = `format-${round.round_id}`;
           newNodes.push({
@@ -155,14 +149,12 @@ export default function LeagueCategoryCanvas() {
       });
     });
 
-    // Store both original and initial state
     originalNodesRef.current = [...newNodes];
     initialNodesRef.current = [...newNodes];
     setNodes(newNodes);
     setEdges(newEdges);
   }, [data?.categories]);
 
-  // Track changed nodes by comparing with initial state
   const getChangedNodes = useCallback(() => {
     const changed: Node<NodeData>[] = [];
 
@@ -173,13 +165,11 @@ export default function LeagueCategoryCanvas() {
         (n) => n.id === currentNode.id
       );
 
-      // New node (not in initial state)
       if (!initialNode) {
         changed.push(currentNode);
         return;
       }
 
-      // Check for changes in position or round data
       const hasPositionChange =
         currentNode.position.x !== initialNode.position.x ||
         currentNode.position.y !== initialNode.position.y;
@@ -235,7 +225,6 @@ export default function LeagueCategoryCanvas() {
     (_e: React.MouseEvent, node: Node<NodeData>) => {
       if (node.type === "categoryNode") return;
 
-      // Update position in the round data if it's a round node
       if (node.type === "roundNode") {
         const round = (node.data as RoundNodeData).round;
         round.position = { ...node.position };
@@ -264,7 +253,6 @@ export default function LeagueCategoryCanvas() {
       const sourceNode = nodes.find((n) => n.id === connection.source);
       const targetNode = nodes.find((n) => n.id === connection.target);
 
-      // ✅ round -> format connection
       if (
         sourceNode?.type === "roundNode" &&
         targetNode?.type === "formatNode" &&
@@ -276,7 +264,7 @@ export default function LeagueCategoryCanvas() {
 
         const roundFormat: LeagueRoundFormat = {
           format_type: formatLabel as RoundFormatTypesEnum,
-          pairing_method: "random", // default, can extend later
+          pairing_method: "random",
           round_id: round.round_id,
           position: targetNode.position,
         };
@@ -299,13 +287,11 @@ export default function LeagueCategoryCanvas() {
         return;
       }
 
-      // ❌ format as source not allowed
       if (sourceNode?.type === "formatNode") {
         toast.error("Format nodes cannot be sources of connections.");
         return;
       }
 
-      // ✅ round -> round connection
       if (
         sourceNode?.type === "roundNode" &&
         targetNode?.type === "roundNode"
@@ -436,7 +422,6 @@ export default function LeagueCategoryCanvas() {
     [nodes, reactFlowInstance]
   );
 
-  // Update edge styles based on node states
   useEffect(() => {
     setEdges((prevEdges) =>
       prevEdges.map((edge) => {
@@ -510,7 +495,6 @@ export default function LeagueCategoryCanvas() {
         const categoryId = node.parentId;
 
         if (_isNew) {
-          // Create new round
           promises.push(
             LeagueCategoryService.saveChanges({
               categoryId,
@@ -537,7 +521,6 @@ export default function LeagueCategoryCanvas() {
           if (initialNode) {
             const initialRound = (initialNode.data as RoundNodeData).round;
 
-            // Position change
             if (
               round.position?.x !== initialRound.position?.x ||
               round.position?.y !== initialRound.position?.y
@@ -551,7 +534,6 @@ export default function LeagueCategoryCanvas() {
               });
             }
 
-            // Format change
             if (
               JSON.stringify(round.round_format) !==
               JSON.stringify(initialRound.round_format)
@@ -582,7 +564,6 @@ export default function LeagueCategoryCanvas() {
       toast.success("All changes saved successfully");
       await refetch();
 
-      // Update refs with current state
       initialNodesRef.current = [...nodes];
       originalNodesRef.current = [...nodes];
     } catch (error) {
@@ -591,7 +572,6 @@ export default function LeagueCategoryCanvas() {
     }
   };
 
-  // Check if there are unsaved changes
   const hasUnsavedChanges = useMemo(() => {
     return getChangedNodes().length > 0;
   }, [getChangedNodes]);
@@ -643,13 +623,13 @@ export default function LeagueCategoryCanvas() {
   return (
     <ContentShell>
       <ContentHeader title="Category Management">
-        <SmallButton onClick={() => setAddDialogOpen(true)}>
+        <Button onClick={() => setAddDialogOpen(true)} size={"sm"}>
           Add Category
-        </SmallButton>
+        </Button>
         {hasUnsavedChanges && (
-          <SmallButton variant="outline" onClick={saveChanges}>
+          <Button variant="outline" onClick={saveChanges} size={"sm"}>
             Save Changes ({getChangedNodes().length})
-          </SmallButton>
+          </Button>
         )}
       </ContentHeader>
       <ContentBody className="flex-row">

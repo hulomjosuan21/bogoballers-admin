@@ -28,24 +28,24 @@ export function ButtonLoading({
   );
 }
 
-interface SmallButtonProps extends React.ComponentProps<typeof Button> {
-  children: React.ReactNode;
-}
+// interface SmallButtonProps extends React.ComponentProps<typeof Button> {
+//   children: React.ReactNode;
+// }
 
-export function SmallButton({
-  children,
-  className,
-  onClick,
-  ...props
-}: SmallButtonProps) {
-  return (
-    <Button
-      variant="default"
-      className={cn("h-6 px-2 text-xs rounded-sm", className)}
-      onClick={onClick}
-      {...props}
-    >
-      {children}
-    </Button>
-  );
-}
+// export function SmallButton({
+//   children,
+//   className,
+//   onClick,
+//   ...props
+// }: SmallButtonProps) {
+//   return (
+//     <Button
+//       variant={props.variant}
+//       className={cn("h-6 px-2 text-xs rounded-sm", className)}
+//       onClick={onClick}
+//       {...props}
+//     >
+//       {children}
+//     </Button>
+//   );
+// }

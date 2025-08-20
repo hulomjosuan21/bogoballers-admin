@@ -46,7 +46,6 @@ import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useQuery } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
 import { LeagueService } from "@/service/league-service";
-import { SmallButton } from "@/components/custom-buttons";
 import { cn } from "@/lib/utils";
 
 export default function ManageCourts({ data }: { data: LeagueCourt[] }) {
@@ -233,9 +232,12 @@ export default function ManageCourts({ data }: { data: LeagueCourt[] }) {
             }}
           >
             <DialogTrigger asChild>
-              <SmallButton className={cn(editIndex !== null && "hidden")}>
+              <Button
+                className={cn(editIndex !== null && "hidden")}
+                size={"sm"}
+              >
                 Add Court
-              </SmallButton>
+              </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md" aria-describedby={undefined}>
               <DialogHeader>
@@ -270,13 +272,14 @@ export default function ManageCourts({ data }: { data: LeagueCourt[] }) {
             </DialogContent>
           </Dialog>
           {hasChanges && (
-            <SmallButton
+            <Button
               variant={"outline"}
+              size={"sm"}
               onClick={handleSaveChanges}
               disabled={isProcessing}
             >
               Save Changes
-            </SmallButton>
+            </Button>
           )}
         </div>
       </div>

@@ -6,11 +6,11 @@ import { DatePicker } from "@/components/date-picker";
 import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
-import { SmallButton } from "@/components/custom-buttons";
 import { LeagueService } from "@/service/league-service";
 import { toast } from "sonner";
 import { useErrorToast } from "@/components/error-toast";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function SettingsPage() {
   const { data: activeLeague, refetch } = useQuery(getActiveLeagueQueryOptions);
@@ -103,9 +103,9 @@ export default function SettingsPage() {
     <ContentShell>
       <ContentHeader title="Settings">
         {hasChanges && (
-          <SmallButton variant={"outline"} onClick={handleSave}>
+          <Button variant={"outline"} onClick={handleSave} size={"sm"}>
             Save Changes
-          </SmallButton>
+          </Button>
         )}
       </ContentHeader>
       <ContentBody>
