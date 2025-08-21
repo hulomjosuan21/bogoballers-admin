@@ -58,6 +58,7 @@ export default function LeagueCategoryCanvas() {
 
   const [nodes, setNodes] = useState<Node<NodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [deletedNodeIds, setDeletedNodeIds] = useState<Set<string>>(new Set());
 
   const originalNodesRef = useRef<Node<NodeData>[]>([]);
   const initialNodesRef = useRef<Node<NodeData>[]>([]);
@@ -145,6 +146,7 @@ export default function LeagueCategoryCanvas() {
     initialNodesRef.current = [...newNodes];
     setNodes(newNodes);
     setEdges(newEdges);
+    setDeletedNodeIds(new Set()); // Reset deleted nodes on data refresh
   }, [data?.categories]);
 
   const getChangedNodes = useCallback(() => {
@@ -191,9 +193,127 @@ export default function LeagueCategoryCanvas() {
     return changed;
   }, [nodes]);
 
-  const onNodesChange = useCallback((changes: NodeChange[]) => {
-    setNodes((nds) => applyNodeChanges(changes, nds) as Node<NodeData>[]);
-  }, []);
+  const getDeletedNodes = useCallback(() => {
+    return initialNodesRef.current.filter(
+      (node) =>
+        deletedNodeIds.has(node.id) &&
+        (node.type === "roundNode" || node.type === "formatNode")
+    );
+  }, [deletedNodeIds]);
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      // Check for remove operations
+      const removeChanges = changes.filter(
+        (change) => change.type === "remove"
+      );
+
+      if (removeChanges.length > 0) {
+        // Get the nodes that are being removed
+        const removedNodeIds = removeChanges.map((change) => change.id);
+        const nodesToDelete = nodes.filter((node) =>
+          removedNodeIds.includes(node.id)
+        );
+
+        // Filter out category nodes - they shouldn't be deletable via keyboard
+        const deletableNodes = nodesToDelete.filter(
+          (node) => node.type === "roundNode" || node.type === "formatNode"
+        );
+
+        if (deletableNodes.length === 0) {
+          // Just apply changes normally if no deletable nodes
+          setNodes((nds) => applyNodeChanges(changes, nds) as Node<NodeData>[]);
+          return;
+        }
+
+        // Track deleted nodes for save operation
+        setDeletedNodeIds((prev) => {
+          const newSet = new Set(prev);
+          deletableNodes.forEach((node) => {
+            // Only track non-new nodes for backend deletion
+            if (
+              node.type === "roundNode" &&
+              !(node.data as RoundNodeData)._isNew
+            ) {
+              newSet.add(node.id);
+            } else if (
+              node.type === "formatNode" &&
+              !(node.data as FormatNodeData)._isNew
+            ) {
+              newSet.add(node.id);
+            }
+          });
+          return newSet;
+        });
+
+        // Apply the changes (this handles the UI deletion)
+        setNodes((nds) => {
+          let updatedNodes = applyNodeChanges(changes, nds) as Node<NodeData>[];
+
+          // Handle format node deletions - update associated round nodes
+          const formatNodesToDelete = deletableNodes.filter(
+            (n) => n.type === "formatNode"
+          );
+          formatNodesToDelete.forEach((formatNode) => {
+            const formatData = formatNode.data as FormatNodeData;
+            if (formatData.round_id) {
+              updatedNodes = updatedNodes.map((n) => {
+                if (
+                  n.type === "roundNode" &&
+                  (n.data as RoundNodeData).round.round_id ===
+                    formatData.round_id
+                ) {
+                  const round = (n.data as RoundNodeData).round;
+                  const updatedRound = { ...round, round_format: null };
+                  return {
+                    ...n,
+                    data: { ...n.data, round: updatedRound } as RoundNodeData,
+                  };
+                }
+                return n;
+              });
+            }
+          });
+
+          return updatedNodes;
+        });
+
+        // Remove associated edges
+        setEdges((eds) =>
+          eds.filter(
+            (edge) =>
+              !removedNodeIds.includes(edge.source) &&
+              !removedNodeIds.includes(edge.target)
+          )
+        );
+
+        // Show immediate feedback
+        const newNodesCount = deletableNodes.filter((node) => {
+          if (node.type === "roundNode")
+            return (node.data as RoundNodeData)._isNew;
+          if (node.type === "formatNode")
+            return (node.data as FormatNodeData)._isNew;
+          return false;
+        }).length;
+
+        const existingNodesCount = deletableNodes.length - newNodesCount;
+
+        if (newNodesCount > 0) {
+          toast.success(`Removed ${newNodesCount} new node(s) from canvas`);
+        }
+
+        if (existingNodesCount > 0) {
+          toast.info(
+            `Marked ${existingNodesCount} node(s) for deletion. Click "Save Changes" to delete from backend.`
+          );
+        }
+      } else {
+        // No remove operations, handle normally
+        setNodes((nds) => applyNodeChanges(changes, nds) as Node<NodeData>[]);
+      }
+    },
+    [nodes]
+  );
 
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
@@ -293,131 +413,18 @@ export default function LeagueCategoryCanvas() {
       return;
     }
 
-    try {
-      const operationsByCategory = new Map<string, CategoryOperation[]>();
+    // Create remove changes for React Flow
+    const removeChanges: NodeChange[] = nodesToDelete.map((node) => ({
+      type: "remove" as const,
+      id: node.id,
+    }));
 
-      for (const node of nodesToDelete) {
-        if (!node.parentId) continue;
+    // This will trigger onNodesChange which handles the deletion tracking
+    onNodesChange(removeChanges);
 
-        const categoryId = node.parentId;
-        if (!operationsByCategory.has(categoryId)) {
-          operationsByCategory.set(categoryId, []);
-        }
-        const operations = operationsByCategory.get(categoryId)!;
-
-        if (node.type === "roundNode") {
-          const { round, _isNew } = node.data as RoundNodeData;
-
-          if (!_isNew) {
-            operations.push({
-              type: "delete_round",
-              data: {
-                round_id: round.round_id,
-              },
-            });
-          }
-        } else if (node.type === "formatNode") {
-          const formatData = node.data as FormatNodeData;
-
-          if (formatData.round_id && !formatData._isNew) {
-            operations.push({
-              type: "update_format",
-              data: {
-                round_id: formatData.round_id,
-                round_format: null,
-              },
-            });
-          }
-        }
-      }
-
-      const nodeIdsToDelete = new Set(nodesToDelete.map((n) => n.id));
-
-      const formatNodesToDelete = nodesToDelete.filter(
-        (n) => n.type === "formatNode"
-      );
-
-      setNodes((nds) => {
-        let updatedNodes = [...nds];
-
-        formatNodesToDelete.forEach((formatNode) => {
-          const formatData = formatNode.data as FormatNodeData;
-          if (formatData.round_id) {
-            updatedNodes = updatedNodes.map((n) => {
-              if (
-                n.type === "roundNode" &&
-                (n.data as RoundNodeData).round.round_id === formatData.round_id
-              ) {
-                const round = (n.data as RoundNodeData).round;
-                const updatedRound = { ...round, round_format: null };
-                return {
-                  ...n,
-                  data: { ...n.data, round: updatedRound } as RoundNodeData,
-                };
-              }
-              return n;
-            });
-          }
-        });
-
-        return updatedNodes.filter((n) => !nodeIdsToDelete.has(n.id));
-      });
-
-      setEdges((eds) =>
-        eds.filter(
-          (edge) =>
-            !nodeIdsToDelete.has(edge.source) &&
-            !nodeIdsToDelete.has(edge.target)
-        )
-      );
-
-      setSelectedNodes([]);
-
-      const promises: Promise<any>[] = [];
-      for (const [categoryId, operations] of operationsByCategory) {
-        if (operations.length > 0) {
-          console.log(
-            `Sending delete operations for category ${categoryId}:`,
-            operations
-          );
-          promises.push(
-            LeagueCategoryService.saveChanges({
-              categoryId,
-              operations,
-            })
-          );
-        }
-      }
-
-      if (promises.length > 0) {
-        await Promise.all(promises);
-        const roundNodes = nodesToDelete.filter(
-          (n) => n.type === "roundNode"
-        ).length;
-        const formatNodes = nodesToDelete.filter(
-          (n) => n.type === "formatNode"
-        ).length;
-        let message = "Deleted ";
-        if (roundNodes > 0) message += `${roundNodes} round node(s)`;
-        if (formatNodes > 0) {
-          if (roundNodes > 0) message += " and ";
-          message += `${formatNodes} format node(s)`;
-        }
-        message += " successfully";
-        toast.success(message);
-        await refetch();
-      } else {
-        toast.success(
-          `Removed ${nodesToDelete.length} new node(s) from canvas`
-        );
-      }
-    } catch (error) {
-      toast.error("Failed to delete nodes");
-      console.error(error);
-
-      await refetch();
-    }
-  }, [selectedNodes, refetch]);
+    // Clear selection
+    setSelectedNodes([]);
+  }, [selectedNodes, onNodesChange]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -784,14 +791,16 @@ export default function LeagueCategoryCanvas() {
   const saveChanges = async () => {
     try {
       const changedNodes = getChangedNodes();
+      const deletedNodes = getDeletedNodes();
 
-      if (changedNodes.length === 0) {
+      if (changedNodes.length === 0 && deletedNodes.length === 0) {
         toast.info("No changes to save");
         return;
       }
 
       const operationsByCategory = new Map<string, CategoryOperation[]>();
 
+      // Handle regular changes (creates, updates)
       for (const node of changedNodes) {
         if (!node.parentId) continue;
 
@@ -905,6 +914,38 @@ export default function LeagueCategoryCanvas() {
         }
       }
 
+      // Handle deletions
+      for (const node of deletedNodes) {
+        if (!node.parentId) continue;
+
+        const categoryId = node.parentId;
+        if (!operationsByCategory.has(categoryId)) {
+          operationsByCategory.set(categoryId, []);
+        }
+        const operations = operationsByCategory.get(categoryId)!;
+
+        if (node.type === "roundNode") {
+          const { round } = node.data as RoundNodeData;
+          operations.push({
+            type: "delete_round",
+            data: {
+              round_id: round.round_id,
+            },
+          });
+        } else if (node.type === "formatNode") {
+          const formatData = node.data as FormatNodeData;
+          if (formatData.round_id) {
+            operations.push({
+              type: "update_format",
+              data: {
+                round_id: formatData.round_id,
+                round_format: null,
+              },
+            });
+          }
+        }
+      }
+
       const promises: Promise<any>[] = [];
 
       for (const [categoryId, operations] of operationsByCategory) {
@@ -924,6 +965,9 @@ export default function LeagueCategoryCanvas() {
 
       await Promise.all(promises);
 
+      // Clear the deleted nodes tracking after successful save
+      setDeletedNodeIds(new Set());
+
       toast.success("All changes saved successfully");
       await refetch();
     } catch (error) {
@@ -933,8 +977,12 @@ export default function LeagueCategoryCanvas() {
   };
 
   const hasUnsavedChanges = useMemo(() => {
-    return getChangedNodes().length > 0;
-  }, [getChangedNodes]);
+    return getChangedNodes().length > 0 || deletedNodeIds.size > 0;
+  }, [getChangedNodes, deletedNodeIds]);
+
+  const getTotalChangesCount = useMemo(() => {
+    return getChangedNodes().length + deletedNodeIds.size;
+  }, [getChangedNodes, deletedNodeIds]);
 
   const categoryCanvas = (
     <>
@@ -988,7 +1036,7 @@ export default function LeagueCategoryCanvas() {
       <ContentHeader title="Category Management">
         {hasUnsavedChanges && (
           <Button variant={"outline"} size={"sm"} onClick={saveChanges}>
-            Save Changes ({getChangedNodes().length})
+            Save Changes ({getTotalChangesCount})
           </Button>
         )}
       </ContentHeader>
