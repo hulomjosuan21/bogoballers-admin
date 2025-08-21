@@ -1,3 +1,7 @@
+import type {
+  QueryObserverResult,
+  RefetchOptions,
+} from "@tanstack/react-query";
 import {
   useCallback,
   useEffect,
@@ -39,8 +43,6 @@ import {
   FormatNodeMenu,
   RoundNodeMenu,
   AddCategoryDialog,
-  useQuery,
-  getActiveLeagueQueryOptions,
   Loader2,
   generateUUIDWithPrefix,
   LeagueCategoryService,
@@ -49,12 +51,26 @@ import {
   edgeTypes,
 } from "./imports";
 import type { CategoryOperation } from "./types";
+import type { League } from "@/types/league";
 
-export default function LeagueCategoryCanvas() {
+type LeagueCategoryCanvasProps = {
+  categories: LeagueCategory[] | undefined;
+  isLoading: boolean;
+  error: unknown;
+  refetch: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<League | null, Error>>;
+  viewOnly?: boolean;
+};
+
+export default function LeagueCategoryCanvas({
+  categories,
+  isLoading,
+  error,
+  refetch,
+  viewOnly = false,
+}: LeagueCategoryCanvasProps) {
   const reactFlowInstance = useReactFlow();
-  const { data, isLoading, error, refetch } = useQuery(
-    getActiveLeagueQueryOptions
-  );
 
   const [nodes, setNodes] = useState<Node<NodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -65,9 +81,8 @@ export default function LeagueCategoryCanvas() {
   const categoriesRef = useRef<LeagueCategory[]>([]);
 
   useEffect(() => {
-    if (!data?.categories) return;
+    if (!categories) return;
 
-    const categories: LeagueCategory[] = data.categories;
     categoriesRef.current = categories;
 
     const newNodes: Node<NodeData>[] = [];
@@ -147,7 +162,7 @@ export default function LeagueCategoryCanvas() {
     setNodes(newNodes);
     setEdges(newEdges);
     setDeletedNodeIds(new Set());
-  }, [data?.categories]);
+  }, [categories]);
 
   const getChangedNodes = useCallback(() => {
     const changed: Node<NodeData>[] = [];
@@ -958,20 +973,29 @@ export default function LeagueCategoryCanvas() {
     return getChangedNodes().length + deletedNodeIds.size;
   }, [getChangedNodes, deletedNodeIds]);
 
+  const safeOnNodesChange = viewOnly ? undefined : onNodesChange;
+  const safeOnEdgesChange = viewOnly ? undefined : onEdgesChange;
+  const safeOnConnect = viewOnly ? undefined : onConnect;
+  const safeOnDrop = viewOnly ? undefined : onDrop;
+  const safeOnNodeDragStop = viewOnly ? undefined : onNodeDragStop;
+  const safeOnSelectionChange = viewOnly ? undefined : onSelectionChange;
+
   const categoryCanvas = (
     <>
       <div className="h-full border rounded-md w-full">
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
           edgeTypes={edgeTypes}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onDrop={onDrop}
-          onNodeDragStop={onNodeDragStop}
-          onSelectionChange={onSelectionChange}
+          nodeTypes={nodeTypes}
+          onNodesChange={safeOnNodesChange}
+          onEdgesChange={safeOnEdgesChange}
+          onConnect={safeOnConnect}
+          onDrop={safeOnDrop}
+          onNodeDragStop={safeOnNodeDragStop}
+          onSelectionChange={safeOnSelectionChange}
           onDragOver={(e) => {
+            if (viewOnly) return;
             e.preventDefault();
             e.stopPropagation();
             e.dataTransfer.dropEffect = "move";
@@ -981,44 +1005,49 @@ export default function LeagueCategoryCanvas() {
           zoomOnScroll
           zoomOnPinch
           panOnScroll
-          selectionOnDrag
+          selectionOnDrag={!viewOnly}
+          draggable={!viewOnly}
+          elementsSelectable={!viewOnly}
           minZoom={0.2}
           maxZoom={2}
-          nodeTypes={nodeTypes}
         >
           <Background />
           <Controls className="node-menu-button" />
         </ReactFlow>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <Button className="w-full" onClick={() => setAddDialogOpen(true)}>
-          Add Category
-        </Button>
-        <RoundNodeMenu
-          onDragStart={(e, label) => onDragStart(e, "round", label)}
-        />
-        <FormatNodeMenu
-          onDragStart={(e, label) => onDragStart(e, "format", label)}
-        />
-      </div>
+      {!viewOnly && (
+        <div className="flex flex-col gap-4">
+          <Button className="w-full" onClick={() => setAddDialogOpen(true)}>
+            Add Category
+          </Button>
+          <RoundNodeMenu
+            onDragStart={(e, label) => onDragStart(e, "round", label)}
+          />
+          <FormatNodeMenu
+            onDragStart={(e, label) => onDragStart(e, "format", label)}
+          />
+        </div>
+      )}
     </>
   );
 
   return (
     <ContentShell>
       <ContentHeader title="Category Management">
-        {hasUnsavedChanges && (
+        {!viewOnly && hasUnsavedChanges && (
           <Button variant={"outline"} size={"sm"} onClick={saveChanges}>
             Save Changes ({getTotalChangesCount})
           </Button>
         )}
       </ContentHeader>
       <ContentBody className="flex-row">
-        <AddCategoryDialog
-          open={addDialogOpen}
-          onOpenChange={setAddDialogOpen}
-        />
+        {!viewOnly && (
+          <AddCategoryDialog
+            open={addDialogOpen}
+            onOpenChange={setAddDialogOpen}
+          />
+        )}
         {isLoading ? (
           <div className="centered-container">
             <Loader2 className="animate-spin text-primary" />

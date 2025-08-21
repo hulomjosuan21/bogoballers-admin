@@ -7,7 +7,7 @@ import {
   SettingsPage,
   AnalyticsPage,
   LeagueCreationPage,
-  LeagueCategoryPageWrapper,
+  LeagueCategoryManagementPage,
   LeagueAffiliatePage,
   LeagueOfficialsPage,
   LeagueMatchSetUnSchedulePage,
@@ -53,7 +53,7 @@ export const leagueAdminRoutes: RouteObject[] = [
   },
   {
     path: "pages/league/categories",
-    element: <LeagueCategoryPageWrapper />,
+    element: <LeagueCategoryManagementPage />,
   },
   {
     path: "pages/league/officials&courts",
