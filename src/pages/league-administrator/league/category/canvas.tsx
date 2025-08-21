@@ -146,7 +146,7 @@ export default function LeagueCategoryCanvas() {
     initialNodesRef.current = [...newNodes];
     setNodes(newNodes);
     setEdges(newEdges);
-    setDeletedNodeIds(new Set()); // Reset deleted nodes on data refresh
+    setDeletedNodeIds(new Set());
   }, [data?.categories]);
 
   const getChangedNodes = useCallback(() => {
@@ -203,34 +203,28 @@ export default function LeagueCategoryCanvas() {
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      // Check for remove operations
       const removeChanges = changes.filter(
         (change) => change.type === "remove"
       );
 
       if (removeChanges.length > 0) {
-        // Get the nodes that are being removed
         const removedNodeIds = removeChanges.map((change) => change.id);
         const nodesToDelete = nodes.filter((node) =>
           removedNodeIds.includes(node.id)
         );
 
-        // Filter out category nodes - they shouldn't be deletable via keyboard
         const deletableNodes = nodesToDelete.filter(
           (node) => node.type === "roundNode" || node.type === "formatNode"
         );
 
         if (deletableNodes.length === 0) {
-          // Just apply changes normally if no deletable nodes
           setNodes((nds) => applyNodeChanges(changes, nds) as Node<NodeData>[]);
           return;
         }
 
-        // Track deleted nodes for save operation
         setDeletedNodeIds((prev) => {
           const newSet = new Set(prev);
           deletableNodes.forEach((node) => {
-            // Only track non-new nodes for backend deletion
             if (
               node.type === "roundNode" &&
               !(node.data as RoundNodeData)._isNew
@@ -246,11 +240,9 @@ export default function LeagueCategoryCanvas() {
           return newSet;
         });
 
-        // Apply the changes (this handles the UI deletion)
         setNodes((nds) => {
           let updatedNodes = applyNodeChanges(changes, nds) as Node<NodeData>[];
 
-          // Handle format node deletions - update associated round nodes
           const formatNodesToDelete = deletableNodes.filter(
             (n) => n.type === "formatNode"
           );
@@ -278,7 +270,6 @@ export default function LeagueCategoryCanvas() {
           return updatedNodes;
         });
 
-        // Remove associated edges
         setEdges((eds) =>
           eds.filter(
             (edge) =>
@@ -287,7 +278,6 @@ export default function LeagueCategoryCanvas() {
           )
         );
 
-        // Show immediate feedback
         const newNodesCount = deletableNodes.filter((node) => {
           if (node.type === "roundNode")
             return (node.data as RoundNodeData)._isNew;
@@ -308,7 +298,6 @@ export default function LeagueCategoryCanvas() {
           );
         }
       } else {
-        // No remove operations, handle normally
         setNodes((nds) => applyNodeChanges(changes, nds) as Node<NodeData>[]);
       }
     },
@@ -413,16 +402,13 @@ export default function LeagueCategoryCanvas() {
       return;
     }
 
-    // Create remove changes for React Flow
     const removeChanges: NodeChange[] = nodesToDelete.map((node) => ({
       type: "remove" as const,
       id: node.id,
     }));
 
-    // This will trigger onNodesChange which handles the deletion tracking
     onNodesChange(removeChanges);
 
-    // Clear selection
     setSelectedNodes([]);
   }, [selectedNodes, onNodesChange]);
 
@@ -800,7 +786,6 @@ export default function LeagueCategoryCanvas() {
 
       const operationsByCategory = new Map<string, CategoryOperation[]>();
 
-      // Handle regular changes (creates, updates)
       for (const node of changedNodes) {
         if (!node.parentId) continue;
 
@@ -858,11 +843,6 @@ export default function LeagueCategoryCanvas() {
               }
 
               if (round.next_round_id !== initialRound.next_round_id) {
-                console.log("Next round ID changed:", {
-                  roundId: round.round_id,
-                  current: round.next_round_id,
-                  initial: initialRound.next_round_id,
-                });
                 operations.push({
                   type: "update_next_round",
                   data: {
@@ -914,7 +894,6 @@ export default function LeagueCategoryCanvas() {
         }
       }
 
-      // Handle deletions
       for (const node of deletedNodes) {
         if (!node.parentId) continue;
 
@@ -950,10 +929,6 @@ export default function LeagueCategoryCanvas() {
 
       for (const [categoryId, operations] of operationsByCategory) {
         if (operations.length > 0) {
-          console.log(
-            `Sending operations for category ${categoryId}:`,
-            operations
-          );
           promises.push(
             LeagueCategoryService.saveChanges({
               categoryId,
@@ -965,7 +940,6 @@ export default function LeagueCategoryCanvas() {
 
       await Promise.all(promises);
 
-      // Clear the deleted nodes tracking after successful save
       setDeletedNodeIds(new Set());
 
       toast.success("All changes saved successfully");
