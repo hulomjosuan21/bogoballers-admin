@@ -1,4 +1,3 @@
-import { BezierEdge } from "@xyflow/react";
 import { RoundStateEnum, RoundTypeEnum } from "./types";
 
 export { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -107,13 +106,6 @@ export { LeagueService } from "@/service/league-service";
 export { generateUUIDWithPrefix } from "@/lib/app_utils";
 
 export type { CreateLeagueCategory } from "@/types/league";
-
-export const CATEGORY_WIDTH = 1280;
-export const CATEGORY_HEIGHT = 720;
-
-export const edgeTypes = {
-  bezier: BezierEdge,
-};
 
 export const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
   [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,

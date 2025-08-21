@@ -32,8 +32,6 @@ import {
   RoundTypeEnum,
   type LeagueCategory,
   toast,
-  CATEGORY_HEIGHT,
-  CATEGORY_WIDTH,
   CategoryNode,
   FormatNode,
   RoundNode,
@@ -48,10 +46,13 @@ import {
   LeagueCategoryService,
   Button,
   STATUSES,
-  edgeTypes,
+  BezierEdge,
 } from "./imports";
 import type { CategoryOperation } from "./types";
 import type { League } from "@/types/league";
+
+export const CATEGORY_WIDTH = 1280;
+export const CATEGORY_HEIGHT = 720;
 
 type LeagueCategoryCanvasProps = {
   categories: LeagueCategory[] | undefined;
@@ -94,8 +95,8 @@ export default function LeagueCategoryCanvas({
         type: "categoryNode",
         position: { x: 50, y: catIndex * 800 },
         data: { category: cat },
-        draggable: true,
-        selectable: true,
+        draggable: !viewOnly, // 🔑 disable when viewOnly
+        selectable: !viewOnly,
       });
 
       cat.rounds.forEach((round) => {
@@ -105,7 +106,7 @@ export default function LeagueCategoryCanvas({
           type: "roundNode",
           parentId: cat.category_id,
           extent: "parent",
-          draggable: true,
+          draggable: !viewOnly,
           position: pos,
           data: { round, _isNew: false } satisfies RoundNodeData,
         });
@@ -134,7 +135,7 @@ export default function LeagueCategoryCanvas({
             type: "formatNode",
             parentId: cat.category_id,
             extent: "parent",
-            draggable: true,
+            draggable: !viewOnly,
             position: round.round_format.position ?? {
               x: pos.x,
               y: pos.y + 120,
@@ -986,7 +987,9 @@ export default function LeagueCategoryCanvas({
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          edgeTypes={edgeTypes}
+          edgeTypes={{
+            bezier: BezierEdge,
+          }}
           nodeTypes={nodeTypes}
           onNodesChange={safeOnNodesChange}
           onEdgesChange={safeOnEdgesChange}

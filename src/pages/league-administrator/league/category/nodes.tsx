@@ -198,7 +198,7 @@ export function FormatNode({ data }: { data: FormatNodeData }) {
     >
       <span className="text-xs font-semibold">{data.label}</span>
       {data._isNew && (
-        <span className="text-xs text-orange-500 font-medium">
+        <span className="text-xs text-primary font-medium">
           (New - unsaved)
         </span>
       )}
