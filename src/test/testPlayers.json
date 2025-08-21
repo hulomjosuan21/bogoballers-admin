@@ -1,0 +1,14 @@
+[
+  { "player_id": "1", "name": "Player 1", "isStaged": false },
+  { "player_id": "2", "name": "Player 2", "isStaged": false },
+  { "player_id": "3", "name": "Player 3", "isStaged": false },
+  { "player_id": "4", "name": "Player 4", "isStaged": false },
+  { "player_id": "5", "name": "Player 5", "isStaged": false },
+  { "player_id": "6", "name": "Player 6", "isStaged": false },
+  { "player_id": "7", "name": "Player 7", "isStaged": false },
+  { "player_id": "8", "name": "Player 8", "isStaged": false },
+  { "player_id": "9", "name": "Player 9", "isStaged": false },
+  { "player_id": "10", "name": "Player 10", "isStaged": true },
+  { "player_id": "11", "name": "Player 11", "isStaged": true },
+  { "player_id": "12", "name": "Player 12", "isStaged": true }
+]

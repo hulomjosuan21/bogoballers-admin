@@ -18,7 +18,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-// import { useLogout } from "@/lib/logout"
 import { useState } from "react";
 import { Logo } from "@/assets";
 import type { LeagueAdminType } from "@/types/league-admin";
@@ -105,7 +104,9 @@ export function NavProfile({ leagueAdmin }: { leagueAdmin: LeagueAdminType }) {
 
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => window.open(`/${leagueAdmin.user_id}`, "_blank")}
+              >
                 <BadgeCheck />
                 About Organization
               </DropdownMenuItem>
