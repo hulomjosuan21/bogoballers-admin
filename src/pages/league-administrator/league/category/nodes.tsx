@@ -17,16 +17,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  type LeagueRoundFormat,
+  type FormatNodeData,
 } from "./imports";
-
-export interface FormatNodeData {
-  label: string;
-  round_format?: LeagueRoundFormat;
-  round_id?: string;
-  _isNew?: boolean;
-  [key: string]: unknown;
-}
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const { category } = data;
