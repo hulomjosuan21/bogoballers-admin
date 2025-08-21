@@ -20,7 +20,6 @@ import {
   type LeagueRoundFormat,
 } from "./imports";
 
-// Update the FormatNodeData interface
 export interface FormatNodeData {
   label: string;
   round_format?: LeagueRoundFormat;
@@ -93,7 +92,6 @@ export function RoundNode({
   const allNodes = allNodesRef.current ?? [];
   const order = data.round.round_order;
 
-  // Fix: show left handle if this node is a target of any next_round_id
   const isTarget = allNodes.some(
     (n) => (n.data as any)?.round?.next_round_id === data.round.round_id
   );
@@ -144,10 +142,10 @@ export function RoundNode({
               const tgtOrder = (targetNode?.data as any)?.round?.round_order;
               if (typeof tgtOrder !== "number") return false;
 
-              if (order === 0 && tgtOrder === 1) return true; // Elim -> QF
-              if (order === 0 && tgtOrder === 2) return true; // Elim -> Semi
-              if (order === 1 && tgtOrder === 2) return true; // QF -> Semi
-              if (order === 2 && tgtOrder === 3) return true; // Semi -> Final
+              if (order === 0 && tgtOrder === 1) return true;
+              if (order === 0 && tgtOrder === 2) return true;
+              if (order === 1 && tgtOrder === 2) return true;
+              if (order === 2 && tgtOrder === 3) return true;
               return false;
             }}
           />
@@ -188,7 +186,6 @@ export function FormatNode({ data }: { data: FormatNodeData }) {
       return false;
     }
 
-    // Only allow connections from round nodes' bottom handle
     return conn.sourceHandle === "bottom";
   };
 
