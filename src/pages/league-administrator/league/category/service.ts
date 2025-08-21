@@ -2,7 +2,7 @@ import axiosClient from "@/lib/axiosClient";
 import {
   ApiResponse,
   type CreateLeagueCategory,
-  type LeagueRoundFormat,
+  type LeagueCategory,
   type SaveChangesPayload,
 } from "./imports";
 
@@ -11,21 +11,6 @@ export class LeagueCategoryService {
     return axiosClient.post(
       `/league/category/${payload.categoryId}/save-changes`,
       payload
-    );
-  }
-
-  static async updateRoundFormat({
-    categoryId,
-    roundId,
-    roundFormat,
-  }: {
-    categoryId: string;
-    roundId: string;
-    roundFormat: LeagueRoundFormat;
-  }) {
-    await axiosClient.post(
-      `/league/category/${categoryId}/round/${roundId}/update-format`,
-      { round_format: roundFormat }
     );
   }
 
@@ -42,5 +27,14 @@ export class LeagueCategoryService {
     );
 
     return ApiResponse.fromJsonNoPayload(response.data);
+  }
+
+  static async fetchActiveCategories(league_id: string) {
+    const response = await axiosClient.get(`/league/category/${league_id}`);
+    return (response.data ?? []) as LeagueCategory[];
+  }
+
+  static async deleteCategory(category_id: string) {
+    await axiosClient.delete(`/league/category/${category_id}`);
   }
 }

@@ -49,18 +49,17 @@ import {
   BezierEdge,
 } from "./imports";
 import type { CategoryOperation } from "./types";
-import type { League } from "@/types/league";
 
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
 
 type LeagueCategoryCanvasProps = {
-  categories: LeagueCategory[] | undefined;
+  categories?: LeagueCategory[] | null;
   isLoading: boolean;
   error: unknown;
   refetch: (
     options?: RefetchOptions | undefined
-  ) => Promise<QueryObserverResult<League | null, Error>>;
+  ) => Promise<QueryObserverResult<LeagueCategory[] | null, Error>>;
   viewOnly?: boolean;
 };
 
@@ -94,8 +93,8 @@ export default function LeagueCategoryCanvas({
         id: cat.category_id,
         type: "categoryNode",
         position: { x: 50, y: catIndex * 800 },
-        data: { category: cat },
-        draggable: false, // 🔑 disable when viewOnly
+        data: { category: cat, viewOnly: viewOnly },
+        draggable: false,
         selectable: true,
       });
 
@@ -106,9 +105,13 @@ export default function LeagueCategoryCanvas({
           type: "roundNode",
           parentId: cat.category_id,
           extent: "parent",
-          draggable: true,
+          draggable: !viewOnly,
           position: pos,
-          data: { round, _isNew: false } satisfies RoundNodeData,
+          data: {
+            round,
+            _isNew: false,
+            viewOnly: viewOnly,
+          } satisfies RoundNodeData,
         });
 
         if (round.next_round_id) {
@@ -135,7 +138,7 @@ export default function LeagueCategoryCanvas({
             type: "formatNode",
             parentId: cat.category_id,
             extent: "parent",
-            draggable: true,
+            draggable: !viewOnly,
             position: round.round_format.position ?? {
               x: pos.x,
               y: pos.y + 120,
@@ -709,7 +712,11 @@ export default function LeagueCategoryCanvas({
           parentId: targetCategory.id,
           extent: "parent",
           position: dropPosition,
-          data: { round: created, _isNew: true } satisfies RoundNodeData,
+          data: {
+            round: created,
+            _isNew: true,
+            viewOnly: viewOnly,
+          } satisfies RoundNodeData,
         };
 
         setNodes((prev) => prev.concat(newNode!));
@@ -744,7 +751,12 @@ export default function LeagueCategoryCanvas({
         if (targetNode?.type === "formatNode") {
           return {
             ...edge,
-            style: { stroke: "#f39c12", strokeWidth: 2 },
+            style: {
+              stroke: "#2196f3",
+              strokeWidth: 1,
+              strokeDasharray: "4",
+              animation: "dash-upcoming 2s linear infinite",
+            },
           };
         }
 
@@ -1005,12 +1017,6 @@ export default function LeagueCategoryCanvas({
           }}
           fitView
           panOnDrag
-          zoomOnScroll
-          zoomOnPinch
-          panOnScroll
-          selectionOnDrag={true}
-          draggable={!viewOnly}
-          elementsSelectable={!viewOnly}
           minZoom={0.2}
           maxZoom={2}
         >

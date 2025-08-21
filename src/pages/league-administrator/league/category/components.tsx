@@ -35,7 +35,13 @@ import {
   type RoundNodeData,
 } from "./imports";
 
-export function RoundNodeSheet({ data }: { data: RoundNodeData }) {
+export function RoundNodeSheet({
+  data,
+  disable,
+}: {
+  data: RoundNodeData;
+  disable: boolean;
+}) {
   const [status, setStatus] = useState<string>(data.round.round_status);
 
   return (
@@ -46,6 +52,7 @@ export function RoundNodeSheet({ data }: { data: RoundNodeData }) {
           size="icon"
           variant="outline"
           aria-label="settings"
+          disabled={disable}
         >
           <Settings2 className="w-4 h-4" />
         </Button>

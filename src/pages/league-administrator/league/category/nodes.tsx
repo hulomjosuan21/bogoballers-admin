@@ -18,10 +18,37 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   type FormatNodeData,
+  getActiveLeagueQueryOptions,
+  useQuery,
+  useErrorToast,
+  LeagueCategoryService,
 } from "./imports";
+import { getActiveLeagueCategoriesQueryOptions } from "@/queries/league-category";
+import { useTransition } from "react";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
-  const { category } = data;
+  const { category, viewOnly } = data;
+  const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
+  const handleError = useErrorToast();
+
+  const { refetch: refetchCategories } = useQuery(
+    getActiveLeagueCategoriesQueryOptions(activeLeague?.league_id)
+  );
+
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      try {
+        await LeagueCategoryService.deleteCategory(data.category.category_id);
+        await refetchCategories();
+        toast.success("Category deleted successfully");
+      } catch (e) {
+        handleError(e);
+      }
+    });
+  };
+
   return (
     <div className="border-2 rounded-md flex flex-col overflow-hidden w-[1280px] h-[720px]">
       <div className="bg-primary text-sm py-1 px-4 flex justify-between items-center gap-2">
@@ -30,12 +57,14 @@ export function CategoryNode({ data }: { data: CategoryNodeData }) {
         </p>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={"ghost"} size={"icon"}>
+            <Button variant={"ghost"} size={"icon"} disabled={viewOnly}>
               <EllipsisVertical className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem>Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDelete} disabled={isPending}>
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -104,7 +133,7 @@ export function RoundNode({
 
       <div className="rounded-md p-3 flex items-center justify-between gap-2 border-2 group bg-background">
         <RoundName order={order} />
-        <RoundNodeSheet data={data} />
+        <RoundNodeSheet data={data} disable={data.viewOnly} />
 
         {hasLeft && (
           <Handle

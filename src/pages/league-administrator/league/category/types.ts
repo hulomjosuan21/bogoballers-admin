@@ -101,6 +101,7 @@ export interface LeagueRoundFormat {
 export interface RoundNodeData {
   round: LeagueCategoryRound;
   _isNew?: boolean;
+  viewOnly: boolean;
   [key: string]: unknown;
 }
 
@@ -170,6 +171,7 @@ export type StatusMap = Record<RoundTypeEnum, RoundStateEnum>;
 
 export interface CategoryNodeData {
   category: LeagueCategory;
+  viewOnly: boolean;
   [key: string]: unknown;
 }
 
@@ -182,11 +184,3 @@ export interface FormatNodeData {
 }
 
 export type NodeData = CategoryNodeData | RoundNodeData | FormatNodeData;
-
-export type RoundDetails = {
-  label: RoundTypeEnum;
-};
-
-export type RoundMenuItem = {
-  label: RoundTypeEnum;
-};
