@@ -4,8 +4,9 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { leagueAdminRoutes } from "./routes";
-import DndTest2 from "./test/TestDndComponent2";
 import PublicViewLeagueAdminPage from "./pages/public/ViewLeagueAdminPage";
+import Count from "./test/Count";
+import State from "./test/State";
 
 export default function App() {
   return (
@@ -15,7 +16,8 @@ export default function App() {
 
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
-        <Route path="/test" element={<DndTest2 />} />
+        <Route path="/count" element={<Count />} />
+        <Route path="/state" element={<State />} />
         <Route path="/:id" element={<PublicViewLeagueAdminPage />} />
 
         <Route element={<ProtectedRoute />}>
