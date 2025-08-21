@@ -95,8 +95,8 @@ export default function LeagueCategoryCanvas({
         type: "categoryNode",
         position: { x: 50, y: catIndex * 800 },
         data: { category: cat },
-        draggable: !viewOnly, // 🔑 disable when viewOnly
-        selectable: !viewOnly,
+        draggable: false, // 🔑 disable when viewOnly
+        selectable: true,
       });
 
       cat.rounds.forEach((round) => {
@@ -106,7 +106,7 @@ export default function LeagueCategoryCanvas({
           type: "roundNode",
           parentId: cat.category_id,
           extent: "parent",
-          draggable: !viewOnly,
+          draggable: true,
           position: pos,
           data: { round, _isNew: false } satisfies RoundNodeData,
         });
@@ -135,7 +135,7 @@ export default function LeagueCategoryCanvas({
             type: "formatNode",
             parentId: cat.category_id,
             extent: "parent",
-            draggable: !viewOnly,
+            draggable: true,
             position: round.round_format.position ?? {
               x: pos.x,
               y: pos.y + 120,
@@ -1008,7 +1008,7 @@ export default function LeagueCategoryCanvas({
           zoomOnScroll
           zoomOnPinch
           panOnScroll
-          selectionOnDrag={!viewOnly}
+          selectionOnDrag={true}
           draggable={!viewOnly}
           elementsSelectable={!viewOnly}
           minZoom={0.2}
