@@ -48,6 +48,7 @@ import {
   STATUSES,
   edgeTypes,
 } from "./imports";
+import type { CategoryOperation } from "./types";
 
 export default function LeagueCategoryCanvas() {
   const reactFlowInstance = useReactFlow();
@@ -125,6 +126,7 @@ export default function LeagueCategoryCanvas() {
             data: {
               label: round.round_format.format_type,
               round_format: round.round_format,
+              round_id: round.round_id,
             } satisfies FormatNodeData,
           });
 
@@ -164,18 +166,25 @@ export default function LeagueCategoryCanvas() {
         currentNode.position.x !== initialNode.position.x ||
         currentNode.position.y !== initialNode.position.y;
 
-      const currentRound = (currentNode.data as RoundNodeData)?.round;
-      const initialRound = (initialNode.data as RoundNodeData)?.round;
+      if (currentNode.type === "roundNode") {
+        const currentRound = (currentNode.data as RoundNodeData)?.round;
+        const initialRound = (initialNode.data as RoundNodeData)?.round;
 
-      const hasRoundDataChange =
-        currentRound &&
-        initialRound &&
-        (currentRound.round_status !== initialRound.round_status ||
-          JSON.stringify(currentRound.round_format) !==
-            JSON.stringify(initialRound.round_format));
+        const hasRoundDataChange =
+          currentRound &&
+          initialRound &&
+          (currentRound.round_status !== initialRound.round_status ||
+            JSON.stringify(currentRound.round_format) !==
+              JSON.stringify(initialRound.round_format) ||
+            currentRound.next_round_id !== initialRound.next_round_id);
 
-      if (hasPositionChange || hasRoundDataChange) {
-        changed.push(currentNode);
+        if (hasPositionChange || hasRoundDataChange) {
+          changed.push(currentNode);
+        }
+      } else if (currentNode.type === "formatNode") {
+        if (hasPositionChange) {
+          changed.push(currentNode);
+        }
       }
     });
 
@@ -186,17 +195,258 @@ export default function LeagueCategoryCanvas() {
     setNodes((nds) => applyNodeChanges(changes, nds) as Node<NodeData>[]);
   }, []);
 
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
-    setEdges((eds) => applyEdgeChanges(changes, eds));
-  }, []);
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      setEdges((eds) => {
+        const newEdges = applyEdgeChanges(changes, eds);
 
-  const [_, setSelectedNodes] = useState<Node<NodeData>[]>([]);
+        changes.forEach((change) => {
+          if (change.type === "remove") {
+            const removedEdge = eds.find((e) => e.id === change.id);
+            if (removedEdge) {
+              const sourceNode = nodes.find((n) => n.id === removedEdge.source);
+              const targetNode = nodes.find((n) => n.id === removedEdge.target);
+
+              if (
+                sourceNode?.type === "roundNode" &&
+                targetNode?.type === "roundNode"
+              ) {
+                setNodes((nds) =>
+                  nds.map((n) => {
+                    if (n.id === sourceNode.id && n.type === "roundNode") {
+                      const currentRound = (n.data as RoundNodeData).round;
+                      const updatedRound = {
+                        ...currentRound,
+                        next_round_id: null,
+                      };
+                      return {
+                        ...n,
+                        data: {
+                          ...n.data,
+                          round: updatedRound,
+                        } as RoundNodeData,
+                      };
+                    }
+                    return n;
+                  })
+                );
+              }
+
+              if (
+                sourceNode?.type === "roundNode" &&
+                targetNode?.type === "formatNode"
+              ) {
+                setNodes((nds) =>
+                  nds.map((n) => {
+                    if (n.id === sourceNode.id && n.type === "roundNode") {
+                      const currentRound = (n.data as RoundNodeData).round;
+                      const updatedRound = {
+                        ...currentRound,
+                        round_format: null,
+                      };
+                      return {
+                        ...n,
+                        data: {
+                          ...n.data,
+                          round: updatedRound,
+                        } as RoundNodeData,
+                      };
+                    }
+                    if (n.id === targetNode.id && n.type === "formatNode") {
+                      return {
+                        ...n,
+                        data: {
+                          ...n.data,
+                          round_id: undefined,
+                          round_format: undefined,
+                        } as FormatNodeData,
+                      };
+                    }
+                    return n;
+                  })
+                );
+              }
+            }
+          }
+        });
+
+        return newEdges;
+      });
+    },
+    [nodes]
+  );
+
+  const [selectedNodes, setSelectedNodes] = useState<Node<NodeData>[]>([]);
   const onSelectionChange = useCallback(
     ({ nodes: selected }: { nodes: Node<NodeData>[] }) => {
       setSelectedNodes(selected ?? []);
     },
     []
   );
+
+  const deleteSelectedNodes = useCallback(async () => {
+    const nodesToDelete = selectedNodes.filter(
+      (node) => node.type === "roundNode" || node.type === "formatNode"
+    );
+
+    if (nodesToDelete.length === 0) {
+      return;
+    }
+
+    try {
+      const operationsByCategory = new Map<string, CategoryOperation[]>();
+
+      for (const node of nodesToDelete) {
+        if (!node.parentId) continue;
+
+        const categoryId = node.parentId;
+        if (!operationsByCategory.has(categoryId)) {
+          operationsByCategory.set(categoryId, []);
+        }
+        const operations = operationsByCategory.get(categoryId)!;
+
+        if (node.type === "roundNode") {
+          const { round, _isNew } = node.data as RoundNodeData;
+
+          if (!_isNew) {
+            operations.push({
+              type: "delete_round",
+              data: {
+                round_id: round.round_id,
+              },
+            });
+          }
+        } else if (node.type === "formatNode") {
+          const formatData = node.data as FormatNodeData;
+
+          if (formatData.round_id && !formatData._isNew) {
+            operations.push({
+              type: "update_format",
+              data: {
+                round_id: formatData.round_id,
+                round_format: null,
+              },
+            });
+          }
+        }
+      }
+
+      const nodeIdsToDelete = new Set(nodesToDelete.map((n) => n.id));
+
+      const formatNodesToDelete = nodesToDelete.filter(
+        (n) => n.type === "formatNode"
+      );
+
+      setNodes((nds) => {
+        let updatedNodes = [...nds];
+
+        formatNodesToDelete.forEach((formatNode) => {
+          const formatData = formatNode.data as FormatNodeData;
+          if (formatData.round_id) {
+            updatedNodes = updatedNodes.map((n) => {
+              if (
+                n.type === "roundNode" &&
+                (n.data as RoundNodeData).round.round_id === formatData.round_id
+              ) {
+                const round = (n.data as RoundNodeData).round;
+                const updatedRound = { ...round, round_format: null };
+                return {
+                  ...n,
+                  data: { ...n.data, round: updatedRound } as RoundNodeData,
+                };
+              }
+              return n;
+            });
+          }
+        });
+
+        return updatedNodes.filter((n) => !nodeIdsToDelete.has(n.id));
+      });
+
+      setEdges((eds) =>
+        eds.filter(
+          (edge) =>
+            !nodeIdsToDelete.has(edge.source) &&
+            !nodeIdsToDelete.has(edge.target)
+        )
+      );
+
+      setSelectedNodes([]);
+
+      const promises: Promise<any>[] = [];
+      for (const [categoryId, operations] of operationsByCategory) {
+        if (operations.length > 0) {
+          console.log(
+            `Sending delete operations for category ${categoryId}:`,
+            operations
+          );
+          promises.push(
+            LeagueCategoryService.saveChanges({
+              categoryId,
+              operations,
+            })
+          );
+        }
+      }
+
+      if (promises.length > 0) {
+        await Promise.all(promises);
+        const roundNodes = nodesToDelete.filter(
+          (n) => n.type === "roundNode"
+        ).length;
+        const formatNodes = nodesToDelete.filter(
+          (n) => n.type === "formatNode"
+        ).length;
+        let message = "Deleted ";
+        if (roundNodes > 0) message += `${roundNodes} round node(s)`;
+        if (formatNodes > 0) {
+          if (roundNodes > 0) message += " and ";
+          message += `${formatNodes} format node(s)`;
+        }
+        message += " successfully";
+        toast.success(message);
+        await refetch();
+      } else {
+        toast.success(
+          `Removed ${nodesToDelete.length} new node(s) from canvas`
+        );
+      }
+    } catch (error) {
+      toast.error("Failed to delete nodes");
+      console.error(error);
+
+      await refetch();
+    }
+  }, [selectedNodes, refetch]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        (event.key === "Delete" || event.key === "Backspace") &&
+        selectedNodes.length > 0 &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey
+      ) {
+        const activeElement = document.activeElement;
+        const isInInput =
+          activeElement &&
+          (activeElement.tagName === "INPUT" ||
+            activeElement.tagName === "TEXTAREA" ||
+            activeElement.getAttribute("contenteditable") === "true");
+
+        if (!isInInput) {
+          event.preventDefault();
+          deleteSelectedNodes();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [deleteSelectedNodes]);
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
@@ -215,15 +465,39 @@ export default function LeagueCategoryCanvas() {
     (_e: React.MouseEvent, node: Node<NodeData>) => {
       if (node.type === "categoryNode") return;
 
-      if (node.type === "roundNode") {
-        const round = (node.data as RoundNodeData).round;
-        round.position = { ...node.position };
-      }
-
       setNodes((nds) =>
-        nds.map((n) =>
-          n.id === node.id ? { ...n, position: node.position } : n
-        )
+        nds.map((n) => {
+          if (n.id === node.id) {
+            if (node.type === "roundNode") {
+              const round = { ...(n.data as RoundNodeData).round };
+              round.position = { ...node.position };
+              return {
+                ...n,
+                position: node.position,
+                data: { ...n.data, round } as RoundNodeData,
+              };
+            }
+
+            if (node.type === "formatNode") {
+              const formatData = n.data as FormatNodeData;
+              const updatedFormatData = { ...formatData };
+
+              if (formatData.round_format) {
+                updatedFormatData.round_format = {
+                  ...formatData.round_format,
+                  position: { ...node.position },
+                };
+              }
+
+              return {
+                ...n,
+                position: node.position,
+                data: updatedFormatData,
+              };
+            }
+          }
+          return n;
+        })
       );
     },
     []
@@ -239,7 +513,7 @@ export default function LeagueCategoryCanvas() {
   );
 
   const onConnect = useCallback(
-    async (connection: Connection) => {
+    (connection: Connection) => {
       const sourceNode = nodes.find((n) => n.id === connection.source);
       const targetNode = nodes.find((n) => n.id === connection.target);
 
@@ -259,21 +533,34 @@ export default function LeagueCategoryCanvas() {
           position: targetNode.position,
         };
 
-        try {
-          await LeagueCategoryService.updateRoundFormat({
-            categoryId: sourceNode.parentId!,
-            roundId: round.round_id,
-            roundFormat,
-          });
+        setNodes((nds) =>
+          nds.map((n) => {
+            if (n.id === sourceNode.id && n.type === "roundNode") {
+              const updatedRound = { ...round, round_format: roundFormat };
+              return {
+                ...n,
+                data: { ...n.data, round: updatedRound } as RoundNodeData,
+              };
+            }
+            if (n.id === targetNode.id && n.type === "formatNode") {
+              return {
+                ...n,
+                data: {
+                  ...n.data,
+                  round_format: roundFormat,
+                  round_id: round.round_id,
+                } as FormatNodeData,
+              };
+            }
+            return n;
+          })
+        );
 
-          toast.success(
-            `Format '${formatLabel}' assigned to ${round.round_name}`
-          );
-          setEdges((eds) => addEdge(connection, eds));
-        } catch (err) {
-          toast.error("Failed to update round format");
-          console.error(err);
-        }
+        setEdges((eds) => addEdge(connection, eds));
+
+        toast.success(
+          `Format '${formatLabel}' assigned to ${round.round_name} (unsaved)`
+        );
         return;
       }
 
@@ -303,7 +590,31 @@ export default function LeagueCategoryCanvas() {
           return;
         }
 
+        setNodes((nds) =>
+          nds.map((n) => {
+            if (n.id === sourceNode.id && n.type === "roundNode") {
+              const currentRound = (n.data as RoundNodeData).round;
+              const updatedRound = {
+                ...currentRound,
+                next_round_id: tRound.round_id,
+              };
+              return {
+                ...n,
+                data: {
+                  ...n.data,
+                  round: updatedRound,
+                } as RoundNodeData,
+              };
+            }
+            return n;
+          })
+        );
+
         setEdges((eds) => addEdge(connection, eds));
+
+        toast.success(
+          `${sRound.round_name} connected to ${tRound.round_name} (unsaved)`
+        );
         return;
       }
 
@@ -404,7 +715,10 @@ export default function LeagueCategoryCanvas() {
           parentId: targetCategory.id,
           extent: "parent",
           position: dropPosition,
-          data: { label } satisfies FormatNodeData,
+          data: {
+            label,
+            _isNew: true,
+          } satisfies FormatNodeData,
         };
         setNodes((prev) => prev.concat(newNode!));
       }
@@ -476,76 +790,135 @@ export default function LeagueCategoryCanvas() {
         return;
       }
 
-      const promises: Promise<any>[] = [];
+      const operationsByCategory = new Map<string, CategoryOperation[]>();
 
       for (const node of changedNodes) {
-        if (node.type !== "roundNode" || !node.parentId) continue;
+        if (!node.parentId) continue;
 
-        const { round, _isNew } = node.data as RoundNodeData;
         const categoryId = node.parentId;
+        if (!operationsByCategory.has(categoryId)) {
+          operationsByCategory.set(categoryId, []);
+        }
+        const operations = operationsByCategory.get(categoryId)!;
 
-        if (_isNew) {
+        if (node.type === "roundNode") {
+          const { round, _isNew } = node.data as RoundNodeData;
+
+          if (_isNew) {
+            operations.push({
+              type: "create_round",
+              data: {
+                round_id: round.round_id,
+                round_name: round.round_name,
+                round_status: round.round_status as RoundStateEnum,
+                round_order: round.round_order,
+                position: round.position,
+              },
+            });
+          } else {
+            const initialNode = initialNodesRef.current.find(
+              (n) => n.id === node.id
+            );
+            if (initialNode) {
+              const initialRound = (initialNode.data as RoundNodeData).round;
+
+              if (
+                round.position?.x !== initialRound.position?.x ||
+                round.position?.y !== initialRound.position?.y
+              ) {
+                operations.push({
+                  type: "update_position",
+                  data: {
+                    round_id: round.round_id,
+                    position: round.position,
+                  },
+                });
+              }
+
+              if (
+                JSON.stringify(round.round_format) !==
+                JSON.stringify(initialRound.round_format)
+              ) {
+                operations.push({
+                  type: "update_format",
+                  data: {
+                    round_id: round.round_id,
+                    round_format: round.round_format ?? null,
+                  },
+                });
+              }
+
+              if (round.next_round_id !== initialRound.next_round_id) {
+                console.log("Next round ID changed:", {
+                  roundId: round.round_id,
+                  current: round.next_round_id,
+                  initial: initialRound.next_round_id,
+                });
+                operations.push({
+                  type: "update_next_round",
+                  data: {
+                    round_id: round.round_id,
+                    next_round_id: round.next_round_id ?? null,
+                  },
+                });
+              }
+            }
+          }
+        } else if (node.type === "formatNode") {
+          const formatData = node.data as FormatNodeData;
+
+          if (formatData.round_id) {
+            const initialNode = initialNodesRef.current.find(
+              (n) => n.id === node.id
+            );
+
+            if (initialNode) {
+              if (
+                node.position.x !== initialNode.position.x ||
+                node.position.y !== initialNode.position.y
+              ) {
+                const roundNode = nodes.find(
+                  (rn) =>
+                    rn.type === "roundNode" &&
+                    (rn.data as RoundNodeData).round.round_id ===
+                      formatData.round_id
+                );
+
+                if (roundNode) {
+                  const round = (roundNode.data as RoundNodeData).round;
+                  if (round.round_format) {
+                    operations.push({
+                      type: "update_format",
+                      data: {
+                        round_id: formatData.round_id,
+                        round_format: {
+                          ...round.round_format,
+                          position: node.position,
+                        },
+                      },
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      const promises: Promise<any>[] = [];
+
+      for (const [categoryId, operations] of operationsByCategory) {
+        if (operations.length > 0) {
+          console.log(
+            `Sending operations for category ${categoryId}:`,
+            operations
+          );
           promises.push(
             LeagueCategoryService.saveChanges({
               categoryId,
-              operations: [
-                {
-                  type: "create_round",
-                  data: {
-                    round_id: round.round_id,
-                    round_name: round.round_name,
-                    round_status: round.round_status as RoundStateEnum,
-                    round_order: round.round_order,
-                    position: round.position,
-                  },
-                },
-              ],
+              operations,
             })
           );
-        } else {
-          const operations: any[] = [];
-
-          const initialNode = initialNodesRef.current.find(
-            (n) => n.id === node.id
-          );
-          if (initialNode) {
-            const initialRound = (initialNode.data as RoundNodeData).round;
-
-            if (
-              round.position?.x !== initialRound.position?.x ||
-              round.position?.y !== initialRound.position?.y
-            ) {
-              operations.push({
-                type: "update_position",
-                data: {
-                  round_id: round.round_id,
-                  position: round.position,
-                },
-              });
-            }
-
-            if (
-              JSON.stringify(round.round_format) !==
-              JSON.stringify(initialRound.round_format)
-            ) {
-              operations.push({
-                type: "update_format",
-                data: {
-                  round_id: round.round_id,
-                  round_format: round.round_format,
-                },
-              });
-            }
-          }
-
-          if (operations.length > 0) {
-            promises.push(
-              LeagueCategoryService.saveChanges({
-                categoryId,
-                operations,
-              })
-            );
-          }
         }
       }
 
@@ -553,9 +926,6 @@ export default function LeagueCategoryCanvas() {
 
       toast.success("All changes saved successfully");
       await refetch();
-
-      initialNodesRef.current = [...nodes];
-      originalNodesRef.current = [...nodes];
     } catch (error) {
       toast.error("Failed to save changes");
       console.error(error);

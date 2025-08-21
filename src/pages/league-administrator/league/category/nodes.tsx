@@ -17,7 +17,17 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  type LeagueRoundFormat,
 } from "./imports";
+
+// Update the FormatNodeData interface
+export interface FormatNodeData {
+  label: string;
+  round_format?: LeagueRoundFormat;
+  round_id?: string;
+  _isNew?: boolean;
+  [key: string]: unknown;
+}
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const { category } = data;
@@ -73,7 +83,6 @@ function getStatusClasses(status: string) {
   }
 }
 
-// --- RoundNode.tsx ---
 export function RoundNode({
   data,
   allNodesRef,
@@ -148,23 +157,16 @@ export function RoundNode({
           id="bottom"
           type="source"
           position={Position.Bottom}
-          isValidConnection={(conn: Connection | Edge) =>
-            conn.targetHandle === "top"
-          }
+          isValidConnection={(conn: Connection | Edge) => {
+            const targetNode = allNodes.find((n) => n.id === conn.target);
+            return (
+              conn.targetHandle === "top" && targetNode?.type === "formatNode"
+            );
+          }}
         />
       </div>
     </div>
   );
-}
-
-export interface FormatNodeData {
-  label: string;
-  round_format?: {
-    format_type: string;
-    pairing_method: string;
-    position: { x: number; y: number };
-    round_id: string;
-  };
 }
 
 export function FormatNode({ data }: { data: FormatNodeData }) {
@@ -186,17 +188,23 @@ export function FormatNode({ data }: { data: FormatNodeData }) {
       return false;
     }
 
+    // Only allow connections from round nodes' bottom handle
     return conn.sourceHandle === "bottom";
   };
 
   return (
     <div
-      className="rounded-md p-2 flex flex-col gap-1 border-2"
+      className="rounded-md p-2 flex flex-col gap-1 border-2 bg-background"
       onMouseUp={() => {
         errorShownRef.current = false;
       }}
     >
       <span className="text-xs font-semibold">{data.label}</span>
+      {data._isNew && (
+        <span className="text-xs text-orange-500 font-medium">
+          (New - unsaved)
+        </span>
+      )}
       <Handle
         id="top"
         type="target"

@@ -25,6 +25,21 @@ export interface LeagueCategoryRound {
   next_round_id?: string | null;
 }
 
+export type CategoryOperation =
+  | CreateRoundOperation
+  | UpdatePositionOperation
+  | UpdateFormatOperation
+  | UpdateNextRoundOperation
+  | DeleteRoundOperation;
+
+interface UpdateNextRoundOperation {
+  type: "update_next_round";
+  data: {
+    round_id: string;
+    next_round_id: string | null;
+  };
+}
+
 interface CreateRoundOperation {
   type: "create_round";
   data: {
@@ -33,6 +48,7 @@ interface CreateRoundOperation {
     round_status: RoundStateEnum;
     round_order: number;
     position: { x: number; y: number };
+    next_round_id?: string | null;
   };
 }
 
@@ -52,10 +68,20 @@ interface UpdateFormatOperation {
   };
 }
 
-export type CategoryOperation =
-  | CreateRoundOperation
-  | UpdatePositionOperation
-  | UpdateFormatOperation;
+interface DeleteRoundOperation {
+  type: "delete_round";
+  data: {
+    round_id: string;
+  };
+}
+
+interface UpdateNextRoundOperation {
+  type: "update_next_round";
+  data: {
+    round_id: string;
+    next_round_id: string | null;
+  };
+}
 
 export interface SaveChangesPayload {
   categoryId: string;
@@ -149,6 +175,9 @@ export interface CategoryNodeData {
 
 export interface FormatNodeData {
   label: string;
+  round_format?: LeagueRoundFormat;
+  round_id?: string;
+  _isNew?: boolean;
   [key: string]: unknown;
 }
 
