@@ -11,6 +11,14 @@ import { toast } from "sonner";
 import { useErrorToast } from "@/components/error-toast";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function SettingsPage() {
   const { data: activeLeague, refetch } = useQuery(getActiveLeagueQueryOptions);
@@ -99,42 +107,90 @@ export default function SettingsPage() {
     }
   };
 
+  const tab1Content = () => (
+    <div className="flex flex-col w-fit">
+      <div className="flex items-center gap-3">
+        <Label className="whitespace-nowrap">Switch Theme</Label>
+        <ModeToggle />
+      </div>
+
+      {activeLeague && (
+        <section className="p-4 space-y-4">
+          <h3 className="text-sm font-bold">Current League Option</h3>
+
+          <div className="flex items-center gap-3">
+            <Label className="whitespace-nowrap">
+              Player Residency Certificate Required
+            </Label>
+            <Switch checked={enabled} onCheckedChange={setEnabled} />
+          </div>
+          <div className="flex items-center gap-3">
+            <Label className="whitespace-nowrap">
+              Player Residency Certificate Valid Until
+            </Label>
+
+            {enabled ? (
+              <DatePicker date={date} setDate={setDate} disabled={!enabled} />
+            ) : (
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <DatePicker date={date} setDate={setDate} disabled />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <div className="space-y-1">
+                      <p className="text-[13px] font-medium">
+                        Player Residency Certificate Valid Until
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        You need to enable the{" "}
+                        <span className="font-medium">
+                          Residency Certificate Required
+                        </span>{" "}
+                        option before setting a validity date for players.
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+
   return (
     <ContentShell>
       <ContentHeader title="Settings">
         {hasChanges && (
-          <Button variant={"outline"} onClick={handleSave} size={"sm"}>
+          <Button onClick={handleSave} variant={"outline"} size={"sm"}>
             Save Changes
           </Button>
         )}
       </ContentHeader>
       <ContentBody>
-        <div className="flex flex-col gap-2 w-fit">
-          <div className="flex items-center gap-3">
-            <Label className="whitespace-nowrap">Switch Theme</Label>
-            <ModeToggle />
-          </div>
-
-          {activeLeague && (
-            <section className="p-4 space-y-4">
-              <h3 className="text-base font-semibold">Current League Option</h3>
-
-              <div className="flex items-center gap-3">
-                <Label className="whitespace-nowrap">
-                  Player Residency Certificate Required
-                </Label>
-                <Switch checked={enabled} onCheckedChange={setEnabled} />
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Label className="whitespace-nowrap">
-                  Player Residency Certificate Valid Until
-                </Label>
-                <DatePicker date={date} setDate={setDate} disabled={!enabled} />
-              </div>
-            </section>
-          )}
-        </div>
+        <Tabs defaultValue="tab-1">
+          <ScrollArea>
+            <TabsList className="text-foreground mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1 w-full justify-start">
+              <TabsTrigger value="tab-1" className="tab-trigger">
+                Preferences
+              </TabsTrigger>
+              <TabsTrigger value="tab-2" className="tab-trigger">
+                Organization
+              </TabsTrigger>
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+          <TabsContent value="tab-1">{tab1Content()}</TabsContent>
+          <TabsContent value="tab-2">
+            <p className="text-muted-foreground pt-1 text-center text-xs">
+              Content for Tab 2
+            </p>
+          </TabsContent>
+        </Tabs>
       </ContentBody>
     </ContentShell>
   );
