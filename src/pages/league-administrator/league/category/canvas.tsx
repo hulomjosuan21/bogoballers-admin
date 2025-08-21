@@ -16,7 +16,6 @@ import {
   type EdgeChange,
   type Connection,
   useReactFlow,
-  BezierEdge,
   type FormatNodeData,
   type LeagueCategoryRound,
   type LeagueRoundFormat,
@@ -46,18 +45,9 @@ import {
   generateUUIDWithPrefix,
   LeagueCategoryService,
   Button,
+  STATUSES,
+  edgeTypes,
 } from "./imports";
-
-const edgeTypes = {
-  bezier: BezierEdge,
-};
-
-const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
-  [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,
-  [RoundTypeEnum.QuarterFinal]: RoundStateEnum.Upcoming,
-  [RoundTypeEnum.SemiFinal]: RoundStateEnum.Upcoming,
-  [RoundTypeEnum.Final]: RoundStateEnum.Upcoming,
-};
 
 export default function LeagueCategoryCanvas() {
   const reactFlowInstance = useReactFlow();
