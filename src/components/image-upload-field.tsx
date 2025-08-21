@@ -75,7 +75,7 @@ export function ImageUploadField({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           {iconOnly ? (
-            <Button variant="default" size="icon">
+            <Button variant="primary" size="icon">
               <ImageUp className="w-4 h-4" />
             </Button>
           ) : (
@@ -107,7 +107,7 @@ export function ImageUploadField({
               {allowUpload && (
                 <Button
                   type="button"
-                  variant={mode === "upload" ? "default" : "ghost"}
+                  variant={mode === "upload" ? "primary" : "ghost"}
                   size="sm"
                   onClick={() => setMode("upload")}
                 >
@@ -117,7 +117,7 @@ export function ImageUploadField({
               {allowEmbed && (
                 <Button
                   type="button"
-                  variant={mode === "embed" ? "default" : "ghost"}
+                  variant={mode === "embed" ? "primary" : "ghost"}
                   size="sm"
                   onClick={() => setMode("embed")}
                 >

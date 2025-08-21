@@ -86,7 +86,7 @@ export function DateTimePicker({ dateTime, setDateTime }: Props) {
                     size="icon"
                     variant={
                       dateTime && dateTime.getHours() % 12 === hour % 12
-                        ? "default"
+                        ? "primary"
                         : "ghost"
                     }
                     className="sm:w-full shrink-0 aspect-square"
@@ -106,7 +106,7 @@ export function DateTimePicker({ dateTime, setDateTime }: Props) {
                     size="icon"
                     variant={
                       dateTime && dateTime.getMinutes() === minute
-                        ? "default"
+                        ? "primary"
                         : "ghost"
                     }
                     className="sm:w-full shrink-0 aspect-square"
@@ -130,7 +130,7 @@ export function DateTimePicker({ dateTime, setDateTime }: Props) {
                       dateTime &&
                       ((ampm === "AM" && dateTime.getHours() < 12) ||
                         (ampm === "PM" && dateTime.getHours() >= 12))
-                        ? "default"
+                        ? "primary"
                         : "ghost"
                     }
                     className="sm:w-full shrink-0 aspect-square"

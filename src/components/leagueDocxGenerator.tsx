@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ButtonLoading } from "./custom-buttons";
-import LeagueService from "@/service/league-service";
+import { LeagueService } from "@/service/league-service";
 
 export default function LeagueExportButton({ leagueId }: { leagueId: string }) {
   const [isProcessing, setProcess] = useState(false);

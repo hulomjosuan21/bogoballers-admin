@@ -1,5 +1,3 @@
-"use client";
-
 import { ChevronRight, MoreHorizontal, type LucideIcon } from "lucide-react";
 
 import {
