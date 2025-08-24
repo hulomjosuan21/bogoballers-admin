@@ -13,6 +13,14 @@ import {
   LeagueMatchSetUnSchedulePage,
   LeagueMatchScheduledPage,
 } from "@/pages";
+import AboutLeaguePage from "@/pages/public/learnings/AboutLeague";
+
+export const publicRoutes: RouteObject[] = [
+  {
+    path: "about/league",
+    element: <AboutLeaguePage />,
+  },
+];
 
 export const leagueAdminRoutes: RouteObject[] = [
   {

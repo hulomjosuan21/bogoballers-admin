@@ -57,8 +57,10 @@ export type LeagueAffiliateCreate = {
 
 export default function ManageAffiliates({
   data,
+  hasActiveLeague,
 }: {
   data: LeagueAffiliate[];
+  hasActiveLeague: boolean;
 }) {
   const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
   const handleError = useErrorToast();
@@ -226,7 +228,12 @@ export default function ManageAffiliates({
   });
 
   return (
-    <div className="space-y-2">
+    <div
+      className={cn(
+        "space-y-2",
+        hasActiveLeague && "pointer-events-none opacity-50"
+      )}
+    >
       <div className="flex justify-between items-center gap-4">
         <p className="text-helper">Manage league affiliates.</p>
         <div className="flex gap-2 items-center">

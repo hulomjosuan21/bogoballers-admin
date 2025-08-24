@@ -18,6 +18,11 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Form,
   FormControl,
   FormField,
@@ -33,11 +38,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useErrorToast } from "@/components/error-toast";
 import { ImageUploadField } from "@/components/image-upload-field";
 import { StaticData } from "@/data";

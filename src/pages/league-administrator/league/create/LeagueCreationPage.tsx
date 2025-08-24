@@ -12,8 +12,10 @@ import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
+import { useNavigate } from "react-router-dom";
 export default function LeagueCreationPage() {
   const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
+  const navigate = useNavigate();
   return (
     <ContentShell>
       <ContentHeader title="Start new League">
@@ -23,7 +25,7 @@ export default function LeagueCreationPage() {
       </ContentHeader>
 
       <ContentBody>
-        {activeLeague && (
+        {!activeLeague && (
           <Alert variant="info">
             <AlertIcon>
               <RiSpamFill />
@@ -39,6 +41,7 @@ export default function LeagueCreationPage() {
                 underlined="solid"
                 size="sm"
                 className="flex mt-0.5"
+                onClick={() => navigate("/public/about/league")}
               >
                 Learn more
               </Button>

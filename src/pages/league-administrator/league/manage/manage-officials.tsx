@@ -63,8 +63,10 @@ const MULTIPLE_ROLES: string[] = StaticData.MultiLeagueRoleOfficials;
 
 export default function ManageOfficialsComponent({
   data,
+  hasActiveLeague,
 }: {
   data: LeagueOfficial[];
+  hasActiveLeague: boolean;
 }) {
   const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
   const [officials, setOfficials] =
@@ -260,7 +262,12 @@ export default function ManageOfficialsComponent({
   });
 
   return (
-    <div className="space-y-2">
+    <div
+      className={cn(
+        "space-y-2",
+        hasActiveLeague && "pointer-events-none opacity-50"
+      )}
+    >
       <div className="flex justify-between items-center gap-4">
         <p className="text-helper">Manage league officials.</p>
         <div className="flex gap-2 items-center">

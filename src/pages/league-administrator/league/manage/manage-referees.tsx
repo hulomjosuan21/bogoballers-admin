@@ -57,8 +57,10 @@ export type LeagueRefereeCreate = {
 
 export default function ManageRefereesComponent({
   data,
+  hasActiveLeague,
 }: {
   data: LeagueReferee[];
+  hasActiveLeague: boolean;
 }) {
   const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
   const handleError = useErrorToast();
@@ -240,7 +242,12 @@ export default function ManageRefereesComponent({
   });
 
   return (
-    <div className="space-y-2">
+    <div
+      className={cn(
+        "space-y-2",
+        hasActiveLeague && "pointer-events-none opacity-50"
+      )}
+    >
       <div className="flex justify-between items-center gap-4">
         <p className="text-helper">
           Manage referees and their availability for games.

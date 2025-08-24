@@ -48,7 +48,13 @@ import { useErrorToast } from "@/components/error-toast";
 import { LeagueService } from "@/service/league-service";
 import { cn } from "@/lib/utils";
 
-export default function ManageCourts({ data }: { data: LeagueCourt[] }) {
+export default function ManageCourts({
+  data,
+  hasActiveLeague,
+}: {
+  data: LeagueCourt[];
+  hasActiveLeague: boolean;
+}) {
   const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
   const handleError = useErrorToast();
   const [isProcessing, setProcess] = useState(false);
@@ -215,7 +221,12 @@ export default function ManageCourts({ data }: { data: LeagueCourt[] }) {
   });
 
   return (
-    <div className="space-y-2">
+    <div
+      className={cn(
+        "space-y-2",
+        hasActiveLeague && "pointer-events-none opacity-50"
+      )}
+    >
       <div className="flex justify-between items-center gap-4">
         <p className="text-helper">
           Manage courts and their availability for games.

@@ -29,11 +29,12 @@ import {
   StaticData,
   toast,
   useErrorToast,
-  useQuery,
+  useQueries,
   useState,
   type CreateLeagueCategory,
   type RoundNodeData,
 } from "./imports";
+import { authLeagueAdminQueryOptions } from "@/queries/league-admin";
 
 export function RoundNodeSheet({
   data,
@@ -111,7 +112,17 @@ export function AddCategoryDialog({
   open,
   onOpenChange,
 }: AddCategoryDialogProps) {
-  const { data: activeLeague, refetch } = useQuery(getActiveLeagueQueryOptions);
+  const [
+    {
+      data: activeLeague,
+      refetch: refetchActiveLeague,
+      isLoading: activeLeagueLoading,
+      error: activeLeagueError,
+    },
+  ] = useQueries({
+    queries: [getActiveLeagueQueryOptions, authLeagueAdminQueryOptions],
+  });
+
   const handleError = useErrorToast();
   const [isProcessing, setProcess] = useState(false);
 
@@ -157,7 +168,7 @@ export function AddCategoryDialog({
         leagueId: activeLeague.league_id,
         data: form,
       });
-      await refetch();
+      await refetchActiveLeague();
       toast.success(res.message);
     } catch (e) {
       handleError(e);

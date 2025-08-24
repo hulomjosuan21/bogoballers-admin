@@ -1,12 +1,5 @@
 import type { LeagueCategory } from "@/pages/league-administrator/league/category/types";
 
-export interface CreateLeagueCategory {
-  category_name: string;
-  max_team: number;
-  team_entrance_fee_amount: number;
-  individual_player_entrance_fee_amount: number;
-}
-
 export type LeagueOfficial = {
   full_name: string;
   role: string;
@@ -52,6 +45,7 @@ export interface League {
   league_title: string;
   league_description: string;
   league_budget: number;
+  league_address: string;
   registration_deadline: string;
   opening_date: string;
   league_schedule: [string, string];

@@ -1,7 +1,6 @@
 import { MultiSelect } from "@/components/multi-select";
 import { Label } from "@/components/ui/label";
 import { StaticData } from "@/data";
-import type { CreateLeagueCategory } from "@/types/league";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
+import { Check, ChevronsUpDown, MoreVertical } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -46,10 +45,25 @@ import {
 } from "@/components/ui/select";
 import { ButtonLoading } from "@/components/custom-buttons";
 import { disableOnLoading } from "@/lib/app_utils";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries } from "@tanstack/react-query";
 import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import type { CreateLeagueCategory } from "../category/types";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { authLeagueAdminQueryOptions } from "@/queries/league-admin";
 
 function validateLeagueForm({
   leagueTitle,
@@ -92,12 +106,14 @@ type Props = {
 };
 
 export default function CreateLeagueForm({ hasActive }: Props) {
-  const { refetch: refetchActiveLeague } = useQuery(
-    getActiveLeagueQueryOptions
-  );
+  const [activeLeague, leagueAdmin] = useQueries({
+    queries: [getActiveLeagueQueryOptions, authLeagueAdminQueryOptions],
+  });
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [leagueTitle, setLeagueTitle] = useState("");
   const [leagueDescription, setLeagueDescription] = useState("");
+  const [selectedAddress, setLeagueAddress] = useState("");
+
   const [overAllBudget, setOverAllBudget] = useState(0);
   const [registrationDadline, setRegistrationDeadline] = useState<Date>();
   const [openingDate, setOpeningDate] = useState<Date>();
@@ -130,6 +146,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
       formData.append("league_title", leagueTitle);
       formData.append("league_budget", String(overAllBudget));
       formData.append("league_description", leagueDescription);
+      formData.append("league_address", selectedAddress);
       formData.append("opening_date", openingDate!.toISOString());
       formData.append(
         "registration_deadline",
@@ -149,7 +166,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
 
       const res = await LeagueService.createNewLeague(formData);
 
-      await refetchActiveLeague();
+      await activeLeague.refetch();
       toast.success(res.message);
     } catch (err) {
       if (err instanceof Error) {
@@ -213,6 +230,62 @@ export default function CreateLeagueForm({ hasActive }: Props) {
             />
             <p className="text-helper">
               Upload a square banner to represent the league visually.
+            </p>
+          </div>
+
+          <div className="grid w-full max-w-md items-center space-y-2">
+            <Label htmlFor="address">League Address</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  id="address"
+                  className={cn(
+                    "justify-between",
+                    !selectedAddress && "text-muted-foreground"
+                  )}
+                >
+                  {leagueAdmin.data?.organization_address ||
+                    selectedAddress ||
+                    "Select Address"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput
+                    placeholder={leagueAdmin.data?.organization_address}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No address found.</CommandEmpty>
+                    <CommandGroup>
+                      {StaticData.Barangays.map((address) => (
+                        <CommandItem
+                          value={address}
+                          key={address}
+                          onSelect={() => {
+                            setLeagueAddress(address);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              address === selectedAddress
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {address}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <p className="text-helper">
+              Default address where this league going to happen.
             </p>
           </div>
         </div>
@@ -298,6 +371,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         loading={isProcessing}
         categories={categories}
         setCategories={setCategories}
+        address={selectedAddress}
       />
 
       <p
@@ -327,8 +401,10 @@ function AddCategories({
   loading,
   categories,
   setCategories,
+  address,
 }: {
   loading: boolean;
+  address: string;
   categories: CreateLeagueCategory[];
   setCategories: React.Dispatch<React.SetStateAction<CreateLeagueCategory[]>>;
 }) {
@@ -433,31 +509,37 @@ function AddCategories({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="team_fee">Team Entrance Fee</Label>
-                <Input
-                  id="team_fee"
-                  type="number"
-                  value={form.team_entrance_fee_amount}
-                  onChange={(e) =>
-                    handleChange(
-                      "team_entrance_fee_amount",
-                      parseFloat(e.target.value) || 0
-                    )
-                  }
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">₱</span>
+                  <Input
+                    id="team_fee"
+                    type="number"
+                    value={form.team_entrance_fee_amount}
+                    onChange={(e) =>
+                      handleChange(
+                        "team_entrance_fee_amount",
+                        parseFloat(e.target.value) || 0
+                      )
+                    }
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="individual_fee">Individual Entrance Fee</Label>
-                <Input
-                  id="individual_fee"
-                  type="number"
-                  value={form.individual_player_entrance_fee_amount}
-                  onChange={(e) =>
-                    handleChange(
-                      "individual_player_entrance_fee_amount",
-                      parseFloat(e.target.value) || 0
-                    )
-                  }
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">₱</span>
+                  <Input
+                    id="individual_fee"
+                    type="number"
+                    value={form.individual_player_entrance_fee_amount}
+                    onChange={(e) =>
+                      handleChange(
+                        "individual_player_entrance_fee_amount",
+                        parseFloat(e.target.value) || 0
+                      )
+                    }
+                  />
+                </div>
               </div>
             </div>
             <DialogFooter>
@@ -493,6 +575,7 @@ function AddCategories({
                   <TableCell>
                     ₱{cat.individual_player_entrance_fee_amount.toFixed(2)}
                   </TableCell>
+
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

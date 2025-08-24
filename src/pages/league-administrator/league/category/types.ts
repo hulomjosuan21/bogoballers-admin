@@ -1,7 +1,23 @@
-export interface LeagueCategory {
+export type Category = {
+  category_name: string;
+  check_player_age: boolean;
+  player_min_age: number | null;
+  player_max_age: number | null;
+  check_address: boolean;
+};
+
+export interface CategoryModel extends Category {}
+
+export interface CreateLeagueCategory {
+  category_name: string;
+  max_team: number;
+  team_entrance_fee_amount: number;
+  individual_player_entrance_fee_amount: number;
+}
+
+export interface LeagueCategory extends Category {
   category_id: string;
   league_id: string;
-  category_name: string;
   max_team: number;
   accept_teams: boolean;
   team_entrance_fee_amount: number;
