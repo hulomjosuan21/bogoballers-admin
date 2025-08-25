@@ -52,7 +52,6 @@ export { AddCategoryDialog, RoundNodeSheet } from "./components";
 export { NoteBox } from "@/components/nodebox";
 
 export { useQuery, useQueries } from "@tanstack/react-query";
-export { getActiveLeagueQueryOptions } from "@/queries/league";
 
 export { Loader2, Settings2, GripVertical } from "lucide-react";
 

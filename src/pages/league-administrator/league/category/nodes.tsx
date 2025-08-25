@@ -18,21 +18,21 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   type FormatNodeData,
-  getActiveLeagueQueryOptions,
   useQuery,
   useErrorToast,
   LeagueCategoryService,
 } from "./imports";
-import { getActiveLeagueCategoriesQueryOptions } from "@/queries/league-category";
 import { useTransition } from "react";
+import { getActiveLeagueQueryOption } from "@/queries/league";
+import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const { category, viewOnly } = data;
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
+  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
   const handleError = useErrorToast();
 
   const { refetch: refetchCategories } = useQuery(
-    getActiveLeagueCategoriesQueryOptions(activeLeague?.league_id)
+    getActiveLeagueCategoriesQueryOption(activeLeague?.league_id)
   );
 
   const [isPending, startTransition] = useTransition();
@@ -40,7 +40,9 @@ export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const handleDelete = () => {
     startTransition(async () => {
       try {
-        await LeagueCategoryService.deleteCategory(data.category.category_id);
+        await LeagueCategoryService.deleteCategory(
+          data.category.league_category_id
+        );
         await refetchCategories();
         toast.success("Category deleted successfully");
       } catch (e) {

@@ -6,10 +6,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  getActiveLeagueQueryOptions,
-  Input,
   Label,
-  LeagueCategoryService,
   NoteBox,
   RoundStateEnum,
   Select,
@@ -26,15 +23,9 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  StaticData,
-  toast,
-  useErrorToast,
-  useQueries,
   useState,
-  type CreateLeagueCategory,
   type RoundNodeData,
 } from "./imports";
-import { authLeagueAdminQueryOptions } from "@/queries/league-admin";
 
 export function RoundNodeSheet({
   data,
@@ -112,77 +103,16 @@ export function AddCategoryDialog({
   open,
   onOpenChange,
 }: AddCategoryDialogProps) {
-  const [
-    {
-      data: activeLeague,
-      refetch: refetchActiveLeague,
-      isLoading: activeLeagueLoading,
-      error: activeLeagueError,
-    },
-  ] = useQueries({
-    queries: [getActiveLeagueQueryOptions, authLeagueAdminQueryOptions],
-  });
-
-  const handleError = useErrorToast();
-  const [isProcessing, setProcess] = useState(false);
-
-  const [form, setForm] = useState<CreateLeagueCategory>({
-    category_name: "",
-    max_team: 0,
-    team_entrance_fee_amount: 0,
-    individual_player_entrance_fee_amount: 0,
-  });
-
-  const handleChange = (field: keyof typeof form, value: any) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const validate = () => {
-    if (!form.category_name) {
-      toast.error("Category name is required");
-      return false;
-    }
-    if (form.max_team <= 0) {
-      toast.error("Max teams must be greater than 0");
-      return false;
-    }
-    if (form.team_entrance_fee_amount < 0) {
-      toast.error("Team entrance fee cannot be negative");
-      return false;
-    }
-    if (form.individual_player_entrance_fee_amount < 0) {
-      toast.error("Individual entrance fee cannot be negative");
-      return false;
-    }
-    return true;
-  };
-
-  const handleSave = async () => {
-    if (!validate()) return;
-    setProcess(true);
-    try {
-      if (!activeLeague?.league_id) {
-        throw new Error("No League Id");
-      }
-      const res = await LeagueCategoryService.createCategory({
-        leagueId: activeLeague.league_id,
-        data: form,
-      });
-      await refetchActiveLeague();
-      toast.success(res.message);
-    } catch (e) {
-      handleError(e);
-    } finally {
-      setForm({
-        category_name: "",
-        max_team: 0,
-        team_entrance_fee_amount: 0,
-        individual_player_entrance_fee_amount: 0,
-      });
-      onOpenChange(false);
-      setProcess(false);
-    }
-  };
+  // const [
+  //   {
+  //     data: activeLeague,
+  //     refetch: refetchActiveLeague,
+  //     isLoading: activeLeagueLoading,
+  //     error: activeLeagueError,
+  //   },
+  // ] = useQueries({
+  //   queries: [getActiveLeagueQueryOptions, authLeagueAdminQueryOptions],
+  // });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -190,77 +120,10 @@ export function AddCategoryDialog({
         <DialogHeader>
           <DialogTitle>Add League Category</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="category_name">Category Name</Label>
-            <Select
-              value={form.category_name}
-              onValueChange={(value) => handleChange("category_name", value)}
-            >
-              <SelectTrigger id="category_name">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {StaticData.ListOfCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="max_team">Max Teams</Label>
-            <Input
-              id="max_team"
-              type="number"
-              value={form.max_team}
-              onChange={(e) =>
-                handleChange("max_team", parseInt(e.target.value) || 0)
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="team_fee">Team Entrance Fee</Label>
-            <Input
-              id="team_fee"
-              type="number"
-              value={form.team_entrance_fee_amount}
-              onChange={(e) =>
-                handleChange(
-                  "team_entrance_fee_amount",
-                  parseFloat(e.target.value) || 0
-                )
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="individual_fee">Individual Entrance Fee</Label>
-            <Input
-              id="individual_fee"
-              type="number"
-              value={form.individual_player_entrance_fee_amount}
-              onChange={(e) =>
-                handleChange(
-                  "individual_player_entrance_fee_amount",
-                  parseFloat(e.target.value) || 0
-                )
-              }
-            />
-          </div>
-        </div>
+        <div className="grid gap-4 py-4"></div>
 
         <DialogFooter>
-          <ButtonLoading
-            onClick={handleSave}
-            loading={isProcessing}
-            className="w-full"
-          >
-            Add Category
-          </ButtonLoading>
+          <ButtonLoading className="w-full">Add Category</ButtonLoading>
         </DialogFooter>
       </DialogContent>
     </Dialog>

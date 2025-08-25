@@ -2,16 +2,16 @@ import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
-import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { Loader2 } from "lucide-react";
 import { TeamSubmissionTable } from "./table";
+import { getActiveLeagueQueryOption } from "@/queries/league";
 
 export default function TeamSubmissionPage() {
   const {
     data: activeLeague,
     isLoading,
     error,
-  } = useQuery(getActiveLeagueQueryOptions);
+  } = useQuery(getActiveLeagueQueryOption);
 
   return (
     <ContentShell>

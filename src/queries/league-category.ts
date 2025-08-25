@@ -2,7 +2,7 @@ import { LeagueCategoryService } from "@/pages/league-administrator/league/categ
 import type { LeagueCategory } from "@/pages/league-administrator/league/category/types";
 import { queryOptions } from "@tanstack/react-query";
 
-export const getActiveLeagueCategoriesQueryOptions = (league_id?: string) =>
+export const getActiveLeagueCategoriesQueryOption = (league_id?: string) =>
   queryOptions<LeagueCategory[] | null, Error>({
     queryKey: ["active-league-categories", league_id],
     queryFn: () => LeagueCategoryService.fetchActiveCategories(league_id!),

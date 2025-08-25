@@ -23,16 +23,20 @@ import {
   StatusLabel,
 } from "@/components/ui/kibo-ui/status";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useQuery } from "@tanstack/react-query";
 import { MoreHorizontal, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { LeagueCategory } from "./league/category/types";
 import type { League } from "@/types/league";
+import { getActiveLeagueQueryOption } from "@/queries/league";
+import { leagueAdminCategoriesQueryOption } from "@/queries/league-admin";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const activeLeague = useQuery(getActiveLeagueQueryOptions);
+  const activeLeague = useQuery(getActiveLeagueQueryOption);
+  const { data: LeagueAdminCategories } = useQuery(
+    leagueAdminCategoriesQueryOption
+  );
 
   const leagueStatus = (status: string) => {
     switch (status) {
@@ -173,6 +177,7 @@ export default function DashboardPage() {
             {statisCards(activeLeague.data.categories)}
           </>
         )}
+        <pre>{JSON.stringify(LeagueAdminCategories, null, 2)}</pre>
       </ContentBody>
     </ContentShell>
   );

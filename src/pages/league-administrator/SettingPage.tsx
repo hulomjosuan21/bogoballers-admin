@@ -5,7 +5,6 @@ import { Switch } from "@/components/ui/switch";
 import { DatePicker } from "@/components/date-picker";
 import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { LeagueService } from "@/service/league-service";
 import { toast } from "sonner";
 import { useErrorToast } from "@/components/error-toast";
@@ -19,9 +18,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getActiveLeagueQueryOption } from "@/queries/league";
 
 export default function SettingsPage() {
-  const { data: activeLeague, refetch } = useQuery(getActiveLeagueQueryOptions);
+  const { data: activeLeague, refetch } = useQuery(getActiveLeagueQueryOption);
   const handleError = useErrorToast();
 
   const [date, setDate] = React.useState<Date>();
@@ -172,20 +172,23 @@ export default function SettingsPage() {
         )}
       </ContentHeader>
       <ContentBody>
-        <Tabs defaultValue="tab-1">
+        <Tabs defaultValue="preferences">
           <ScrollArea>
             <TabsList className="text-foreground mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1 w-full justify-start">
-              <TabsTrigger value="tab-1" className="tab-trigger">
+              <TabsTrigger value="preferences" className="tab-trigger">
                 Preferences
               </TabsTrigger>
-              <TabsTrigger value="tab-2" className="tab-trigger">
+              <TabsTrigger value="categories" className="tab-trigger">
+                Categories
+              </TabsTrigger>
+              <TabsTrigger value="organization" className="tab-trigger">
                 Organization
               </TabsTrigger>
             </TabsList>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
-          <TabsContent value="tab-1">{tab1Content()}</TabsContent>
-          <TabsContent value="tab-2">
+          <TabsContent value="preferences">{tab1Content()}</TabsContent>
+          <TabsContent value="organization">
             <p className="text-muted-foreground pt-1 text-center text-xs">
               Content for Tab 2
             </p>

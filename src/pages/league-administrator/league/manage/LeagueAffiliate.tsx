@@ -8,20 +8,19 @@ import {
   AlertTitle,
   AlertToolbar,
 } from "@/components/ui/alert";
-import {
-  getActiveLeagueQueryOptions,
-  getActiveLeagueResourceQueryOptions,
-} from "@/queries/league";
+
 import { Loader2 } from "lucide-react";
 import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import {
+  getActiveLeagueQueryOption,
+  getActiveLeagueResourceQueryOption,
+} from "@/queries/league";
 
 export default function LeagueAffiliatePage() {
   const [activeLeague, { data, isLoading, error }] = useQueries({
-    queries: [getActiveLeagueQueryOptions, getActiveLeagueResourceQueryOptions],
+    queries: [getActiveLeagueQueryOption, getActiveLeagueResourceQueryOption],
   });
-  const navigate = useNavigate();
   return (
     <ContentShell>
       <ContentHeader title="Sponsors & Partners"></ContentHeader>
@@ -50,7 +49,13 @@ export default function LeagueAffiliatePage() {
                     underlined="solid"
                     size="sm"
                     className="flex mt-0.5"
-                    onClick={() => navigate("/public/about/league")}
+                    onClick={() =>
+                      window.open(
+                        "/public/about/league",
+                        "_blank",
+                        "noopener,noreferrer"
+                      )
+                    }
                   >
                     Learn more
                   </Button>

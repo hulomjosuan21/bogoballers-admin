@@ -1,5 +1,6 @@
 import { ApiResponse } from "@/lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
+import type { CategoryModel } from "@/pages/league-administrator/league/category/types";
 import type { LeagueAdminType } from "@/types/league-admin";
 
 class LeagueAdministratorService {
@@ -56,6 +57,11 @@ class LeagueAdministratorService {
       console.error("Error registering league administrator:", error);
       throw error;
     }
+  }
+
+  static async fetchCategories() {
+    const response = await axiosClient.get<CategoryModel[]>("/category/all");
+    return response.data;
   }
 }
 

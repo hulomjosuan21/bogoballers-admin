@@ -42,11 +42,11 @@ import { toast } from "sonner";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { useEffect, useRef, useState } from "react";
 import type { LeagueCourt } from "@/types/league";
-import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useQuery } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
 import { LeagueService } from "@/service/league-service";
 import { cn } from "@/lib/utils";
+import { getActiveLeagueQueryOption } from "@/queries/league";
 
 export default function ManageCourts({
   data,
@@ -55,7 +55,7 @@ export default function ManageCourts({
   data: LeagueCourt[];
   hasActiveLeague: boolean;
 }) {
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
+  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
   const handleError = useErrorToast();
   const [isProcessing, setProcess] = useState(false);
   const [courts, setCourts] = useState<LeagueCourt[]>(data);

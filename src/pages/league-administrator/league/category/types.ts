@@ -1,12 +1,24 @@
 export type Category = {
+  category_id: string;
   category_name: string;
   check_player_age: boolean;
   player_min_age: number | null;
   player_max_age: number | null;
   check_address: boolean;
+  allowed_address: string | null;
+  max_team: number;
+  accept_teams: boolean;
+  allow_guest_team: boolean;
+  team_entrance_fee_amount: number;
+  allow_guest_player: boolean;
+  guest_player_fee_amount: number;
 };
 
-export interface CategoryModel extends Category {}
+export interface CategoryModel extends Category {
+  league_administrator_id: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface CreateLeagueCategory {
   category_name: string;
@@ -16,12 +28,8 @@ export interface CreateLeagueCategory {
 }
 
 export interface LeagueCategory extends Category {
-  category_id: string;
+  league_category_id: string;
   league_id: string;
-  max_team: number;
-  accept_teams: boolean;
-  team_entrance_fee_amount: number;
-  individual_player_entrance_fee_amount: number;
   created_at: string;
   updated_at: string;
   rounds: LeagueCategoryRound[];

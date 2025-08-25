@@ -90,7 +90,7 @@ export default function LeagueCategoryCanvas({
 
     categories.forEach((cat, catIndex) => {
       newNodes.push({
-        id: cat.category_id,
+        id: cat.league_category_id,
         type: "categoryNode",
         position: { x: 50, y: catIndex * 800 },
         data: { category: cat, viewOnly: viewOnly },
@@ -103,7 +103,7 @@ export default function LeagueCategoryCanvas({
         newNodes.push({
           id: round.round_id,
           type: "roundNode",
-          parentId: cat.category_id,
+          parentId: cat.league_category_id,
           extent: "parent",
           draggable: !viewOnly,
           position: pos,
@@ -136,7 +136,7 @@ export default function LeagueCategoryCanvas({
           newNodes.push({
             id: formatNodeId,
             type: "formatNode",
-            parentId: cat.category_id,
+            parentId: cat.league_category_id,
             extent: "parent",
             draggable: !viewOnly,
             position: round.round_format.position ?? {
