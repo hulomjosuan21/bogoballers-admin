@@ -10,6 +10,7 @@ import {
   AlertToolbar,
   RiSpamFill,
   Button,
+  useMemo,
 } from "./imports";
 import { CloudAlert } from "lucide-react";
 import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
@@ -21,6 +22,9 @@ export default function LeagueCategoryManagementPage() {
     isLoading: isLoadingLeague,
     error: leagueError,
   } = useQuery(getActiveLeagueQueryOption);
+  const hasActiveLeague = useMemo(() => {
+    return activeLeague != null && Object.keys(activeLeague).length > 0;
+  }, [activeLeague]);
 
   const {
     data: categories,
@@ -31,10 +35,9 @@ export default function LeagueCategoryManagementPage() {
 
   return (
     <>
-      {!activeLeague ? (
+      {!hasActiveLeague ? (
         <ContentShell>
           <ContentHeader title="Category Management"></ContentHeader>
-
           <ContentBody>
             <Alert variant="secondary">
               <AlertIcon>

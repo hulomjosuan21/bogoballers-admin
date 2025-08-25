@@ -40,7 +40,6 @@ import {
   ContentHeader,
   FormatNodeMenu,
   RoundNodeMenu,
-  AddCategoryDialog,
   Loader2,
   generateUUIDWithPrefix,
   LeagueCategoryService,
@@ -459,8 +458,6 @@ export default function LeagueCategoryCanvas({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [deleteSelectedNodes]);
-
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const nodeTypes = useMemo(
     () => ({
@@ -955,11 +952,11 @@ export default function LeagueCategoryCanvas({
 
       const promises: Promise<any>[] = [];
 
-      for (const [categoryId, operations] of operationsByCategory) {
+      for (const [leagueCategoryId, operations] of operationsByCategory) {
         if (operations.length > 0) {
           promises.push(
             LeagueCategoryService.saveChanges({
-              categoryId,
+              leagueCategoryId,
               operations,
             })
           );
@@ -1027,9 +1024,6 @@ export default function LeagueCategoryCanvas({
 
       {!viewOnly && (
         <div className="flex flex-col gap-4">
-          <Button className="w-full" onClick={() => setAddDialogOpen(true)}>
-            Add Category
-          </Button>
           <RoundNodeMenu
             onDragStart={(e, label) => onDragStart(e, "round", label)}
           />
@@ -1051,12 +1045,6 @@ export default function LeagueCategoryCanvas({
         )}
       </ContentHeader>
       <ContentBody className="flex-row">
-        {!viewOnly && (
-          <AddCategoryDialog
-            open={addDialogOpen}
-            onOpenChange={setAddDialogOpen}
-          />
-        )}
         {isLoading ? (
           <div className="centered-container">
             <Loader2 className="animate-spin text-primary" />

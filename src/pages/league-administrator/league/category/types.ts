@@ -4,10 +4,23 @@ export type Category = {
   check_player_age: boolean;
   player_min_age: number | null;
   player_max_age: number | null;
+  player_gender: string;
   check_address: boolean;
   allowed_address: string | null;
-  max_team: number;
-  accept_teams: boolean;
+  allow_guest_team: boolean;
+  team_entrance_fee_amount: number;
+  allow_guest_player: boolean;
+  guest_player_fee_amount: number;
+};
+
+export type CreateCategory = {
+  category_name: string;
+  check_player_age: boolean;
+  player_min_age: number | null;
+  player_max_age: number | null;
+  player_gender: string;
+  check_address: boolean;
+  allowed_address: string | null;
   allow_guest_team: boolean;
   team_entrance_fee_amount: number;
   allow_guest_player: boolean;
@@ -30,10 +43,17 @@ export interface CreateLeagueCategory {
 export interface LeagueCategory extends Category {
   league_category_id: string;
   league_id: string;
+  max_team: number;
+  accept_teams: boolean;
   created_at: string;
   updated_at: string;
   rounds: LeagueCategoryRound[];
 }
+
+export type LeagueCategoryUpdatableFields = {
+  max_team: number;
+  accept_teams: boolean;
+};
 
 export interface LeagueCategoryRound {
   round_id: string;
@@ -108,7 +128,7 @@ interface UpdateNextRoundOperation {
 }
 
 export interface SaveChangesPayload {
-  categoryId: string;
+  leagueCategoryId: string;
   operations: CategoryOperation[];
 }
 

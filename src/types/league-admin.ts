@@ -10,3 +10,7 @@ export interface LeagueAdminType {
   created_at: string;
   updated_at: string;
 }
+
+export interface LeagueAdminModel extends LeagueAdminType {
+  league_administrator_id: string;
+}

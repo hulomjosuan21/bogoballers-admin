@@ -12,8 +12,15 @@ import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getActiveLeagueQueryOption } from "@/queries/league";
+import { useMemo } from "react";
 export default function LeagueCreationPage() {
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
+  const { data: activeLeague, isLoading } = useQuery(
+    getActiveLeagueQueryOption
+  );
+  const hasActiveLeague = useMemo(() => {
+    return activeLeague != null && Object.keys(activeLeague).length > 0;
+  }, [activeLeague]);
+
   return (
     <ContentShell>
       <ContentHeader title="Start new League">
@@ -23,7 +30,7 @@ export default function LeagueCreationPage() {
       </ContentHeader>
 
       <ContentBody>
-        {!activeLeague && (
+        {hasActiveLeague && (
           <Alert variant="info">
             <AlertIcon>
               <RiSpamFill />
@@ -52,7 +59,7 @@ export default function LeagueCreationPage() {
             </AlertToolbar>
           </Alert>
         )}
-        <CreateLeagueForm hasActive={!!!activeLeague} />
+        {!isLoading && <CreateLeagueForm hasActive={hasActiveLeague} />}
       </ContentBody>
     </ContentShell>
   );

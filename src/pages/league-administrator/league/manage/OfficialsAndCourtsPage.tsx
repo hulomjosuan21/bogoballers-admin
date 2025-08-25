@@ -19,11 +19,15 @@ import {
   getActiveLeagueQueryOption,
   getActiveLeagueResourceQueryOption,
 } from "@/queries/league";
+import { useMemo } from "react";
 
 export default function LeagueOfficialsPage() {
-  const [activeLeague, { data, isLoading, error }] = useQueries({
+  const [{ data: activeLeague }, { data, isLoading, error }] = useQueries({
     queries: [getActiveLeagueQueryOption, getActiveLeagueResourceQueryOption],
   });
+  const hasActiveLeague = useMemo(() => {
+    return activeLeague != null && Object.keys(activeLeague).length > 0;
+  }, [activeLeague]);
   return (
     <ContentShell>
       <ContentHeader title="League Officials" />
@@ -39,7 +43,7 @@ export default function LeagueOfficialsPage() {
           </div>
         ) : (
           <>
-            {!activeLeague.data && (
+            {!hasActiveLeague && (
               <Alert variant="secondary">
                 <AlertIcon>
                   <RiSpamFill />
@@ -67,15 +71,15 @@ export default function LeagueOfficialsPage() {
             )}
             <ManageOfficials
               data={data?.league_officials ?? []}
-              hasActiveLeague={!!!activeLeague.data}
+              hasActiveLeague={!hasActiveLeague}
             />
             <ManangeReferees
               data={data?.league_referees ?? []}
-              hasActiveLeague={!!!activeLeague.data}
+              hasActiveLeague={!hasActiveLeague}
             />
             <ManageCourts
               data={data?.league_courts ?? []}
-              hasActiveLeague={!!!activeLeague.data}
+              hasActiveLeague={!hasActiveLeague}
             />
           </>
         )}

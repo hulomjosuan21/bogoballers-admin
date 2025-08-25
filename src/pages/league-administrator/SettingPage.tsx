@@ -3,7 +3,7 @@ import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { Switch } from "@/components/ui/switch";
 import { DatePicker } from "@/components/date-picker";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LeagueService } from "@/service/league-service";
 import { toast } from "sonner";
@@ -19,9 +19,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getActiveLeagueQueryOption } from "@/queries/league";
+import ManageCategories from "./league/ManageCategories";
 
 export default function SettingsPage() {
   const { data: activeLeague, refetch } = useQuery(getActiveLeagueQueryOption);
+  const hasActiveLeague = useMemo(() => {
+    return activeLeague != null && Object.keys(activeLeague).length > 0;
+  }, [activeLeague]);
   const handleError = useErrorToast();
 
   const [date, setDate] = React.useState<Date>();
@@ -114,7 +118,7 @@ export default function SettingsPage() {
         <ModeToggle />
       </div>
 
-      {activeLeague && (
+      {hasActiveLeague && (
         <section className="p-4 space-y-4">
           <h3 className="text-sm font-bold">Current League Option</h3>
 
@@ -188,6 +192,9 @@ export default function SettingsPage() {
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
           <TabsContent value="preferences">{tab1Content()}</TabsContent>
+          <TabsContent value="categories">
+            <ManageCategories />
+          </TabsContent>
           <TabsContent value="organization">
             <p className="text-muted-foreground pt-1 text-center text-xs">
               Content for Tab 2

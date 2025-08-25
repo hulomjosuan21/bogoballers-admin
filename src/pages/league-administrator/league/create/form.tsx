@@ -1,7 +1,7 @@
 import { MultiSelect } from "@/components/multi-select";
 import { Label } from "@/components/ui/label";
 import { StaticData } from "@/data";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateTimePicker } from "@/components/datetime-picker";
@@ -16,7 +16,7 @@ import { toast } from "sonner";
 
 import { ButtonLoading } from "@/components/custom-buttons";
 import { disableOnLoading } from "@/lib/app_utils";
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -32,9 +32,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { getActiveLeagueQueryOption } from "@/queries/league";
-import { authLeagueAdminQueryOption } from "@/queries/league-admin";
+import {
+  authLeagueAdminQueryOption,
+  leagueAdminCategoriesQueryOption,
+} from "@/queries/league-admin";
 import { Check, ChevronsUpDown } from "lucide-react";
+import MultipleSelector from "@/components/ui/multiselect";
+import type { CategoryModel } from "../category/types";
+import type { BasicMultiSelectOption } from "@/components/ui/types";
+import { getActiveLeagueQueryOption } from "@/queries/league";
 
 function validateLeagueForm({
   leagueTitle,
@@ -45,6 +51,7 @@ function validateLeagueForm({
   openingDate,
   dateRange,
   leagueBanner,
+  categories,
 }: {
   leagueTitle: string;
   overAllBudget: number;
@@ -54,6 +61,7 @@ function validateLeagueForm({
   openingDate?: Date;
   dateRange?: DateRange;
   leagueBanner: File | string | null;
+  categories: string[];
 }) {
   if (!leagueTitle.trim()) throw new Error("League title is required.");
   if (!leagueDescription.trim()) throw new Error("Description is required.");
@@ -67,6 +75,8 @@ function validateLeagueForm({
   if (!dateRange?.from || !dateRange?.to)
     throw new Error("League schedule range is required.");
   if (!leagueBanner) throw new Error("League banner image is required.");
+  if (!categories || !categories.length)
+    throw new Error("At least one category must be selected.");
 }
 
 type Props = {
@@ -74,13 +84,20 @@ type Props = {
 };
 
 export default function CreateLeagueForm({ hasActive }: Props) {
-  const [activeLeague, leagueAdmin] = useQueries({
-    queries: [getActiveLeagueQueryOption, authLeagueAdminQueryOption],
+  const [leagueAdmin, activeLeague] = useQueries({
+    queries: [authLeagueAdminQueryOption, getActiveLeagueQueryOption],
   });
+  const { data: LeagueAdminCategories } = useQuery(
+    leagueAdminCategoriesQueryOption
+  );
+
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [leagueTitle, setLeagueTitle] = useState("");
   const [leagueDescription, setLeagueDescription] = useState("");
   const [selectedAddress, setLeagueAddress] = useState("");
+  const [selectedCategories, setCategories] = useState<
+    BasicMultiSelectOption[]
+  >([]);
 
   const [overAllBudget, setOverAllBudget] = useState(0);
   const [registrationDadline, setRegistrationDeadline] = useState<Date>();
@@ -97,6 +114,8 @@ export default function CreateLeagueForm({ hasActive }: Props) {
   const handleSubmit = async () => {
     setProcessing(true);
     try {
+      const categoryIds = selectedCategories.map((opt) => opt.value);
+
       validateLeagueForm({
         leagueTitle,
         overAllBudget,
@@ -106,6 +125,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         openingDate,
         dateRange,
         leagueBanner,
+        categories: categoryIds,
       });
 
       const formData = new FormData();
@@ -114,6 +134,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
       formData.append("league_description", leagueDescription);
       formData.append("league_address", selectedAddress);
       formData.append("opening_date", openingDate!.toISOString());
+      formData.append("categories", JSON.stringify(categoryIds));
       formData.append(
         "registration_deadline",
         registrationDadline!.toISOString()
@@ -128,7 +149,9 @@ export default function CreateLeagueForm({ hasActive }: Props) {
       } else if (typeof leagueBanner === "string") {
         formData.append("banner_image", leagueBanner);
       }
-
+      // for (let [key, value] of formData.entries()) {
+      //   console.log(key, value);
+      // }
       const res = await LeagueService.createNewLeague(formData);
 
       await activeLeague.refetch();
@@ -144,6 +167,15 @@ export default function CreateLeagueForm({ hasActive }: Props) {
       setProcessing(false);
     }
   };
+
+  const options = useMemo(
+    () =>
+      (LeagueAdminCategories || []).map((cat: CategoryModel) => ({
+        value: cat.category_id,
+        label: cat.category_name,
+      })),
+    [LeagueAdminCategories]
+  );
 
   return (
     <section
@@ -317,7 +349,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
           baseClass: "grid space-y-2",
         })}
       >
-        <Label htmlFor="rules">Select Sportsmanship Rules</Label>
+        <Label>Select Sportsmanship Rules</Label>
         <MultiSelect
           id="rules"
           options={StaticData.SportsmanshipRules}
@@ -332,15 +364,32 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         </p>
       </div>
 
-      <p
+      <div
         className={disableOnLoading({
           condition: isProcessing,
-          baseClass: "text-helper",
+          baseClass: "grid space-y-2",
         })}
       >
-        Define the competition category (e.g., category, fees). Participants
-        will register under these categories.
-      </p>
+        <Label>Select League Categories</Label>
+        <MultipleSelector
+          commandProps={{
+            label: "Select categories",
+          }}
+          value={selectedCategories}
+          options={options}
+          onChange={(opts) => setCategories(opts)}
+          placeholder="Select categories"
+          hideClearAllButton
+          hidePlaceholderWhenSelected
+          emptyIndicator={
+            <p className="text-center text-sm">No categories found</p>
+          }
+        />
+        <p className="text-helper">
+          Define the competition category (e.g., category, fees). Participants
+          will register under these categories.
+        </p>
+      </div>
 
       <Separator />
 

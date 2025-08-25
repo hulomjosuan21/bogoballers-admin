@@ -16,11 +16,16 @@ import {
   getActiveLeagueQueryOption,
   getActiveLeagueResourceQueryOption,
 } from "@/queries/league";
+import { useMemo } from "react";
 
 export default function LeagueAffiliatePage() {
-  const [activeLeague, { data, isLoading, error }] = useQueries({
+  const [{ data: activeLeague }, { data, isLoading, error }] = useQueries({
     queries: [getActiveLeagueQueryOption, getActiveLeagueResourceQueryOption],
   });
+  const hasActiveLeague = useMemo(() => {
+    return activeLeague != null && Object.keys(activeLeague).length > 0;
+  }, [activeLeague]);
+
   return (
     <ContentShell>
       <ContentHeader title="Sponsors & Partners"></ContentHeader>
@@ -36,7 +41,7 @@ export default function LeagueAffiliatePage() {
           </div>
         ) : (
           <>
-            {!activeLeague.data && (
+            {!hasActiveLeague && (
               <Alert variant="secondary">
                 <AlertIcon>
                   <RiSpamFill />
@@ -64,7 +69,7 @@ export default function LeagueAffiliatePage() {
             )}
             <ManageAffiliates
               data={data?.league_affiliates ?? []}
-              hasActiveLeague={!!!activeLeague.data}
+              hasActiveLeague={!hasActiveLeague}
             />
           </>
         )}
