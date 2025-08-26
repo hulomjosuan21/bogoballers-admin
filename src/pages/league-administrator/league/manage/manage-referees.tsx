@@ -44,9 +44,9 @@ import { DataTablePagination } from "@/components/data-table-pagination";
 import type { LeagueReferee } from "@/types/league";
 import { LeagueService } from "@/service/league-service";
 import { useQuery } from "@tanstack/react-query";
-import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { useErrorToast } from "@/components/error-toast";
 import { cn } from "@/lib/utils";
+import { getActiveLeagueQueryOption } from "@/queries/league";
 
 export type LeagueRefereeCreate = {
   full_name: string;
@@ -62,7 +62,7 @@ export default function ManageRefereesComponent({
   data: LeagueReferee[];
   hasActiveLeague: boolean;
 }) {
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
+  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
   const handleError = useErrorToast();
   const [isProcessing, setProcess] = useState(false);
   const [referees, setReferees] = useState<LeagueRefereeCreate[]>(data);

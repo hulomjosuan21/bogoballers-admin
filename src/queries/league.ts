@@ -2,7 +2,7 @@ import type { League, LeagueResource } from "@/types/league";
 import { LeagueService } from "@/service/league-service";
 import { queryOptions } from "@tanstack/react-query";
 
-export const getActiveLeagueQueryOptions = queryOptions<League | null, Error>({
+export const getActiveLeagueQueryOption = queryOptions<League | null, Error>({
   queryKey: ["active-league"],
   queryFn: LeagueService.fetchActiveLeague,
   staleTime: Infinity,
@@ -12,7 +12,7 @@ export const getActiveLeagueQueryOptions = queryOptions<League | null, Error>({
   refetchOnReconnect: false,
 });
 
-export const getActiveLeagueResourceQueryOptions = queryOptions<
+export const getActiveLeagueResourceQueryOption = queryOptions<
   LeagueResource | null,
   Error
 >({

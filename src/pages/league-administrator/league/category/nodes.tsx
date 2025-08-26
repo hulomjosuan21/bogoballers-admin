@@ -1,4 +1,3 @@
-import { EllipsisVertical } from "lucide-react";
 import {
   getRoundTypeByOrder,
   Handle,
@@ -12,42 +11,12 @@ import {
   type Connection,
   type Edge,
   useReactFlow,
-  Button,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
   type FormatNodeData,
-  getActiveLeagueQueryOptions,
-  useQuery,
-  useErrorToast,
-  LeagueCategoryService,
 } from "./imports";
-import { getActiveLeagueCategoriesQueryOptions } from "@/queries/league-category";
-import { useTransition } from "react";
+import { LeagueCategoryNodeSheet } from "./components";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const { category, viewOnly } = data;
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
-  const handleError = useErrorToast();
-
-  const { refetch: refetchCategories } = useQuery(
-    getActiveLeagueCategoriesQueryOptions(activeLeague?.league_id)
-  );
-
-  const [isPending, startTransition] = useTransition();
-
-  const handleDelete = () => {
-    startTransition(async () => {
-      try {
-        await LeagueCategoryService.deleteCategory(data.category.category_id);
-        await refetchCategories();
-        toast.success("Category deleted successfully");
-      } catch (e) {
-        handleError(e);
-      }
-    });
-  };
 
   return (
     <div className="border-2 rounded-md flex flex-col overflow-hidden w-[1280px] h-[720px]">
@@ -55,18 +24,7 @@ export function CategoryNode({ data }: { data: CategoryNodeData }) {
         <p>
           <strong>Category:</strong> {category.category_name}
         </p>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant={"ghost"} size={"icon"} disabled={viewOnly}>
-              <EllipsisVertical className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={handleDelete} disabled={isPending}>
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <LeagueCategoryNodeSheet data={data} disable={viewOnly} />
       </div>
       <div className="flex-1 p-2 overflow-auto flex flex-col">
         <p className="text-helper italic text-xs mb-4">
@@ -74,10 +32,14 @@ export function CategoryNode({ data }: { data: CategoryNodeData }) {
         </p>
         <div className="flex-grow" />
         <div className="text-helper flex items-center">
-          <p>Max Teams: {category.max_team}</p>
-          <p className="border-l px-2 ml-2">
+          <p className="px-2 border-r">Max Teams: {category.max_team}</p>
+          <p className="px-2 border-r">
             Team Entrance Fee: {category.team_entrance_fee_amount}
           </p>
+          <p className="px-2 border-r">
+            Allow guest player: {category.allow_guest_player ? "Yes" : "No"}
+          </p>
+          <p className="px-2">Allowed Address: {category.allowed_address}</p>
         </div>
       </div>
     </div>

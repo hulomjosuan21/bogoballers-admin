@@ -4,7 +4,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { leagueAdminRoutes, publicRoutes } from "./routes";
-
+// added some changes
 export default function App() {
   return (
     <>

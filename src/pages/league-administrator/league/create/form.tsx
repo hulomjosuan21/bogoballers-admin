@@ -1,7 +1,7 @@
 import { MultiSelect } from "@/components/multi-select";
 import { Label } from "@/components/ui/label";
 import { StaticData } from "@/data";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateTimePicker } from "@/components/datetime-picker";
@@ -13,43 +13,12 @@ import { useErrorToast } from "@/components/error-toast";
 import { Separator } from "@/components/ui/separator";
 import { LeagueService } from "@/service/league-service";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Check, ChevronsUpDown, MoreVertical } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { ButtonLoading } from "@/components/custom-buttons";
 import { disableOnLoading } from "@/lib/app_utils";
-import { useQueries } from "@tanstack/react-query";
-import { getActiveLeagueQueryOptions } from "@/queries/league";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import type { CreateLeagueCategory } from "../category/types";
 import {
   Command,
   CommandEmpty,
@@ -63,7 +32,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { authLeagueAdminQueryOptions } from "@/queries/league-admin";
+import {
+  authLeagueAdminQueryOption,
+  leagueAdminCategoriesQueryOption,
+} from "@/queries/league-admin";
+import { Check, ChevronsUpDown } from "lucide-react";
+import MultipleSelector from "@/components/ui/multiselect";
+import type { CategoryModel } from "../category/types";
+import type { BasicMultiSelectOption } from "@/components/ui/types";
+import { getActiveLeagueQueryOption } from "@/queries/league";
 
 function validateLeagueForm({
   leagueTitle,
@@ -84,7 +61,7 @@ function validateLeagueForm({
   openingDate?: Date;
   dateRange?: DateRange;
   leagueBanner: File | string | null;
-  categories: CreateLeagueCategory[];
+  categories: string[];
 }) {
   if (!leagueTitle.trim()) throw new Error("League title is required.");
   if (!leagueDescription.trim()) throw new Error("Description is required.");
@@ -98,7 +75,8 @@ function validateLeagueForm({
   if (!dateRange?.from || !dateRange?.to)
     throw new Error("League schedule range is required.");
   if (!leagueBanner) throw new Error("League banner image is required.");
-  if (!categories.length) throw new Error("At least one category is required.");
+  if (!categories || !categories.length)
+    throw new Error("At least one category must be selected.");
 }
 
 type Props = {
@@ -106,13 +84,20 @@ type Props = {
 };
 
 export default function CreateLeagueForm({ hasActive }: Props) {
-  const [activeLeague, leagueAdmin] = useQueries({
-    queries: [getActiveLeagueQueryOptions, authLeagueAdminQueryOptions],
+  const [leagueAdmin, activeLeague] = useQueries({
+    queries: [authLeagueAdminQueryOption, getActiveLeagueQueryOption],
   });
+  const { data: LeagueAdminCategories } = useQuery(
+    leagueAdminCategoriesQueryOption
+  );
+
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [leagueTitle, setLeagueTitle] = useState("");
   const [leagueDescription, setLeagueDescription] = useState("");
   const [selectedAddress, setLeagueAddress] = useState("");
+  const [selectedCategories, setCategories] = useState<
+    BasicMultiSelectOption[]
+  >([]);
 
   const [overAllBudget, setOverAllBudget] = useState(0);
   const [registrationDadline, setRegistrationDeadline] = useState<Date>();
@@ -121,7 +106,6 @@ export default function CreateLeagueForm({ hasActive }: Props) {
     from: new Date(),
     to: dayjs().add(20, "day").toDate(),
   });
-  const [categories, setCategories] = useState<CreateLeagueCategory[]>([]);
   const [rules, setRules] = useState<string[]>([]);
   const [isProcessing, setProcessing] = useState(false);
 
@@ -130,6 +114,8 @@ export default function CreateLeagueForm({ hasActive }: Props) {
   const handleSubmit = async () => {
     setProcessing(true);
     try {
+      const categoryIds = selectedCategories.map((opt) => opt.value);
+
       validateLeagueForm({
         leagueTitle,
         overAllBudget,
@@ -139,7 +125,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         openingDate,
         dateRange,
         leagueBanner,
-        categories,
+        categories: categoryIds,
       });
 
       const formData = new FormData();
@@ -148,6 +134,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
       formData.append("league_description", leagueDescription);
       formData.append("league_address", selectedAddress);
       formData.append("opening_date", openingDate!.toISOString());
+      formData.append("categories", JSON.stringify(categoryIds));
       formData.append(
         "registration_deadline",
         registrationDadline!.toISOString()
@@ -162,8 +149,9 @@ export default function CreateLeagueForm({ hasActive }: Props) {
       } else if (typeof leagueBanner === "string") {
         formData.append("banner_image", leagueBanner);
       }
-      formData.append("categories", JSON.stringify(categories));
-
+      // for (let [key, value] of formData.entries()) {
+      //   console.log(key, value);
+      // }
       const res = await LeagueService.createNewLeague(formData);
 
       await activeLeague.refetch();
@@ -179,6 +167,15 @@ export default function CreateLeagueForm({ hasActive }: Props) {
       setProcessing(false);
     }
   };
+
+  const options = useMemo(
+    () =>
+      (LeagueAdminCategories || []).map((cat: CategoryModel) => ({
+        value: cat.category_id,
+        label: cat.category_name,
+      })),
+    [LeagueAdminCategories]
+  );
 
   return (
     <section
@@ -352,7 +349,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
           baseClass: "grid space-y-2",
         })}
       >
-        <Label htmlFor="rules">Select Sportsmanship Rules</Label>
+        <Label>Select Sportsmanship Rules</Label>
         <MultiSelect
           id="rules"
           options={StaticData.SportsmanshipRules}
@@ -367,22 +364,32 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         </p>
       </div>
 
-      <AddCategories
-        loading={isProcessing}
-        categories={categories}
-        setCategories={setCategories}
-        address={selectedAddress}
-      />
-
-      <p
+      <div
         className={disableOnLoading({
           condition: isProcessing,
-          baseClass: "text-helper",
+          baseClass: "grid space-y-2",
         })}
       >
-        Define the competition category (e.g., category, fees). Participants
-        will register under these categories.
-      </p>
+        <Label>Select League Categories</Label>
+        <MultipleSelector
+          commandProps={{
+            label: "Select categories",
+          }}
+          value={selectedCategories}
+          options={options}
+          onChange={(opts) => setCategories(opts)}
+          placeholder="Select categories"
+          hideClearAllButton
+          hidePlaceholderWhenSelected
+          emptyIndicator={
+            <p className="text-center text-sm">No categories found</p>
+          }
+        />
+        <p className="text-helper">
+          Define the competition category (e.g., category, fees). Participants
+          will register under these categories.
+        </p>
+      </div>
 
       <Separator />
 
@@ -394,220 +401,5 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         Create
       </ButtonLoading>
     </section>
-  );
-}
-
-function AddCategories({
-  loading,
-  categories,
-  setCategories,
-  address,
-}: {
-  loading: boolean;
-  address: string;
-  categories: CreateLeagueCategory[];
-  setCategories: React.Dispatch<React.SetStateAction<CreateLeagueCategory[]>>;
-}) {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
-  const [form, setForm] = useState<CreateLeagueCategory>({
-    category_name: "",
-    max_team: 0,
-    team_entrance_fee_amount: 0,
-    individual_player_entrance_fee_amount: 0,
-  });
-
-  const handleChange = (field: keyof CreateLeagueCategory, value: any) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const resetForm = () => {
-    setForm({
-      category_name: "",
-      max_team: 0,
-      team_entrance_fee_amount: 0,
-      individual_player_entrance_fee_amount: 0,
-    });
-    setSelectedIndex(null);
-    setDialogOpen(false);
-  };
-
-  const handleSave = () => {
-    if (selectedIndex !== null) {
-      const updated = [...categories];
-      updated[selectedIndex] = form;
-      setCategories(updated);
-    } else {
-      setCategories((prev) => [...prev, form]);
-    }
-    resetForm();
-  };
-
-  const handleEdit = (index: number) => {
-    setForm(categories[index]);
-    setSelectedIndex(index);
-    setDialogOpen(true);
-  };
-
-  const handleDelete = (index: number) => {
-    const updated = [...categories];
-    updated.splice(index, 1);
-    setCategories(updated);
-  };
-
-  return (
-    <div
-      className={disableOnLoading({
-        condition: loading,
-        baseClass: "space-y-4",
-      })}
-    >
-      <div className="flex items-center justify-between">
-        <Label>League Categories</Label>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm">Add Category</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {selectedIndex !== null ? "Edit" : "Add"} League Category
-              </DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="category_name">Category Name</Label>
-                <Select
-                  value={form.category_name}
-                  onValueChange={(value) =>
-                    handleChange("category_name", value)
-                  }
-                >
-                  <SelectTrigger id="category_name">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {StaticData.ListOfCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="max_team">Max Teams</Label>
-                <Input
-                  id="max_team"
-                  type="number"
-                  value={form.max_team}
-                  onChange={(e) =>
-                    handleChange("max_team", parseInt(e.target.value) || 0)
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="team_fee">Team Entrance Fee</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">₱</span>
-                  <Input
-                    id="team_fee"
-                    type="number"
-                    value={form.team_entrance_fee_amount}
-                    onChange={(e) =>
-                      handleChange(
-                        "team_entrance_fee_amount",
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="individual_fee">Individual Entrance Fee</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">₱</span>
-                  <Input
-                    id="individual_fee"
-                    type="number"
-                    value={form.individual_player_entrance_fee_amount}
-                    onChange={(e) =>
-                      handleChange(
-                        "individual_player_entrance_fee_amount",
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button onClick={handleSave}>
-                {selectedIndex !== null ? "Update" : "Add"} Category
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="overflow-hidden rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted">
-              <TableHead>Category</TableHead>
-              <TableHead>Max Teams</TableHead>
-              <TableHead>Accept Teams</TableHead>
-              <TableHead>Team Fee</TableHead>
-              <TableHead>Individual Fee</TableHead>
-              <TableHead className="text-right"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories.length > 0 ? (
-              categories.map((cat, idx) => (
-                <TableRow key={idx}>
-                  <TableCell>{cat.category_name}</TableCell>
-                  <TableCell>{cat.max_team}</TableCell>
-                  <TableCell>
-                    ₱{cat.team_entrance_fee_amount.toFixed(2)}
-                  </TableCell>
-                  <TableCell>
-                    ₱{cat.individual_player_entrance_fee_amount.toFixed(2)}
-                  </TableCell>
-
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="ghost">
-                          <MoreVertical className="w-5 h-5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEdit(idx)}>
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(idx)}
-                          className="text-red-500"
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  No data.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
   );
 }

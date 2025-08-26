@@ -4,39 +4,40 @@ import {
   ContentBody,
   ContentHeader,
   ContentShell,
-  getActiveLeagueQueryOptions,
   Alert,
   AlertIcon,
   AlertTitle,
   AlertToolbar,
   RiSpamFill,
   Button,
+  useMemo,
 } from "./imports";
-import { getActiveLeagueCategoriesQueryOptions } from "@/queries/league-category";
-import { useNavigate } from "react-router-dom";
 import { CloudAlert } from "lucide-react";
+import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
+import { getActiveLeagueQueryOption } from "@/queries/league";
 
 export default function LeagueCategoryManagementPage() {
-  const navigate = useNavigate();
   const {
     data: activeLeague,
     isLoading: isLoadingLeague,
     error: leagueError,
-  } = useQuery(getActiveLeagueQueryOptions);
+  } = useQuery(getActiveLeagueQueryOption);
+  const hasActiveLeague = useMemo(() => {
+    return activeLeague != null && Object.keys(activeLeague).length > 0;
+  }, [activeLeague]);
 
   const {
     data: categories,
     isLoading: isLoadingCategories,
     error: categoriesError,
     refetch: refetchCategories,
-  } = useQuery(getActiveLeagueCategoriesQueryOptions(activeLeague?.league_id));
+  } = useQuery(getActiveLeagueCategoriesQueryOption(activeLeague?.league_id));
 
   return (
     <>
-      {!activeLeague ? (
+      {!hasActiveLeague ? (
         <ContentShell>
           <ContentHeader title="Category Management"></ContentHeader>
-
           <ContentBody>
             <Alert variant="secondary">
               <AlertIcon>
@@ -50,7 +51,7 @@ export default function LeagueCategoryManagementPage() {
                   underlined="solid"
                   size="sm"
                   className="flex mt-0.5"
-                  onClick={() => navigate("/public/about/league")}
+                  onClick={() => window.open("/public/about/league", "_blank")}
                 >
                   Learn more
                 </Button>

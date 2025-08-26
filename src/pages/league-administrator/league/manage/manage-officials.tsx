@@ -47,9 +47,9 @@ import type { LeagueOfficial } from "@/types/league";
 import { LeagueService } from "@/service/league-service";
 import { useErrorToast } from "@/components/error-toast";
 import { useQuery } from "@tanstack/react-query";
-import { getActiveLeagueQueryOptions } from "@/queries/league";
 import { StaticData } from "@/data";
 import { cn } from "@/lib/utils";
+import { getActiveLeagueQueryOption } from "@/queries/league";
 
 export type LeagueCreateOfficialCreate = {
   full_name: string;
@@ -68,7 +68,7 @@ export default function ManageOfficialsComponent({
   data: LeagueOfficial[];
   hasActiveLeague: boolean;
 }) {
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOptions);
+  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
   const [officials, setOfficials] =
     useState<LeagueCreateOfficialCreate[]>(data);
   const originalData = useRef<LeagueOfficial[] | LeagueCreateOfficialCreate[]>(

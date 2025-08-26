@@ -8,20 +8,24 @@ import {
   AlertTitle,
   AlertToolbar,
 } from "@/components/ui/alert";
-import {
-  getActiveLeagueQueryOptions,
-  getActiveLeagueResourceQueryOptions,
-} from "@/queries/league";
+
 import { Loader2 } from "lucide-react";
 import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import {
+  getActiveLeagueQueryOption,
+  getActiveLeagueResourceQueryOption,
+} from "@/queries/league";
+import { useMemo } from "react";
 
 export default function LeagueAffiliatePage() {
-  const [activeLeague, { data, isLoading, error }] = useQueries({
-    queries: [getActiveLeagueQueryOptions, getActiveLeagueResourceQueryOptions],
+  const [{ data: activeLeague }, { data, isLoading, error }] = useQueries({
+    queries: [getActiveLeagueQueryOption, getActiveLeagueResourceQueryOption],
   });
-  const navigate = useNavigate();
+  const hasActiveLeague = useMemo(() => {
+    return activeLeague != null && Object.keys(activeLeague).length > 0;
+  }, [activeLeague]);
+
   return (
     <ContentShell>
       <ContentHeader title="Sponsors & Partners"></ContentHeader>
@@ -37,7 +41,7 @@ export default function LeagueAffiliatePage() {
           </div>
         ) : (
           <>
-            {!activeLeague.data && (
+            {!hasActiveLeague && (
               <Alert variant="secondary">
                 <AlertIcon>
                   <RiSpamFill />
@@ -50,7 +54,13 @@ export default function LeagueAffiliatePage() {
                     underlined="solid"
                     size="sm"
                     className="flex mt-0.5"
-                    onClick={() => navigate("/public/about/league")}
+                    onClick={() =>
+                      window.open(
+                        "/public/about/league",
+                        "_blank",
+                        "noopener,noreferrer"
+                      )
+                    }
                   >
                     Learn more
                   </Button>
@@ -59,7 +69,7 @@ export default function LeagueAffiliatePage() {
             )}
             <ManageAffiliates
               data={data?.league_affiliates ?? []}
-              hasActiveLeague={!!!activeLeague.data}
+              hasActiveLeague={!hasActiveLeague}
             />
           </>
         )}

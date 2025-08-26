@@ -13,18 +13,21 @@ import {
 } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { RiSpamFill } from "@remixicon/react";
-import {
-  getActiveLeagueQueryOptions,
-  getActiveLeagueResourceQueryOptions,
-} from "@/queries/league";
+
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import {
+  getActiveLeagueQueryOption,
+  getActiveLeagueResourceQueryOption,
+} from "@/queries/league";
+import { useMemo } from "react";
 
 export default function LeagueOfficialsPage() {
-  const [activeLeague, { data, isLoading, error }] = useQueries({
-    queries: [getActiveLeagueQueryOptions, getActiveLeagueResourceQueryOptions],
+  const [{ data: activeLeague }, { data, isLoading, error }] = useQueries({
+    queries: [getActiveLeagueQueryOption, getActiveLeagueResourceQueryOption],
   });
-  const navigate = useNavigate();
+  const hasActiveLeague = useMemo(() => {
+    return activeLeague != null && Object.keys(activeLeague).length > 0;
+  }, [activeLeague]);
   return (
     <ContentShell>
       <ContentHeader title="League Officials" />
@@ -40,7 +43,7 @@ export default function LeagueOfficialsPage() {
           </div>
         ) : (
           <>
-            {!activeLeague.data && (
+            {!hasActiveLeague && (
               <Alert variant="secondary">
                 <AlertIcon>
                   <RiSpamFill />
@@ -53,7 +56,13 @@ export default function LeagueOfficialsPage() {
                     underlined="solid"
                     size="sm"
                     className="flex mt-0.5"
-                    onClick={() => navigate("/public/about/league")}
+                    onClick={() =>
+                      window.open(
+                        "/public/about/league",
+                        "_blank",
+                        "noopener,noreferrer"
+                      )
+                    }
                   >
                     Learn more
                   </Button>
@@ -62,15 +71,15 @@ export default function LeagueOfficialsPage() {
             )}
             <ManageOfficials
               data={data?.league_officials ?? []}
-              hasActiveLeague={!!!activeLeague.data}
+              hasActiveLeague={!hasActiveLeague}
             />
             <ManangeReferees
               data={data?.league_referees ?? []}
-              hasActiveLeague={!!!activeLeague.data}
+              hasActiveLeague={!hasActiveLeague}
             />
             <ManageCourts
               data={data?.league_courts ?? []}
-              hasActiveLeague={!!!activeLeague.data}
+              hasActiveLeague={!hasActiveLeague}
             />
           </>
         )}

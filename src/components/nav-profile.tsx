@@ -23,6 +23,7 @@ import LeagueAdministratorService from "@/service/league-admin-service";
 import { toast } from "sonner";
 import { useErrorToast } from "./error-toast";
 import { useNavigate } from "react-router-dom";
+import { queryClient } from "@/lib/queryClient";
 
 export function NavProfile({ leagueAdmin }: { leagueAdmin: LeagueAdminType }) {
   const { isMobile } = useSidebar();
@@ -34,6 +35,7 @@ export function NavProfile({ leagueAdmin }: { leagueAdmin: LeagueAdminType }) {
     setIsLoggingOut(true);
     try {
       const res = await LeagueAdministratorService.logout();
+      queryClient.clear();
       toast.success(res.message);
       navigate("/auth/login", { replace: true });
     } catch (e) {

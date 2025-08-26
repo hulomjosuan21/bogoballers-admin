@@ -1,14 +1,15 @@
 import { ApiResponse } from "@/lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
-import type { LeagueAdminType } from "@/types/league-admin";
+import type { CategoryModel } from "@/pages/league-administrator/league/category/types";
+import type { LeagueAdminModel } from "@/types/league-admin";
 
 class LeagueAdministratorService {
-  static async auth(): Promise<LeagueAdminType> {
+  static async auth(): Promise<LeagueAdminModel> {
     const response = await axiosClient.get("/league-administrator/auth", {
       withCredentials: true,
     });
 
-    return response.data as LeagueAdminType;
+    return response.data as LeagueAdminModel;
   }
 
   static async logout() {
@@ -56,6 +57,11 @@ class LeagueAdministratorService {
       console.error("Error registering league administrator:", error);
       throw error;
     }
+  }
+
+  static async fetchCategories() {
+    const response = await axiosClient.get<CategoryModel[]>("/category/all");
+    return response.data;
   }
 }
 
