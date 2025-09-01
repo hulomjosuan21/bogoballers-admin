@@ -100,7 +100,7 @@ export const AppNavbar = ({
         <div className="flex gap-2">
           <div className="relative">
             <Input
-              className="peer h-8 ps-8 pe-2"
+              className="peer ps-8 pe-2"
               placeholder="Search..."
               type="search"
               onFocus={() => {
@@ -156,7 +156,7 @@ export const AppNavbar = ({
                 <div className="flex flex-col gap-3">
                   <div className="relative">
                     <Input
-                      className="peer h-8 ps-8 pe-2"
+                      className="peer ps-8 pe-2"
                       placeholder="Search..."
                       type="search"
                       onFocus={() => {
