@@ -1,0 +1,13 @@
+[
+  { "value": "Birth Certificate", "label": "Birth Certificate" },
+  { "value": "Live Birth", "label": "Live Birth" },
+  { "value": "Barangay Clearance", "label": "Barangay Clearance" },
+  { "value": "Medical Certificate", "label": "Medical Certificate" },
+  { "value": "National ID", "label": "National ID" },
+  { "value": "PSA Birth Certificate", "label": "PSA Birth Certificate" },
+  { "value": "PSA Marriage Certificate", "label": "PSA Marriage Certificate" },
+  {
+    "value": "PSA CENOMAR",
+    "label": "PSA CENOMAR (Certificate of No Marriage)"
+  }
+]

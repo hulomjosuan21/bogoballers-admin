@@ -38,18 +38,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { DataTablePagination } from "@/components/data-table-pagination";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type SetStateAction,
+} from "react";
 import type { Category, CreateCategory } from "./category/types";
 import { useQueries } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
@@ -75,6 +73,26 @@ import { StaticData } from "@/data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Sheet,
+  SheetBody,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useAlertDialog } from "@/hooks/user-alert-dialog";
+import type { BasicMultiSelectOption } from "@/components/ui/types";
+import { DatePicker } from "@/components/date-picker";
+import MultipleSelector from "@/components/ui/multiselect";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function ManageCategories() {
   const [categories, leagueAdmin] = useQueries({
@@ -91,19 +109,38 @@ export default function ManageCategories() {
 
   const [open, setOpen] = useState(false);
   const [editCategoryId, setEditCategoryId] = useState<string | null>(null);
+  const [originalFormData, setOriginalFormData] =
+    useState<CreateCategory | null>(null);
   const [form, setForm] = useState<CreateCategory>({
     category_name: "",
     check_player_age: true,
     player_min_age: null,
     player_max_age: null,
     player_gender: "Male",
-    check_address: true,
+    check_address: false,
     allowed_address: null,
     allow_guest_team: false,
     team_entrance_fee_amount: 0,
     allow_guest_player: false,
     guest_player_fee_amount: 0,
+    requires_valid_document: false,
+    allowed_documents: null,
+    document_valid_until: null,
   });
+
+  const [selectedDocuments, setSelectedDocuments] = useState<
+    BasicMultiSelectOption[]
+  >([]);
+  const [documentValidDate, setDocumentValidDate] = useState<
+    Date | undefined
+  >();
+
+  const { openDialog, AlertDialogComponent } = useAlertDialog();
+
+  const documentOptions = useMemo(
+    () => StaticData.PlayerValidationDocuments,
+    []
+  );
 
   useEffect(() => {
     if (categories.data) {
@@ -111,11 +148,77 @@ export default function ManageCategories() {
     }
   }, [categories.data]);
 
+  const hasFormChanges = () => {
+    if (!originalFormData || !editCategoryId) return false;
+
+    return (
+      form.category_name !== originalFormData.category_name ||
+      form.check_player_age !== originalFormData.check_player_age ||
+      form.player_min_age !== originalFormData.player_min_age ||
+      form.player_max_age !== originalFormData.player_max_age ||
+      form.player_gender !== originalFormData.player_gender ||
+      form.check_address !== originalFormData.check_address ||
+      form.allowed_address !== originalFormData.allowed_address ||
+      form.allow_guest_team !== originalFormData.allow_guest_team ||
+      form.team_entrance_fee_amount !==
+        originalFormData.team_entrance_fee_amount ||
+      form.allow_guest_player !== originalFormData.allow_guest_player ||
+      form.guest_player_fee_amount !==
+        originalFormData.guest_player_fee_amount ||
+      form.requires_valid_document !==
+        originalFormData.requires_valid_document ||
+      JSON.stringify(form.allowed_documents) !==
+        JSON.stringify(originalFormData.allowed_documents) ||
+      form.document_valid_until !== originalFormData.document_valid_until
+    );
+  };
+
   const handleChange = (
     key: keyof CreateCategory,
     value: string | boolean | number | null
   ) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => {
+      const newForm = { ...prev, [key]: value };
+
+      if (key === "check_player_age" && !value) {
+        newForm.player_min_age = null;
+        newForm.player_max_age = null;
+      }
+
+      if (key === "check_address" && !value) {
+        newForm.allowed_address = null;
+      }
+
+      if (key === "allow_guest_player" && !value) {
+        newForm.guest_player_fee_amount = 0;
+      }
+
+      if (key === "requires_valid_document" && !value) {
+        newForm.allowed_documents = null;
+        newForm.document_valid_until = null;
+        setSelectedDocuments([]);
+        setDocumentValidDate(undefined);
+      }
+
+      return newForm;
+    });
+  };
+
+  const handleDocumentsChange = (documents: BasicMultiSelectOption[]) => {
+    setSelectedDocuments(documents);
+    setForm((prev) => ({
+      ...prev,
+      allowed_documents: documents.map((doc) => doc.value),
+    }));
+  };
+
+  const handleDateChange = (value: SetStateAction<Date | undefined>) => {
+    const date = typeof value === "function" ? value(documentValidDate) : value;
+    setDocumentValidDate(date);
+    setForm((prev) => ({
+      ...prev,
+      document_valid_until: date ? date.toISOString().split("T")[0] : null,
+    }));
   };
 
   const handleSubmit = async () => {
@@ -133,34 +236,51 @@ export default function ManageCategories() {
 
     setProcess(true);
     try {
+      const payload: CreateCategory = {
+        category_name: form.category_name,
+        check_player_age: form.check_player_age,
+        player_min_age: form.check_player_age ? form.player_min_age : null,
+        player_max_age: form.check_player_age ? form.player_max_age : null,
+        player_gender: form.player_gender,
+        check_address: form.check_address,
+        allowed_address: form.check_address ? form.allowed_address : null,
+        allow_guest_team: form.allow_guest_team,
+        team_entrance_fee_amount: form.team_entrance_fee_amount || 0,
+        allow_guest_player: form.allow_guest_player,
+        guest_player_fee_amount: form.allow_guest_player
+          ? form.guest_player_fee_amount
+          : 0,
+        requires_valid_document: form.requires_valid_document,
+        allowed_documents: form.requires_valid_document
+          ? form.allowed_documents
+          : null,
+        document_valid_until: form.requires_valid_document
+          ? form.document_valid_until
+          : null,
+      };
+
       if (editCategoryId) {
-        await CategoryService.update(editCategoryId, form);
+        const confirm = await openDialog({
+          confirmText: "Edit",
+          cancelText: "Cancel",
+        });
+        if (!confirm) return;
+        console.log(payload.document_valid_until);
+
+        await CategoryService.update(editCategoryId, payload);
         toast.success("Category updated successfully");
       } else {
         const leagueAdminId = leagueAdmin.data?.league_administrator_id;
         if (!leagueAdminId) {
           throw new Error("No League Administrator ID found");
         }
-        await CategoryService.create(leagueAdminId, form);
+
+        await CategoryService.create(leagueAdminId, payload);
         toast.success("Category created successfully");
       }
 
       categories.refetch();
-
-      setForm({
-        category_name: "",
-        check_player_age: true,
-        player_min_age: null,
-        player_max_age: null,
-        check_address: true,
-        allowed_address: null,
-        allow_guest_team: false,
-        team_entrance_fee_amount: 0,
-        allow_guest_player: false,
-        guest_player_fee_amount: 0,
-        player_gender: "Male",
-      });
-      setEditCategoryId(null);
+      resetForm();
       setOpen(false);
     } catch (e) {
       handleError(e);
@@ -169,8 +289,31 @@ export default function ManageCategories() {
     }
   };
 
-  const handleEdit = (category: Category) => {
+  const resetForm = () => {
     setForm({
+      category_name: "",
+      check_player_age: true,
+      player_min_age: null,
+      player_max_age: null,
+      player_gender: "Male",
+      check_address: false,
+      allowed_address: null,
+      allow_guest_team: false,
+      team_entrance_fee_amount: 0,
+      allow_guest_player: false,
+      guest_player_fee_amount: 0,
+      requires_valid_document: false,
+      allowed_documents: null,
+      document_valid_until: null,
+    });
+    setEditCategoryId(null);
+    setOriginalFormData(null);
+    setSelectedDocuments([]);
+    setDocumentValidDate(undefined);
+  };
+
+  const handleEdit = (category: Category) => {
+    const formData = {
       category_name: category.category_name,
       check_player_age: category.check_player_age,
       player_min_age: category.player_min_age,
@@ -182,14 +325,42 @@ export default function ManageCategories() {
       allow_guest_player: category.allow_guest_player,
       guest_player_fee_amount: category.guest_player_fee_amount,
       player_gender: category.player_gender || "Male",
-    });
+      requires_valid_document: category.requires_valid_document || false,
+      allowed_documents: category.allowed_documents,
+      document_valid_until: category.document_valid_until,
+    };
+
+    setForm(formData);
+    setOriginalFormData(formData);
     setEditCategoryId(category.category_id);
+
+    if (category.allowed_documents) {
+      const selectedDocs = category.allowed_documents
+        .map((doc) => documentOptions.find((opt) => opt.value === doc))
+        .filter(Boolean) as BasicMultiSelectOption[];
+      setSelectedDocuments(selectedDocs);
+    } else {
+      setSelectedDocuments([]);
+    }
+
+    if (category.document_valid_until) {
+      setDocumentValidDate(new Date(category.document_valid_until));
+    } else {
+      setDocumentValidDate(undefined);
+    }
+
     setOpen(true);
   };
 
   const handleRemove = async (categoryId: string) => {
     setProcess(true);
     try {
+      const confirm = await openDialog({
+        confirmText: "Delete",
+        cancelText: "Cancel",
+      });
+      if (!confirm) return;
+
       await CategoryService.delete(categoryId);
       toast.success("Category deleted successfully");
       categories.refetch();
@@ -214,29 +385,6 @@ export default function ManageCategories() {
         </div>
       ),
     },
-
-    {
-      accessorKey: "check_player_age",
-      header: () => (
-        <span className="block text-left text-xs font-medium">Age Check</span>
-      ),
-      cell: ({ row }) => (
-        <div className="text-left text-sm">
-          {row.original.check_player_age ? (
-            <Badge variant="outline" className="gap-1">
-              <CheckIcon
-                className="text-emerald-500"
-                size={12}
-                aria-hidden="true"
-              />
-              Yes
-            </Badge>
-          ) : (
-            <X className="text-red-500" size={12} aria-hidden="true" />
-          )}
-        </div>
-      ),
-    },
     {
       accessorKey: "player_age_range",
       header: () => (
@@ -246,50 +394,47 @@ export default function ManageCategories() {
         const category = row.original;
         if (!category.check_player_age) {
           return (
-            <span className="block text-left text-sm text-muted-foreground">
-              -
-            </span>
-          );
-        }
-        const min = category.player_min_age;
-        const max = category.player_max_age;
-
-        return (
-          <span className="block text-left text-sm text-muted-foreground">
-            {(min == null || min === 0) && (max == null || max === 0)
-              ? "Not Set"
-              : `${min} - ${max}`}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: "check_address",
-      header: () => (
-        <span className="block text-left text-xs font-medium">
-          Address Check
-        </span>
-      ),
-      cell: ({ row }) => (
-        <div className="text-left text-sm">
-          {row.original.check_address ? (
-            <Badge variant="outline" className="gap-1">
-              <CheckIcon
-                className="text-emerald-500"
-                size={12}
-                aria-hidden="true"
-              />
-              Yes
-            </Badge>
-          ) : (
             <Badge variant="outline" className="gap-1">
               <X className="text-red-500" size={12} aria-hidden="true" />
               No
             </Badge>
-          )}
-        </div>
-      ),
+          );
+        }
+
+        const min = category.player_min_age;
+        const max = category.player_max_age;
+
+        if ((min == null || min === 0) && (max == null || max === 0)) {
+          return (
+            <Badge variant="outline" className="gap-1">
+              <X className="text-red-500" size={12} aria-hidden="true" />
+              Not Set
+            </Badge>
+          );
+        }
+
+        return (
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="gap-1">
+                  <CheckIcon
+                    className="text-emerald-500"
+                    size={12}
+                    aria-hidden="true"
+                  />
+                  Yes
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent className="px-2 py-1 text-xs">
+                {min} - {max} yrs
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      },
     },
+
     {
       accessorKey: "player_gender",
       header: () => (
@@ -322,19 +467,36 @@ export default function ManageCategories() {
       cell: ({ row }) => {
         const checkAddress = row.original.check_address;
         const address = row.original.allowed_address;
-
         return (
-          <div
-            className={`text-left text-xs ${
-              checkAddress ? "" : "text-muted-foreground"
-            }`}
-          >
-            {checkAddress ? address : "-"}
+          <div className="text-left text-sm">
+            {checkAddress && address ? (
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="gap-1">
+                      <CheckIcon
+                        className="text-emerald-500"
+                        size={12}
+                        aria-hidden="true"
+                      />
+                      Yes
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent className="px-2 py-1 text-xs">
+                    {address}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Badge variant="outline" className="gap-1">
+                <X className="text-red-500" size={12} aria-hidden="true" />
+                No
+              </Badge>
+            )}
           </div>
         );
       },
     },
-
     {
       accessorKey: "team_entrance_fee_amount",
       header: () => (
@@ -420,6 +582,64 @@ export default function ManageCategories() {
       ),
     },
     {
+      accessorKey: "requires_valid_document",
+      header: () => (
+        <span className="block text-left text-xs font-medium">
+          Document Required
+        </span>
+      ),
+      cell: ({ row }) => (
+        <div className="text-left text-sm">
+          {row.original.requires_valid_document ? (
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="gap-1">
+                    <CheckIcon
+                      className="text-emerald-500"
+                      size={12}
+                      aria-hidden="true"
+                    />
+                    Yes
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="py-3 max-w-xs">
+                  <div className="space-y-2">
+                    <p className="text-[13px] font-medium">
+                      Valid Until: {row.original.document_valid_until}
+                    </p>
+
+                    <div>
+                      <p className="text-[13px] font-medium mb-1">
+                        Allowed Documents:
+                      </p>
+                      {row.original.allowed_documents &&
+                      row.original.allowed_documents.length > 0 ? (
+                        <ul className="list-disc list-inside space-y-0.5 text-xs text-muted-foreground">
+                          {row.original.allowed_documents.map((doc, idx) => (
+                            <li key={idx}>{doc}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          No documents
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Badge variant="outline" className="gap-1">
+              <X className="text-red-500" size={12} aria-hidden="true" />
+              No
+            </Badge>
+          )}
+        </div>
+      ),
+    },
+    {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
@@ -479,52 +699,41 @@ export default function ManageCategories() {
 
   return (
     <section className="space-y-2">
+      <AlertDialogComponent />
       <div className="flex justify-between items-center gap-4">
         <p className="text-helper">
           Configure competition categories with age restrictions, fees, and
           guest policies.
         </p>
 
-        <Dialog
+        <Sheet
           open={open}
           onOpenChange={(val) => {
             if (!val) {
-              setEditCategoryId(null);
-              setForm({
-                category_name: "",
-                check_player_age: true,
-                player_min_age: null,
-                player_max_age: null,
-                player_gender: "Male",
-                check_address: true,
-                allowed_address: null,
-                allow_guest_team: false,
-                team_entrance_fee_amount: 0,
-                allow_guest_player: false,
-                guest_player_fee_amount: 0,
-              });
+              resetForm();
             }
             setOpen(val);
           }}
         >
-          <DialogTrigger asChild>
-            <Button size={"sm"}>Add Category</Button>
-          </DialogTrigger>
-          <DialogContent
-            className="max-w-md max-h-[90vh] overflow-y-auto"
+          <SheetTrigger asChild>
+            <Button size="sm">Add Category</Button>
+          </SheetTrigger>
+          <SheetContent
+            side="right"
+            className="max-w-md"
             aria-describedby={undefined}
           >
-            <DialogHeader>
-              <DialogTitle>
+            <SheetHeader>
+              <SheetTitle>
                 {editCategoryId ? "Edit" : "Add"} Category
-              </DialogTitle>
-            </DialogHeader>
+              </SheetTitle>
+            </SheetHeader>
 
-            <div className="space-y-4">
+            <SheetBody className="flex-1 overflow-y-auto space-y-4">
               <div className="grid gap-2">
                 <Label>Category Name</Label>
                 <Input
-                  defaultValue={form.category_name}
+                  value={form.category_name}
                   onChange={(e) =>
                     handleChange("category_name", e.target.value)
                   }
@@ -550,7 +759,7 @@ export default function ManageCategories() {
                       <Label>Min Age</Label>
                       <Input
                         type="number"
-                        defaultValue={form.player_min_age || ""}
+                        value={form.player_min_age || ""}
                         onChange={(e) =>
                           handleChange(
                             "player_min_age",
@@ -564,7 +773,7 @@ export default function ManageCategories() {
                       <Label>Max Age</Label>
                       <Input
                         type="number"
-                        defaultValue={form.player_max_age || ""}
+                        value={form.player_max_age || ""}
                         onChange={(e) =>
                           handleChange(
                             "player_max_age",
@@ -585,18 +794,15 @@ export default function ManageCategories() {
                   onValueChange={(val) => handleChange("player_gender", val)}
                   className="flex space-x-4"
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Male" id="male" />
-                    <Label htmlFor="male">Male</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Female" id="female" />
-                    <Label htmlFor="female">Female</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Any" id="any" />
-                    <Label htmlFor="any">Any</Label>
-                  </div>
+                  {["Male", "Female", "Any"].map((gender) => (
+                    <div key={gender} className="flex items-center space-x-2">
+                      <RadioGroupItem
+                        value={gender}
+                        id={gender.toLowerCase()}
+                      />
+                      <Label htmlFor={gender.toLowerCase()}>{gender}</Label>
+                    </div>
+                  ))}
                 </RadioGroup>
               </div>
 
@@ -671,7 +877,7 @@ export default function ManageCategories() {
                 <Label>Team Entrance Fee</Label>
                 <Input
                   type="number"
-                  defaultValue={form.team_entrance_fee_amount}
+                  value={form.team_entrance_fee_amount}
                   onChange={(e) =>
                     handleChange(
                       "team_entrance_fee_amount",
@@ -714,7 +920,7 @@ export default function ManageCategories() {
                     <Label>Guest Player Fee</Label>
                     <Input
                       type="number"
-                      defaultValue={form.guest_player_fee_amount}
+                      value={form.guest_player_fee_amount}
                       onChange={(e) =>
                         handleChange(
                           "guest_player_fee_amount",
@@ -726,24 +932,80 @@ export default function ManageCategories() {
                   </div>
                 )}
               </div>
-            </div>
 
-            <DialogFooter className="pt-4">
-              <Button
-                onClick={handleSubmit}
-                disabled={isProcessing}
-                className="w-full"
-                size={"sm"}
-              >
-                {isProcessing
-                  ? "Processing..."
-                  : editCategoryId
-                  ? "Update"
-                  : "Add"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="requires_valid_document"
+                    checked={form.requires_valid_document}
+                    onCheckedChange={(val) =>
+                      handleChange("requires_valid_document", val)
+                    }
+                  />
+                  <Label htmlFor="requires_valid_document">
+                    Require Valid Documents
+                  </Label>
+                </div>
+
+                {form.requires_valid_document && (
+                  <div className="space-y-3">
+                    <div className="grid gap-2">
+                      <Label>Allowed Documents</Label>
+                      <MultipleSelector
+                        commandProps={{
+                          label: "Select documents",
+                        }}
+                        value={selectedDocuments}
+                        options={documentOptions}
+                        onChange={handleDocumentsChange}
+                        placeholder="Select required documents"
+                        hideClearAllButton
+                        hidePlaceholderWhenSelected
+                        emptyIndicator={
+                          <p className="text-center text-sm">
+                            No documents found
+                          </p>
+                        }
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label>Document Valid Until</Label>
+                      <DatePicker
+                        date={documentValidDate}
+                        setDate={handleDateChange}
+                        disabled={!form.requires_valid_document}
+                      />
+                      <p className="text-helper">
+                        Set expiration date for document validity.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </SheetBody>
+
+            <SheetFooter className="flex justify-end gap-2">
+              <SheetClose asChild>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={
+                    isProcessing ||
+                    (editCategoryId !== null && !hasFormChanges())
+                  }
+                  size="sm"
+                  className="w-full"
+                >
+                  {isProcessing
+                    ? "Processing..."
+                    : editCategoryId
+                    ? "Save Changes"
+                    : "Add"}
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
 
       <div className="overflow-hidden rounded-md border">

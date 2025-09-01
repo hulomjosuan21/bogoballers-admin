@@ -11,6 +11,9 @@ export type Category = {
   team_entrance_fee_amount: number;
   allow_guest_player: boolean;
   guest_player_fee_amount: number;
+  requires_valid_document: boolean;
+  allowed_documents: string[] | null;
+  document_valid_until: string | null;
 };
 
 export type CreateCategory = {
@@ -25,6 +28,9 @@ export type CreateCategory = {
   team_entrance_fee_amount: number;
   allow_guest_player: boolean;
   guest_player_fee_amount: number;
+  requires_valid_document: boolean;
+  allowed_documents: string[] | null;
+  document_valid_until: string | null;
 };
 
 export interface CategoryModel extends Category {
