@@ -6,6 +6,7 @@ import { Loader2Icon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { QueryResultWrapper } from "@/types/search-results";
 import { useErrorToast } from "@/components/error-toast";
+import { SearchResultsList } from "./EntitySearchResultPages";
 
 export default function SearchScreen() {
   const [queryResult, setQueryResult] = useState<QueryResultWrapper | null>(
@@ -65,7 +66,9 @@ export default function SearchScreen() {
       </nav>
 
       <section className="mt-14">
-        {queryResult && <pre>{JSON.stringify(queryResult, null, 2)}</pre>}
+        {queryResult && queryResult.results.length > 0 && (
+          <SearchResultsList results={queryResult.results} permissions={[]} />
+        )}
       </section>
     </div>
   );

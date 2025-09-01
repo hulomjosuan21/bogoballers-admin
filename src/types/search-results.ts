@@ -35,7 +35,7 @@ export interface QueryLeague extends League {
 }
 
 export interface QueryResult extends BaseResultWrapper {
-  data: QueryPlayer | QueryPlayerTeam | QueryLeagueAdmin | QueryLeague;
+  data: QueryPlayer | QueryTeam | QueryLeagueAdmin | QueryLeague;
 }
 
 export interface QueryResultWrapper {

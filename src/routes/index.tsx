@@ -15,7 +15,7 @@ import {
 } from "@/pages";
 import AboutLeaguePage from "@/pages/public/learnings/AboutLeague";
 import LeaderboardPage from "@/pages/leaderboard/LeaderboardPage";
-import SearchScreen from "@/pages/public/SearchScreen";
+import SearchScreen from "@/pages/public/SearchPage";
 
 export const publicRoutes: RouteObject[] = [
   {
