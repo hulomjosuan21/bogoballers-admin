@@ -26,11 +26,11 @@ export default function SearchScreen() {
 
   return (
     <div className="">
-      <nav className="fixed top-0 left-0 py-2 px-4 flex items-center gap-2 border-b w-full bg-background z-10">
+      <nav className="fixed top-0 left-0 py-2 px-4 flex items-center justify-center gap-2 border-b w-full bg-background z-10">
         <div className="relative">
           <Input
             ref={inputRef}
-            className="peer ps-8 pe-2"
+            className="peer ps-8 pe-2 lg:w-2xl"
             placeholder="Search..."
             type="search"
             value={searchQuery}
