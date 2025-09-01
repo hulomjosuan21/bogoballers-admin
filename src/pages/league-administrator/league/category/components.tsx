@@ -168,7 +168,7 @@ export function LeagueCategoryNodeSheet({
         </SheetBody>
         <SheetFooter className="flex justify-between">
           <Button
-            variant="destructive"
+            variant="ghost"
             type="button"
             onClick={handleDelete}
             disabled={isPending}

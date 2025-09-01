@@ -14,11 +14,21 @@ import {
   LeagueMatchScheduledPage,
 } from "@/pages";
 import AboutLeaguePage from "@/pages/public/learnings/AboutLeague";
+import LeaderboardPage from "@/pages/leaderboard/LeaderboardPage";
+import SearchScreen from "@/pages/public/SearchScreen";
 
 export const publicRoutes: RouteObject[] = [
   {
-    path: "about/league",
+    path: "/about/league",
     element: <AboutLeaguePage />,
+  },
+  {
+    path: "/leaderboard",
+    element: <LeaderboardPage />,
+  },
+  {
+    path: "/find",
+    element: <SearchScreen />,
   },
 ];
 

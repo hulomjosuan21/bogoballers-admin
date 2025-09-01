@@ -1,5 +1,5 @@
 import type {
-  League,
+  LeagueType,
   LeagueAffiliate,
   LeagueCourt,
   LeagueOfficial,
@@ -114,8 +114,8 @@ export class LeagueService {
     return ApiResponse.fromJsonNoPayload(response.data);
   }
 
-  static async fetchActiveLeague(): Promise<League | null> {
-    const response = await axiosClient.get<League>("/league/active");
+  static async fetchActiveLeague(): Promise<LeagueType | null> {
+    const response = await axiosClient.get<LeagueType>("/league/active");
 
     if (!response.data || Object.keys(response.data).length === 0) {
       return null;

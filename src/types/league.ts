@@ -39,7 +39,7 @@ export interface LeagueOption {
   player_residency_certificate_required: boolean;
 }
 
-export interface League {
+export type League = {
   league_id: string;
   league_administrator_id: string;
   league_title: string;
@@ -56,5 +56,8 @@ export interface League {
   created_at: string;
   updated_at: string;
   categories: LeagueCategory[];
+};
+
+export interface LeagueType extends League {
   option: LeagueOption;
 }

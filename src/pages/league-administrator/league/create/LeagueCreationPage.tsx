@@ -47,11 +47,7 @@ export default function LeagueCreationPage() {
                 size="sm"
                 className="flex mt-0.5"
                 onClick={() =>
-                  window.open(
-                    "/public/about/league",
-                    "_blank",
-                    "noopener,noreferrer"
-                  )
+                  window.open("/about/league", "_blank", "noopener,noreferrer")
                 }
               >
                 Learn more

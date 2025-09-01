@@ -4,17 +4,25 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { leagueAdminRoutes, publicRoutes } from "./routes";
-// added some changes
+import { AppNavbar } from "./components/app-navbar";
+
+function LandingPage() {
+  return (
+    <div className="">
+      <AppNavbar />
+    </div>
+  );
+}
 export default function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<h1>Home</h1>} />
+        <Route path="/" element={<LandingPage />} />
 
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
 
-        <Route path="/public">
+        <Route>
           {publicRoutes.map((route, index) => (
             <Route
               key={index}

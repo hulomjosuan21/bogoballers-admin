@@ -27,7 +27,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MoreHorizontal, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { LeagueCategory } from "./league/category/types";
-import type { League } from "@/types/league";
+import type { LeagueType } from "@/types/league";
 import { getActiveLeagueQueryOption } from "@/queries/league";
 import { leagueAdminCategoriesQueryOption } from "@/queries/league-admin";
 
@@ -78,7 +78,7 @@ export default function DashboardPage() {
     }
   };
 
-  const leagueSection = (league: League) => (
+  const leagueSection = (league: LeagueType) => (
     <section>
       <div className="w-full">
         <div className="grid items-center gap-8 md:gap-16 lg:grid-cols-2">

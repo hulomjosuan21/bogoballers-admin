@@ -58,7 +58,7 @@ export default function LeagueOfficialsPage() {
                     className="flex mt-0.5"
                     onClick={() =>
                       window.open(
-                        "/public/about/league",
+                        "/about/league",
                         "_blank",
                         "noopener,noreferrer"
                       )
