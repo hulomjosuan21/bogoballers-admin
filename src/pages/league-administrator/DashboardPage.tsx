@@ -1,21 +1,4 @@
 import ContentHeader from "@/components/content-header";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardToolbar,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import {
   Status,
@@ -24,160 +7,244 @@ import {
 } from "@/components/ui/kibo-ui/status";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { useQuery } from "@tanstack/react-query";
-import { MoreHorizontal, Settings } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import type { LeagueCategory } from "./league/category/types";
 import type { LeagueType } from "@/types/league";
-import { getActiveLeagueQueryOption } from "@/queries/league";
-import { leagueAdminCategoriesQueryOption } from "@/queries/league-admin";
+import {
+  getActiveLeagueAnalyticsQueryOption,
+  getActiveLeagueQueryOption,
+} from "@/queries/league";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ProfitAreaChart } from "@/charts/DashboardProfitChart";
+import {
+  SendToBack,
+  UserRound,
+  UsersRound,
+  type LucideIcon,
+  EyeOff,
+  Eye,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
-export default function DashboardPage() {
-  const navigate = useNavigate();
-  const activeLeague = useQuery(getActiveLeagueQueryOption);
-  const { data: LeagueAdminCategories } = useQuery(
-    leagueAdminCategoriesQueryOption
-  );
+interface DashboardCardProps {
+  title: string;
+  value: number | string;
+  lastUpdate?: string | null;
+  icon?: LucideIcon;
+}
 
+const LeagueSection = ({
+  league,
+  wrap,
+}: {
+  league: LeagueType;
+  wrap: boolean;
+}) => {
   const leagueStatus = (status: string) => {
-    switch (status) {
-      case "Scheduled":
-        return (
-          <Status status="maintenance">
-            <StatusIndicator />
-            <StatusLabel>Scheduled</StatusLabel>
-          </Status>
-        );
-      case "Ongoing":
-        return (
-          <Status status="online">
-            <StatusIndicator />
-            <StatusLabel>Ongoing</StatusLabel>
-          </Status>
-        );
-      case "Completed":
-        return (
-          <Status status="degraded">
-            <StatusIndicator />
-            <StatusLabel>Completed</StatusLabel>
-          </Status>
-        );
-      case "Postponed":
-        return (
-          <Status status="offline">
-            <StatusIndicator />
-            <StatusLabel>Postponed</StatusLabel>
-          </Status>
-        );
-      case "Cancelled":
-        return (
-          <Status status="offline">
-            <StatusIndicator />
-            <StatusLabel>Cancelled</StatusLabel>
-          </Status>
-        );
-    }
+    const map: Record<
+      string,
+      {
+        status: "online" | "offline" | "degraded" | "maintenance";
+        label: string;
+      }
+    > = {
+      Scheduled: { status: "maintenance", label: "Scheduled" },
+      Ongoing: { status: "online", label: "Ongoing" },
+      Completed: { status: "degraded", label: "Completed" },
+      Postponed: { status: "offline", label: "Postponed" },
+      Cancelled: { status: "offline", label: "Cancelled" },
+    };
+    const s = map[status];
+    return (
+      s && (
+        <Status status={s.status}>
+          <StatusIndicator />
+          <StatusLabel>{s.label}</StatusLabel>
+        </Status>
+      )
+    );
   };
 
-  const leagueSection = (league: LeagueType) => (
+  return (
     <section>
-      <div className="w-full">
-        <div className="grid items-center gap-8 md:gap-16 lg:grid-cols-2">
-          <ImageZoom>
-            <img
-              src={league.banner_url}
-              alt={"activeleague-banner"}
-              className="max-h-96 w-full rounded-md object-cover"
-            />
-          </ImageZoom>
-          <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
-            <div className="flex items-center gap-2 my-2">
-              <h1 className="mt-0 text-lg font-semibold text-balance">
-                {league.league_title}
-              </h1>
-              {leagueStatus(league.status!)}
-            </div>
-            <p className="mb-8 max-w-xl text-muted-foreground">
-              {league.league_description}
-            </p>
-            <div className="flex w-full flex-col justify-center gap-2 sm:flex-row lg:justify-start">
-              <Button variant="outline">Learn more</Button>
-            </div>
+      <div
+        className={`grid gap-4 items-start ${
+          wrap ? "grid-cols-1" : "sm:grid-cols-1 lg:grid-cols-2"
+        }`}
+      >
+        <ImageZoom>
+          <img
+            src={league.banner_url}
+            alt="activeleague-banner"
+            className="max-h-96 w-full rounded-md object-cover"
+          />
+        </ImageZoom>
+
+        <div className="flex flex-col gap-3 items-center text-center lg:items-start lg:text-left">
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 my-2">
+            <h1 className="text-lg font-semibold break-words">
+              {league.league_title}
+            </h1>
+            {leagueStatus(league.status!)}
           </div>
+          <p className="text-muted-foreground text-sm text-justify break-words">
+            {league.league_description}
+          </p>
         </div>
       </div>
     </section>
   );
+};
 
-  const statisCards = (categories: LeagueCategory[]) => (
-    <div className="flex items-center justify-center">
-      <div className="grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="border-0">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              All Categories
-            </CardTitle>
-            <CardToolbar>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="-me-1.5">
-                    <MoreHorizontal />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="bottom">
-                  <DropdownMenuLabel className="text-xs">
-                    Categories
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    {categories.map((cat, index) => (
-                      <DropdownMenuItem key={index}>
-                        {cat.category_name}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem
-                      onClick={() =>
-                        navigate(
-                          "/league-administrator/pages/league/categories"
-                        )
-                      }
-                    >
-                      <Settings />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </CardToolbar>
-          </CardHeader>
-          <CardContent className="space-y-2.5">
-            <div className="flex items-center gap-2.5">
-              <span className="text-2xl font-medium text-foreground tracking-tight">
-                {categories.length ?? 0}
-              </span>
+const AnalyticsCard = ({
+  title,
+  value,
+  lastUpdate,
+  icon: Icon,
+}: DashboardCardProps) => (
+  <Card className="rounded-md flex-1 min-w-72">
+    <CardHeader className="flex flex-row items-center justify-between">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      {Icon && <Icon className="h-5 w-5 text-muted-foreground" />}
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{value}</div>
+      {lastUpdate !== undefined && (
+        <p className="text-xs text-muted-foreground">
+          {lastUpdate
+            ? `Last update: ${new Date(lastUpdate).toLocaleDateString()}`
+            : "No updates yet"}
+        </p>
+      )}
+    </CardContent>
+  </Card>
+);
+
+const RecentUpdates = () => {
+  const updates = [
+    {
+      name: "Bob Johnson",
+      time: "2 days ago",
+      title: "Weekend Plans",
+      body: "Hey everyone! I'm thinking of organizing a team outing this weekend....",
+    },
+    {
+      name: "Emily Davis",
+      time: "2 days ago",
+      title: "Re: Question about Budget",
+      body: "I've reviewed the budget numbers you sent over....",
+    },
+    {
+      name: "Michael Wilson",
+      time: "1 week ago",
+      title: "Important Announcement",
+      body: "Please join us for an all-hands meeting this Friday at 3 PM....",
+    },
+    {
+      name: "Sarah Brown",
+      time: "1 week ago",
+      title: "Re: Feedback on Proposal",
+      body: "Thank you for sending over the proposal. I've reviewed it and have some thoughts....",
+    },
+  ];
+
+  return (
+    <div className="bg-card rounded-md py-4 border shadow-sm">
+      <div className="border-b">
+        <h2 className="text-md font-semibold mb-4 text-center">
+          Recent Updates
+        </h2>
+      </div>
+      <div>
+        {updates.map((item, i) => (
+          <div key={i} className="border-b p-2 last:border-none last:pb-0">
+            <div className="flex justify-between text-sm font-medium">
+              <span className="font-light">{item.name}</span>
+              <span className="text-muted-foreground text-xs">{item.time}</span>
             </div>
-            <div className="text-xs text-muted-foreground mt-2 border-t pt-2.5">
-              Total categories in this league
-            </div>
-          </CardContent>
-        </Card>
+            <p className="font-semibold text-sm">{item.title}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2">
+              {item.body}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
+};
+
+export default function DashboardPage() {
+  const activeLeague = useQuery(getActiveLeagueQueryOption);
+  const activeLeagueAnalytics = useQuery(
+    getActiveLeagueAnalyticsQueryOption(activeLeague.data?.league_id)
+  );
+  const [showUpdates, setShowUpdates] = useState(true);
 
   return (
     <ContentShell>
-      <ContentHeader title="Dashboard" />
+      <ContentHeader title="Dashboard">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowUpdates((prev) => !prev)}
+        >
+          {showUpdates ? (
+            <>
+              <EyeOff className="h-4 w-4 mr-1" /> Hide Updates
+            </>
+          ) : (
+            <>
+              <Eye className="h-4 w-4 mr-1" /> Show Updates
+            </>
+          )}
+        </Button>
+      </ContentHeader>
+
       <ContentBody>
-        {activeLeague.data && (
-          <>
-            {leagueSection(activeLeague.data)}
-            {statisCards(activeLeague.data.categories)}
-          </>
+        {activeLeague.data && activeLeagueAnalytics.data && (
+          <div
+            className={`grid gap-6 ${
+              showUpdates ? "lg:grid-cols-3" : "lg:grid-cols-2"
+            }`}
+          >
+            <div className="lg:col-span-2 flex flex-col gap-6">
+              <LeagueSection
+                league={activeLeagueAnalytics.data.active_league}
+                wrap={showUpdates}
+              />
+
+              <div className="flex gap-4 items-center flex-wrap">
+                <AnalyticsCard
+                  title="Total Teams"
+                  value={activeLeagueAnalytics.data.total_accepted_teams.count}
+                  lastUpdate={
+                    activeLeagueAnalytics.data.total_accepted_teams.last_update
+                  }
+                  icon={UsersRound}
+                />
+                <AnalyticsCard
+                  title="Total Players"
+                  value={activeLeagueAnalytics.data.total_players.count}
+                  lastUpdate={
+                    activeLeagueAnalytics.data.total_players.last_update
+                  }
+                  icon={UserRound}
+                />
+                <AnalyticsCard
+                  title="Total Categories"
+                  value={activeLeagueAnalytics.data.total_categories.count}
+                  lastUpdate={
+                    activeLeagueAnalytics.data.total_categories.last_update
+                  }
+                  icon={SendToBack}
+                />
+              </div>
+
+              <ProfitAreaChart data={activeLeagueAnalytics.data.total_profit} />
+            </div>
+
+            {showUpdates && <RecentUpdates />}
+          </div>
         )}
-        <pre>{JSON.stringify(LeagueAdminCategories, null, 2)}</pre>
       </ContentBody>
     </ContentShell>
   );

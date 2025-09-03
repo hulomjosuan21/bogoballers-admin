@@ -58,6 +58,32 @@ export type League = {
   categories: LeagueCategory[];
 };
 
-export interface LeagueType extends League {
-  option: LeagueOption;
+export interface LeagueType extends League {}
+
+export interface ProfitChartPoint {
+  date: string;
+  amount: number;
+}
+
+export interface TotalProfit {
+  amount: number;
+  last_update: string | null;
+  chart: ProfitChartPoint[];
+}
+
+export interface LeagueAnalytics {
+  active_league: LeagueType;
+  total_profit: TotalProfit;
+  total_accepted_teams: {
+    count: number;
+    last_update: string | null;
+  };
+  total_players: {
+    count: number;
+    last_update: string | null;
+  };
+  total_categories: {
+    count: number;
+    last_update: string | null;
+  };
 }

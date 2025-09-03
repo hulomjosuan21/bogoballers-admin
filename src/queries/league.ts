@@ -1,4 +1,8 @@
-import type { LeagueType, LeagueResource } from "@/types/league";
+import type {
+  LeagueType,
+  LeagueResource,
+  LeagueAnalytics,
+} from "@/types/league";
 import { LeagueService } from "@/service/league-service";
 import { queryOptions } from "@tanstack/react-query";
 
@@ -27,3 +31,15 @@ export const getActiveLeagueResourceQueryOption = queryOptions<
   refetchOnMount: false,
   refetchOnReconnect: false,
 });
+
+export const getActiveLeagueAnalyticsQueryOption = (leagueId?: string) =>
+  queryOptions<LeagueAnalytics | null, Error>({
+    queryKey: ["active-league-resource"],
+    queryFn: () => LeagueService.analytics(leagueId!),
+    enabled: !!leagueId,
+    staleTime: Infinity,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });

@@ -6,6 +6,7 @@ import type {
   LeagueOption,
   LeagueReferee,
   LeagueResource,
+  LeagueAnalytics,
 } from "@/types/league";
 import { ApiResponse } from "./../lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
@@ -31,6 +32,14 @@ const IMAGE_KEY_MAP: ImageKeyMap = {
   league_affiliates: "image",
 };
 export class LeagueService {
+  static async analytics(leagueId: string) {
+    const res = await axiosClient.get<LeagueAnalytics>(
+      `/league/analytics/${leagueId}`
+    );
+
+    return res.data;
+  }
+
   static async updateOption({
     leagueId,
     data,
