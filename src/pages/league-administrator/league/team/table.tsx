@@ -108,11 +108,23 @@ export const columns = ({
   },
   {
     accessorKey: "payment_status",
-    header: "Payment Status",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Payment Status
+        <ArrowUpDown className="ml-1 h-4 w-4" />
+      </Button>
+    ),
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue) return true;
+      return row.getValue(columnId) === filterValue;
+    },
     cell: ({ row }) => {
       const status = row.original.payment_status;
 
-      if (["Paid Online", "Paid On Site", "Waived"].includes(status)) {
+      if (["Paid Online", "Paid On Site", "No Charge"].includes(status)) {
         return (
           <Badge variant="outline" className="gap-1">
             <CheckIcon
@@ -166,7 +178,7 @@ export const columns = ({
         })
       );
 
-      const { openDialog, AlertDialogComponent } = useAlertDialog();
+      const { openDialog } = useAlertDialog();
 
       const { deleteApi } = useDeleteTeamStore();
 
@@ -210,9 +222,12 @@ export const columns = ({
         );
       };
 
+      const paidPending = ["Paid On Site", "Paid Online"].includes(
+        team.payment_status
+      );
+
       return (
         <div className="text-right">
-          <AlertDialogComponent />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
@@ -225,14 +240,35 @@ export const columns = ({
               <DropdownMenuItem onClick={() => dialogOpen(team)}>
                 Details
               </DropdownMenuItem>
+              <DropdownMenuItem>Message</DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuLabel>Set payment status</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => handleUpdate({ payment_status: "Paid On Site" })}
               >
-                Set Paid On Site
+                On Site
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleUpdate({ payment_status: "Paid Online" })}
+              >
+                Online
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleUpdate({ payment_status: "Pending" })}
+              >
+                Unpaid
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleUpdate({ payment_status: "No Charge" })}
+              >
+                No Charge
+              </DropdownMenuItem>
+
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleDelete}>Remove</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDelete}>
+                {paidPending ? "Remove & Refund" : "Remove"}
+              </DropdownMenuItem>
+
               <DropdownMenuItem
                 onClick={() => handleUpdate({ status: "Accepted" })}
               >
@@ -324,7 +360,7 @@ export function TeamSubmissionTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={6 + 1} className="h-24 text-center">
                   {isLoading ? "Loading..." : "No data."}
                 </TableCell>
               </TableRow>

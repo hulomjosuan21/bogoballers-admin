@@ -1,7 +1,14 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+// AlertDialogContext.tsx
+import {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+  type ReactNode,
+} from "react";
 import {
   AlertDialog,
-  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -18,6 +25,14 @@ interface AlertDialogOptions {
   confirmText?: string;
 }
 
+interface AlertDialogContextType {
+  openDialog: (options?: AlertDialogOptions) => Promise<boolean>;
+}
+
+const AlertDialogContext = createContext<AlertDialogContextType | undefined>(
+  undefined
+);
+
 const DEFAULT_OPTIONS: Required<AlertDialogOptions> = {
   title: "Are you sure?",
   description: "This action cannot be undone.",
@@ -25,13 +40,15 @@ const DEFAULT_OPTIONS: Required<AlertDialogOptions> = {
   confirmText: "Continue",
 };
 
-export function useAlertDialog() {
+export function AlertDialogProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [resolver, setResolver] = useState<((value: boolean) => void) | null>(
     null
   );
   const [currentOptions, setCurrentOptions] =
     useState<Required<AlertDialogOptions>>(DEFAULT_OPTIONS);
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+
   const openDialog = (options?: AlertDialogOptions) =>
     new Promise<boolean>((resolve) => {
       setCurrentOptions({ ...DEFAULT_OPTIONS, ...options });
@@ -44,7 +61,10 @@ export function useAlertDialog() {
     setIsOpen(false);
   };
 
-  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  const handleCancel = () => {
+    resolver?.(false);
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -52,32 +72,37 @@ export function useAlertDialog() {
     }
   }, [isOpen]);
 
-  const handleCancel = () => {
-    resolver?.(false);
-    setIsOpen(false);
-  };
-
-  const AlertDialogComponent = ({ trigger }: { trigger?: ReactNode }) => (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{currentOptions.title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {currentOptions.description}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCancel}>
-            {currentOptions.cancelText}
-          </AlertDialogCancel>
-          <AlertDialogAction ref={confirmButtonRef} onClick={handleConfirm}>
-            {currentOptions.confirmText}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+  return (
+    <AlertDialogContext.Provider value={{ openDialog }}>
+      {children}
+      <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{currentOptions.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {currentOptions.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancel}>
+              {currentOptions.cancelText}
+            </AlertDialogCancel>
+            <AlertDialogAction ref={confirmButtonRef} onClick={handleConfirm}>
+              {currentOptions.confirmText}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </AlertDialogContext.Provider>
   );
+}
 
-  return { openDialog, AlertDialogComponent };
+export function useAlertDialog() {
+  const context = useContext(AlertDialogContext);
+  if (!context) {
+    throw new Error(
+      "useAlertDialog must be used within an AlertDialogProvider"
+    );
+  }
+  return context;
 }

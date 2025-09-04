@@ -78,9 +78,7 @@ const TeamSearchResultListItem: React.FC<TeamSearchResultProps> = ({
       </div>
       <div className="flex-1 flex items-center justify-between min-w-0">
         <div className="flex-1 mr-2">
-          <p className="text-sm font-semibold text-gray-900 truncate">
-            {result.team_name}
-          </p>
+          <p className="text-sm font-semibold truncate">{result.team_name}</p>
         </div>
         <CustomBadge text="Team" variant="outline" />
       </div>
@@ -110,7 +108,7 @@ const LeagueAdministratorSearchResultListItem: React.FC<
       </div>
       <div className="flex-1 flex items-center justify-between min-w-0">
         <div className="flex-1 mr-2">
-          <p className="text-sm font-semibold text-gray-900 truncate">
+          <p className="text-sm font-semibold truncate">
             {result.organization_name}
           </p>
         </div>
@@ -141,7 +139,7 @@ const LeagueSearchResultListItem: React.FC<LeagueSearchResultProps> = ({
       </div>
       <div className="flex-1 flex items-center justify-between min-w-0">
         <div className="flex-1 mr-2">
-          <p className="text-xs font-semibold text-gray-900 line-clamp-2">
+          <p className="text-xs font-semibold line-clamp-2">
             {result.league_title}
           </p>
         </div>

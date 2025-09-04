@@ -135,7 +135,7 @@ export default function ManageCategories() {
     Date | undefined
   >();
 
-  const { openDialog, AlertDialogComponent } = useAlertDialog();
+  const { openDialog } = useAlertDialog();
 
   const documentOptions = useMemo(
     () => StaticData.PlayerValidationDocuments,
@@ -699,7 +699,6 @@ export default function ManageCategories() {
 
   return (
     <section className="space-y-2">
-      <AlertDialogComponent />
       <div className="flex justify-between items-center gap-4">
         <p className="text-helper">
           Configure competition categories with age restrictions, fees, and

@@ -35,7 +35,7 @@ export default function PlayerLeaderboard() {
       {
         accessorKey: "name",
         id: "name",
-        header: "Player",
+        header: "Name",
         cell: ({ row }) => {
           const rank = row.index + 1;
           let rankClass = "";
