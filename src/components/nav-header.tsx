@@ -5,14 +5,18 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import logoMain from "@/assets/logo-main.png";
+import { useNavigate } from "react-router-dom";
 
 export function AppSidebarHeader() {
+  const navigate = useNavigate();
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton
           size="lg"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          onClick={() => navigate("/")}
         >
           <Avatar className="h-8 w-8 rounded-lg">
             <AvatarImage src={logoMain} alt="logo" />

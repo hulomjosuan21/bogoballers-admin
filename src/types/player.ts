@@ -12,6 +12,7 @@ export type Player = {
   position: string[];
   height_in: number;
   weight_kg: number;
+  valid_documents: string[];
   total_games_played: number;
   total_points_scored: number;
   total_assists: number;

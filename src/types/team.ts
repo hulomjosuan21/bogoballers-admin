@@ -26,3 +26,16 @@ export interface TeamModel extends TeamType {
   user: UserType;
   accepted_players: PlayerTeamModel[];
 }
+
+export interface LeagueTeamModel extends TeamModel {
+  league_team_id: string;
+  league_id: string;
+  league_category_id: string;
+  status: string;
+  amount_paid: number;
+  payment_status: string;
+  wins: number;
+  losses: number;
+  draws: number;
+  points: number;
+}

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -44,6 +44,14 @@ export function useAlertDialog() {
     setIsOpen(false);
   };
 
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      confirmButtonRef.current?.focus();
+    }
+  }, [isOpen]);
+
   const handleCancel = () => {
     resolver?.(false);
     setIsOpen(false);
@@ -63,7 +71,7 @@ export function useAlertDialog() {
           <AlertDialogCancel onClick={handleCancel}>
             {currentOptions.cancelText}
           </AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm}>
+          <AlertDialogAction ref={confirmButtonRef} onClick={handleConfirm}>
             {currentOptions.confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>

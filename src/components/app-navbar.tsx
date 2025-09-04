@@ -80,11 +80,7 @@ export const AppNavbar = ({
       <nav className="hidden justify-between items-center lg:flex">
         <div className="flex items-center gap-6">
           <a href={logo.url} className="flex items-center gap-2">
-            <img
-              src={logo.src}
-              className="max-h-8" //dark:invert
-              alt={logo.alt}
-            />
+            <img src={logo.src} className="max-h-8" alt={logo.alt} />
             <span className="text-lg font-semibold tracking-tighter">
               {logo.title}
             </span>

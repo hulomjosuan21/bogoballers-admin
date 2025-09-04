@@ -49,9 +49,7 @@ const PlayerSearchResultListItem: React.FC<PlayerSearchResultProps> = ({
       </div>
       <div className="flex-1 flex items-center justify-between min-w-0">
         <div className="flex-1 mr-2">
-          <p className="text-sm font-semibold text-gray-900 truncate">
-            {result.full_name}
-          </p>
+          <p className="text-sm font-semibold truncate">{result.full_name}</p>
         </div>
         <CustomBadge text="Player" variant="outline" />
       </div>

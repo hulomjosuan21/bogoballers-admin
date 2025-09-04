@@ -11,7 +11,6 @@ import {
   AlertTitle,
   AlertToolbar,
 } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
 import { RiSpamFill } from "@remixicon/react";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ import {
   getActiveLeagueResourceQueryOption,
 } from "@/queries/league";
 import { useMemo } from "react";
+import ErrorLoading from "@/components/error-loading";
 
 export default function LeagueOfficialsPage() {
   const [{ data: activeLeague }, { data, isLoading, error }] = useQueries({
@@ -33,14 +33,8 @@ export default function LeagueOfficialsPage() {
       <ContentHeader title="League Officials" />
 
       <ContentBody className="">
-        {isLoading ? (
-          <div className="centered-container">
-            <Loader2 className="spinner-primary" />
-          </div>
-        ) : error ? (
-          <div className="centered-container">
-            <p className="text-primary">{error.message}</p>
-          </div>
+        {isLoading || error ? (
+          <ErrorLoading isLoading={isLoading} error={error} />
         ) : (
           <>
             {!hasActiveLeague && (

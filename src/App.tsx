@@ -4,14 +4,10 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { leagueAdminRoutes, publicRoutes } from "./routes";
-import { AppNavbar } from "./components/app-navbar";
+import HeroSection from "./pages/public/landing-page/LandingPage";
 
 function LandingPage() {
-  return (
-    <div className="">
-      <AppNavbar />
-    </div>
-  );
+  return <HeroSection />;
 }
 export default function App() {
   return (
