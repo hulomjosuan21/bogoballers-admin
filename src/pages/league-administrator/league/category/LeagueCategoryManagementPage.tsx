@@ -13,8 +13,8 @@ import {
   useMemo,
 } from "./imports";
 import { CloudAlert } from "lucide-react";
-import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
-import { getActiveLeagueQueryOption } from "@/queries/league";
+import { getActiveLeagueCategoriesQueryOption } from "@/queries/leagueCategoryQueryOption";
+import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 
 export default function LeagueCategoryManagementPage() {
   const {

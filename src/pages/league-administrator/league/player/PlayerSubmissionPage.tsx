@@ -15,8 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-import { getActiveLeagueQueryOption } from "@/queries/league";
-import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
+import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
+import { getActiveLeagueCategoriesQueryOption } from "@/queries/leagueCategoryQueryOption";
 
 export default function PlayerSubmissionPage() {
   const {

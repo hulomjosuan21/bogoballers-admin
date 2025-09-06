@@ -51,11 +51,11 @@ import {
 import type { Category, CreateCategory } from "./category/types";
 import { useQueries } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
-import CategoryService from "@/service/category-service";
+import CategoryService from "@/service/categoryService";
 import {
   authLeagueAdminQueryOption,
   leagueAdminCategoriesQueryOption,
-} from "@/queries/league-admin";
+} from "@/queries/leagueAdminQueryOption";
 import {
   Command,
   CommandEmpty,
@@ -83,7 +83,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useAlertDialog } from "@/hooks/user-alert-dialog";
+import { useAlertDialog } from "@/hooks/userAlertDialog";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
 import { DatePicker } from "@/components/date-picker";
 import MultipleSelector from "@/components/ui/multiselect";

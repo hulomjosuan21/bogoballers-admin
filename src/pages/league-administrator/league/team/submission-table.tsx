@@ -33,13 +33,13 @@ import { DataTablePagination } from "@/components/data-table-pagination";
 import type { LeagueTeamModel } from "@/types/team";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getAllLeagueTeamsSubmissionQueryOptions } from "@/queries/league_team";
+import { getAllLeagueTeamsSubmissionQueryOptions } from "@/queries/leagueTeamQueryOption";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import { formatIsoDate } from "@/helpers/helpers";
 import { Badge } from "@/components/ui/badge";
 import { useCheckPlayerSheet, useUpdateTeamStore } from "./store";
 import { toast } from "sonner";
-import { useAlertDialog } from "@/hooks/user-alert-dialog";
+import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { queryClient } from "@/lib/queryClient";
 
 interface TeamSubmissionTableProps {

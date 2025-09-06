@@ -8,7 +8,7 @@ import type {
   LeagueResource,
   LeagueAnalytics,
 } from "@/types/league";
-import { ApiResponse } from "./../lib/apiResponse";
+import { ApiResponse } from "../lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
 import type { LeagueCreateOfficialCreate } from "@/pages/league-administrator/league/manage/manage-officials";
 import type { LeagueRefereeCreate } from "@/pages/league-administrator/league/manage/manage-referees";

@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import {
   getActiveLeagueQueryOption,
   getActiveLeagueResourceQueryOption,
-} from "@/queries/league";
+} from "@/queries/leagueQueryOption";
 import { useMemo } from "react";
 import ErrorLoading from "@/components/error-loading";
 

@@ -11,7 +11,7 @@ import type { DateRange } from "react-day-picker";
 import dayjs from "dayjs";
 import { useErrorToast } from "@/components/error-toast";
 import { Separator } from "@/components/ui/separator";
-import { LeagueService } from "@/service/league-service";
+import { LeagueService } from "@/service/leagueService";
 import { toast } from "sonner";
 
 import { ButtonLoading } from "@/components/custom-buttons";
@@ -35,12 +35,12 @@ import {
 import {
   authLeagueAdminQueryOption,
   leagueAdminCategoriesQueryOption,
-} from "@/queries/league-admin";
+} from "@/queries/leagueAdminQueryOption";
 import { Check, ChevronsUpDown } from "lucide-react";
 import MultipleSelector from "@/components/ui/multiselect";
 import type { CategoryModel } from "../category/types";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
-import { getActiveLeagueQueryOption } from "@/queries/league";
+import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 
 function validateLeagueForm({
   leagueTitle,

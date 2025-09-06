@@ -3,8 +3,10 @@ import type { PlayerModel } from "@/types/player";
 
 export class PlayerService {
   static async get_player_leaderboar() {
-    const response = await axiosClient.get("/player/leaderboard");
+    const response = await axiosClient.get<PlayerModel[]>(
+      "/player/leaderboard"
+    );
 
-    return (response.data || []) as PlayerModel[];
+    return response.data;
   }
 }

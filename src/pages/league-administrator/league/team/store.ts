@@ -1,4 +1,4 @@
-import { LeagueTeamService } from "@/service/league-team-service";
+import { LeagueTeamService } from "@/service/leagueTeamService";
 import { createDeleteStore } from "@/stores/deleteStore";
 import { createDialogStore } from "@/stores/dialogStore";
 import { createUpdateStore } from "@/stores/updateStore";

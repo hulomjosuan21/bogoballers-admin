@@ -1,4 +1,4 @@
-import { getActiveLeagueQueryOption } from "@/queries/league";
+import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 import {
   Button,
   Input,
@@ -27,7 +27,7 @@ import {
   type CategoryNodeData,
   type RoundNodeData,
 } from "./imports";
-import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
+import { getActiveLeagueCategoriesQueryOption } from "@/queries/leagueCategoryQueryOption";
 import { useEffect, useRef, useTransition } from "react";
 import { FolderCog, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";

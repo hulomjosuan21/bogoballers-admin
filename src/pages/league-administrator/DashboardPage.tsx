@@ -11,7 +11,7 @@ import type { LeagueType } from "@/types/league";
 import {
   getActiveLeagueAnalyticsQueryOption,
   getActiveLeagueQueryOption,
-} from "@/queries/league";
+} from "@/queries/leagueQueryOption";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ProfitAreaChart } from "@/charts/DashboardProfitChart";
 import {

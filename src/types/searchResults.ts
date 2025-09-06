@@ -1,5 +1,5 @@
 import type { League } from "./league";
-import type { LeagueAdminModel } from "./league-admin";
+import type { LeagueAdminModel } from "./leagueAdmin";
 import type { Player, PlayerType } from "./player";
 import type { Team } from "./team";
 import type { User, UserType } from "./user";

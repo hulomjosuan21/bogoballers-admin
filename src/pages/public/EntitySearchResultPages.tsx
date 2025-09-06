@@ -5,7 +5,7 @@ import type {
   QueryPlayer,
   QueryResult,
   QueryTeam,
-} from "@/types/search-results";
+} from "@/types/searchResults";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 

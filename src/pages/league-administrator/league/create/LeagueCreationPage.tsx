@@ -11,7 +11,7 @@ import {
 import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { getActiveLeagueQueryOption } from "@/queries/league";
+import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 import { useMemo } from "react";
 export default function LeagueCreationPage() {
   const { data: activeLeague, isLoading } = useQuery(

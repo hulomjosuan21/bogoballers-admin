@@ -30,7 +30,7 @@ import {
 import type { LeagueTeamForMatch } from "@/types/team";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getAllLeagueTeamForMatchQueryOption } from "@/queries/league_team";
+import { getAllLeagueTeamForMatchQueryOption } from "@/queries/leagueTeamQueryOption";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, MoreVertical } from "lucide-react";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";

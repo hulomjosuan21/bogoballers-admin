@@ -44,12 +44,12 @@ import {
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import type { LeagueOfficial } from "@/types/league";
-import { LeagueService } from "@/service/league-service";
+import { LeagueService } from "@/service/leagueService";
 import { useErrorToast } from "@/components/error-toast";
 import { useQuery } from "@tanstack/react-query";
 import { StaticData } from "@/data";
 import { cn } from "@/lib/utils";
-import { getActiveLeagueQueryOption } from "@/queries/league";
+import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 
 export type LeagueCreateOfficialCreate = {
   full_name: string;

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/form";
 import { useErrorToast } from "@/components/error-toast";
 import { Auth } from "@/assets";
-import LeagueAdministratorService from "@/service/league-admin-service";
+import LeagueAdministratorService from "@/service/leagueAdminService";
 import { toast } from "sonner";
 
 const loginSchema = z.object({

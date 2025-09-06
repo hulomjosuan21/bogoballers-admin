@@ -1,5 +1,6 @@
+import { QUERY_KEYS } from "@/constants/queryKeys";
 import { queryClient } from "@/lib/queryClient";
-import { getActiveLeagueQueryOption } from "@/queries/league";
+import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 import { useQuery } from "@tanstack/react-query";
 
 export const useActiveLeague = () => {
@@ -15,7 +16,7 @@ export const useActiveLeague = () => {
 
 export async function refetchActiveLeague() {
   await queryClient.refetchQueries({
-    queryKey: ["active-league"],
+    queryKey: QUERY_KEYS.ACTIVE_LEAGUE,
     exact: true,
   });
 }
