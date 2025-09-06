@@ -46,8 +46,10 @@ export class LeagueCategoryService {
   }
 
   static async fetchActiveCategories(league_id: string) {
-    const response = await axiosClient.get(`/league/category/${league_id}`);
-    return (response.data ?? []) as LeagueCategory[];
+    const response = await axiosClient.get<LeagueCategory[]>(
+      `/league/category/${league_id}`
+    );
+    return response.data;
   }
 
   static async deleteCategory(category_id: string) {

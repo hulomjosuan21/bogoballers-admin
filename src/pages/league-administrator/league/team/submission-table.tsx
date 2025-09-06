@@ -18,7 +18,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -38,13 +37,10 @@ import { getAllLeagueTeamsSubmissionQueryOptions } from "@/queries/league_team";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import { formatIsoDate } from "@/helpers/helpers";
 import { Badge } from "@/components/ui/badge";
-import {
-  useCheckPlayerSheet,
-  useDeleteTeamStore,
-  useUpdateTeamStore,
-} from "./store";
+import { useCheckPlayerSheet, useUpdateTeamStore } from "./store";
 import { toast } from "sonner";
 import { useAlertDialog } from "@/hooks/user-alert-dialog";
+import { queryClient } from "@/lib/queryClient";
 
 interface TeamSubmissionTableProps {
   leagueId?: string;
@@ -180,27 +176,6 @@ export const columns = ({
 
       const { openDialog } = useAlertDialog();
 
-      const { deleteApi } = useDeleteTeamStore();
-
-      const handleDelete = async () => {
-        const confirm = await openDialog({
-          confirmText: "Remove",
-          cancelText: "Cancel",
-        });
-        if (!confirm) return;
-        toast.promise(
-          deleteApi(team.league_team_id).then((res) => {
-            refetch();
-            return res;
-          }),
-          {
-            loading: "Removing team...",
-            success: (res) => res,
-            error: (err) => getErrorMessage(err) ?? "Failed to remove team",
-          }
-        );
-      };
-
       const { updateApi } = useUpdateTeamStore();
 
       const handleUpdate = async (data: Partial<LeagueTeamModel>) => {
@@ -220,11 +195,14 @@ export const columns = ({
             error: (err) => getErrorMessage(err) ?? "Something went wrong!",
           }
         );
+        await queryClient.refetchQueries({
+          queryKey: ["league-team-submission", leagueId, leagueCategoryId],
+        });
       };
 
-      const paidPending = ["Paid On Site", "Paid Online"].includes(
-        team.payment_status
-      );
+      // const paidPending = ["Paid On Site", "Paid Online"].includes(
+      //   team.payment_status
+      // );
 
       return (
         <div className="text-right">
@@ -240,35 +218,6 @@ export const columns = ({
               <DropdownMenuItem onClick={() => dialogOpen(team)}>
                 Details
               </DropdownMenuItem>
-              <DropdownMenuItem>Message</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Set payment status</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => handleUpdate({ payment_status: "Paid On Site" })}
-              >
-                On Site
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleUpdate({ payment_status: "Paid Online" })}
-              >
-                Online
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleUpdate({ payment_status: "Pending" })}
-              >
-                Unpaid
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleUpdate({ payment_status: "No Charge" })}
-              >
-                No Charge
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleDelete}>
-                {paidPending ? "Remove & Refund" : "Remove"}
-              </DropdownMenuItem>
-
               <DropdownMenuItem
                 onClick={() => handleUpdate({ status: "Accepted" })}
               >

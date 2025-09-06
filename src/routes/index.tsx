@@ -16,6 +16,7 @@ import {
 import AboutLeaguePage from "@/pages/public/learnings/AboutLeague";
 import LeaderboardPage from "@/pages/leaderboard/LeaderboardPage";
 import SearchScreen from "@/pages/public/SearchPage";
+import LeagueTeamsPage from "@/pages/league-administrator/league/team/LeagueTeamsPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -44,6 +45,10 @@ export const leagueAdminRoutes: RouteObject[] = [
   {
     path: "pages/league/resource",
     element: <LeagueResourcePage />,
+  },
+  {
+    path: "pages/league/teams",
+    element: <LeagueTeamsPage />,
   },
   {
     path: "pages/league/match/scheduled",

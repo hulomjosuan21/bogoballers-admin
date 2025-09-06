@@ -17,18 +17,16 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 import { getActiveLeagueQueryOption } from "@/queries/league";
 import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
+import LeagueTeamsTable from "./league-teams-table";
 
-import { TeamSubmissionTable } from "./submission-table";
-import { CheckPlayerSheet } from "./components";
-
-export default function TeamSubmissionPage() {
+export default function LeagueTeamsPage() {
   const {
     data: activeLeague,
     isLoading,
     error,
   } = useQuery(getActiveLeagueQueryOption);
 
-  const { data: categories, isLoading: isLoadingCategories } = useQuery(
+  const { data: categories, isLoading: isLoadingCategory } = useQuery(
     getActiveLeagueCategoriesQueryOption(activeLeague?.league_id)
   );
 
@@ -50,10 +48,9 @@ export default function TeamSubmissionPage() {
       </ContentShell>
     );
   }
-
   return (
     <ContentShell>
-      <ContentHeader title="Team Submission" />
+      <ContentHeader title={`${activeLeague?.league_title} Teams`} />
 
       <ContentBody>
         {isLoading || error ? (
@@ -110,11 +107,10 @@ export default function TeamSubmissionPage() {
                     value={cat.league_category_id}
                     className="pt-2"
                   >
-                    <CheckPlayerSheet />
-                    <TeamSubmissionTable
+                    <LeagueTeamsTable
                       leagueCategoryId={cat.league_category_id}
                       leagueId={activeLeague?.league_id}
-                      isLoading={isLoadingCategories}
+                      isLoading={isLoadingCategory}
                     />
                   </TabsContent>
                 ))}

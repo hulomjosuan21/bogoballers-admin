@@ -78,7 +78,7 @@ const data = {
       items: [
         {
           title: "All",
-          url: "#",
+          url: "/league-administrator/pages/league/teams",
         },
         {
           title: "Submissions",

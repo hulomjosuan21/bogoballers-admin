@@ -1,4 +1,6 @@
+import type { LeagueCategoryModel } from "@/pages/league-administrator/league/category/types";
 import type { UserType } from "./user";
+import type { LeagueTeamModel } from "./team";
 
 export type Player = {
   player_id: string;
@@ -35,7 +37,15 @@ export interface PlayerModel extends PlayerType {
 export interface PlayerTeamModel extends PlayerModel {
   team_id: string;
   player_team_id: string;
-  is_ban: boolean;
-  is_accepted: string;
-  is_team_captain: string;
+  is_accepted: boolean;
+  is_team_captain: boolean;
+}
+
+export interface LeaguePlayer extends PlayerTeamModel {
+  league_player_id: string;
+  league_id: string;
+  league_category_id: string;
+  league_team_id: string;
+  league_category: LeagueCategoryModel;
+  league_team: LeagueTeamModel;
 }

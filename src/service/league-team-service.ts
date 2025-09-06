@@ -1,5 +1,5 @@
 import axiosClient from "@/lib/axiosClient";
-import type { LeagueTeamModel } from "@/types/team";
+import type { LeagueTeamForMatch, LeagueTeamModel } from "@/types/team";
 
 export class LeagueTeamService {
   static async updateOne({
@@ -32,6 +32,20 @@ export class LeagueTeamService {
   }) {
     const response = await axiosClient.get<LeagueTeamModel[]>(
       `/league-team/all/submission/${leagueId}/${leagueCategoryId}`
+    );
+
+    return response.data;
+  }
+
+  static async getAllForMatch({
+    leagueId,
+    leagueCategoryId,
+  }: {
+    leagueId?: string;
+    leagueCategoryId?: string;
+  }) {
+    const response = await axiosClient.get<LeagueTeamForMatch[]>(
+      `/league-team/all/${leagueId}/${leagueCategoryId}?status=Accepted`
     );
 
     return response.data;
