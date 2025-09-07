@@ -11,6 +11,7 @@ export const useLeagueCategories = (leagueId?: string) => {
     leagueCategoriesLoading:
       query.isLoading || query.isFetching || query.isPending,
     refetchLeagueCategories: query.refetch,
+    leagueCategoriesError: query.error,
   };
 };
 

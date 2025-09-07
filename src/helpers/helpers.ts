@@ -31,3 +31,10 @@ export function calculateAge(birthDate: string): number {
 
   return age;
 }
+
+export function currencyFormat(amount: number, currency: string = "PHP") {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency,
+  }).format(amount);
+}

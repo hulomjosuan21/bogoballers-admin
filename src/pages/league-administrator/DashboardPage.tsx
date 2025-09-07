@@ -6,12 +6,7 @@ import {
   StatusLabel,
 } from "@/components/ui/kibo-ui/status";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import { useQuery } from "@tanstack/react-query";
 import type { LeagueType } from "@/types/league";
-import {
-  getActiveLeagueAnalyticsQueryOption,
-  getActiveLeagueQueryOption,
-} from "@/queries/leagueQueryOption";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ProfitAreaChart } from "@/charts/DashboardProfitChart";
 import {
@@ -24,6 +19,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import {
+  useActiveLeague,
+  useActiveLeagueAnalytics,
+} from "@/hooks/useActiveLeague";
 
 interface DashboardCardProps {
   title: string;
@@ -173,10 +172,10 @@ const RecentUpdates = () => {
 };
 
 export default function DashboardPage() {
-  const activeLeague = useQuery(getActiveLeagueQueryOption);
-  const activeLeagueAnalytics = useQuery(
-    getActiveLeagueAnalyticsQueryOption(activeLeague.data?.league_id)
-  );
+  const { activeLeagueId, activeLeagueData } = useActiveLeague();
+
+  const { activeLeagueAnalyticsData } =
+    useActiveLeagueAnalytics(activeLeagueId);
   const [showUpdates, setShowUpdates] = useState(true);
 
   return (
@@ -200,7 +199,7 @@ export default function DashboardPage() {
       </ContentHeader>
 
       <ContentBody>
-        {activeLeague.data && activeLeagueAnalytics.data && (
+        {activeLeagueData && activeLeagueAnalyticsData && (
           <div
             className={`grid gap-6 ${
               showUpdates ? "lg:grid-cols-3" : "lg:grid-cols-2"
@@ -208,38 +207,38 @@ export default function DashboardPage() {
           >
             <div className="lg:col-span-2 flex flex-col gap-6">
               <LeagueSection
-                league={activeLeagueAnalytics.data.active_league}
+                league={activeLeagueAnalyticsData.active_league}
                 wrap={showUpdates}
               />
 
               <div className="flex gap-4 items-center flex-wrap">
                 <AnalyticsCard
                   title="Total Teams"
-                  value={activeLeagueAnalytics.data.total_accepted_teams.count}
+                  value={activeLeagueAnalyticsData.total_accepted_teams.count}
                   lastUpdate={
-                    activeLeagueAnalytics.data.total_accepted_teams.last_update
+                    activeLeagueAnalyticsData.total_accepted_teams.last_update
                   }
                   icon={UsersRound}
                 />
                 <AnalyticsCard
                   title="Total Players"
-                  value={activeLeagueAnalytics.data.total_players.count}
+                  value={activeLeagueAnalyticsData.total_players.count}
                   lastUpdate={
-                    activeLeagueAnalytics.data.total_players.last_update
+                    activeLeagueAnalyticsData.total_players.last_update
                   }
                   icon={UserRound}
                 />
                 <AnalyticsCard
                   title="Total Categories"
-                  value={activeLeagueAnalytics.data.total_categories.count}
+                  value={activeLeagueAnalyticsData.total_categories.count}
                   lastUpdate={
-                    activeLeagueAnalytics.data.total_categories.last_update
+                    activeLeagueAnalyticsData.total_categories.last_update
                   }
                   icon={SendToBack}
                 />
               </div>
 
-              <ProfitAreaChart data={activeLeagueAnalytics.data.total_profit} />
+              <ProfitAreaChart data={activeLeagueAnalyticsData.total_profit} />
             </div>
 
             {showUpdates && <RecentUpdates />}
