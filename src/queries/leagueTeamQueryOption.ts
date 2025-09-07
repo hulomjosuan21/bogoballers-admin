@@ -1,4 +1,4 @@
-import { LeagueTeamService } from "@/service/league-team-service";
+import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeamForMatch, LeagueTeamModel } from "@/types/team";
 import { queryOptions } from "@tanstack/react-query";
 

@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useState } from "react";
 import { Logo } from "@/assets";
-import type { LeagueAdminType } from "@/types/league-admin";
-import LeagueAdministratorService from "@/service/league-admin-service";
+import type { LeagueAdminType } from "@/types/leagueAdmin";
+import LeagueAdministratorService from "@/service/leagueAdminService";
 import { toast } from "sonner";
 import { useErrorToast } from "./error-toast";
 import { useNavigate } from "react-router-dom";

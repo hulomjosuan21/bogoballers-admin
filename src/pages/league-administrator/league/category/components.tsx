@@ -1,4 +1,3 @@
-import { getActiveLeagueQueryOption } from "@/queries/league";
 import {
   Button,
   Input,
@@ -21,18 +20,17 @@ import {
   SheetTitle,
   SheetTrigger,
   toast,
-  useErrorToast,
-  useQuery,
   useState,
   type CategoryNodeData,
   type RoundNodeData,
 } from "./imports";
-import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
-import { useEffect, useRef, useTransition } from "react";
+import { useEffect, useRef } from "react";
 import { FolderCog, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import type { LeagueCategoryUpdatableFields } from "./types";
 import { LeagueCategoryRoundService } from "./service";
+import { useActiveLeague } from "@/hooks/useActiveLeague";
+import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 
 export function LeagueCategoryNodeSheet({
   data,
@@ -42,14 +40,9 @@ export function LeagueCategoryNodeSheet({
   disable: boolean;
 }) {
   const { category } = data;
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
-  const handleError = useErrorToast();
-
-  const { refetch: refetchCategories } = useQuery(
-    getActiveLeagueCategoriesQueryOption(activeLeague?.league_id)
-  );
-
-  const [isPending, startTransition] = useTransition();
+  const { activeLeagueId } = useActiveLeague();
+  const [isPending, setPending] = useState(false);
+  const { refetchLeagueCategories } = useLeagueCategories(activeLeagueId);
 
   const [maxTeam, setMaxTeam] = useState<
     LeagueCategoryUpdatableFields["max_team"]
@@ -91,30 +84,43 @@ export function LeagueCategoryNodeSheet({
       return;
     }
 
-    startTransition(async () => {
+    setPending(true);
+
+    const updateCategory = async () => {
       try {
-        console.log(JSON.stringify(changes, null, 2));
-        const response = await LeagueCategoryService.updateLeagueCategory({
+        await LeagueCategoryService.updateLeagueCategory({
           league_category_id: category.league_category_id,
-          changes: changes,
+          changes,
         });
-        await refetchCategories();
-        toast.success(response.message);
-      } catch (e) {
-        handleError(e);
+        await refetchLeagueCategories();
+      } finally {
+        setPending(false);
       }
+    };
+
+    toast.promise(updateCategory(), {
+      loading: "Updating league category...",
+      success: "League category updated successfully!",
+      error: "Failed to update league category",
     });
   };
 
   const handleDelete = () => {
-    startTransition(async () => {
+    setPending(true);
+
+    const deleteCategory = async () => {
       try {
         await LeagueCategoryService.deleteCategory(category.league_category_id);
-        await refetchCategories();
-        toast.success("Category deleted successfully");
-      } catch (e) {
-        handleError(e);
+        await refetchLeagueCategories();
+      } finally {
+        setPending(false);
       }
+    };
+
+    toast.promise(deleteCategory(), {
+      loading: "Deleting league category...",
+      success: "League category deleted successfully!",
+      error: "Failed to delete league category",
     });
   };
 
@@ -203,13 +209,11 @@ export function RoundNodeSheet({
   disable: boolean;
 }) {
   const { round } = data;
-  const handleError = useErrorToast();
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
-  const { refetch: refetchCategories } = useQuery(
-    getActiveLeagueCategoriesQueryOption(activeLeague?.league_id)
-  );
 
-  const [isPending, startTransition] = useTransition();
+  const { activeLeagueId } = useActiveLeague();
+  const { refetchLeagueCategories } = useLeagueCategories(activeLeagueId);
+
+  const [isPending, setPending] = useState(false);
 
   const [status, setStatus] = useState(round.round_status);
   const originalStatus = useRef(round.round_status);
@@ -227,17 +231,25 @@ export function RoundNodeSheet({
       return;
     }
 
-    startTransition(async () => {
+    setPending(true);
+
+    const updateRound = async () => {
       try {
         const response = await LeagueCategoryRoundService.updateRound({
           roundId: round.round_id,
           changes: { round_status: status },
         });
-        await refetchCategories();
-        toast.success(response.message);
-      } catch (e) {
-        handleError(e);
+        await refetchLeagueCategories();
+        return response.message;
+      } finally {
+        setPending(false);
       }
+    };
+
+    toast.promise(updateRound(), {
+      loading: "Updating round...",
+      success: (message) => message,
+      error: "Failed to update round",
     });
   };
 

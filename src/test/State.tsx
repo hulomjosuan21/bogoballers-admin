@@ -1,4 +1,4 @@
-import { createSocket } from "@/service/socketio-service";
+import { createSocket } from "@/service/socketioService";
 import { useEffect, useMemo, useState } from "react";
 
 export default function State() {

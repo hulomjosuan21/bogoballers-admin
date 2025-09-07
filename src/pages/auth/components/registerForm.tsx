@@ -42,7 +42,7 @@ import { useErrorToast } from "@/components/error-toast";
 import { ImageUploadField } from "@/components/image-upload-field";
 import { StaticData } from "@/data";
 import { ButtonLoading } from "@/components/custom-buttons";
-import LeagueAdministratorService from "@/service/league-admin-service";
+import LeagueAdministratorService from "@/service/leagueAdminService";
 import { toast } from "sonner";
 
 const formSchema = z

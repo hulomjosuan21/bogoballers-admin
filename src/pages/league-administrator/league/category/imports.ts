@@ -106,7 +106,7 @@ export {
 export { StaticData } from "@/data";
 
 export { LeagueCategoryService } from "./service";
-export { LeagueService } from "@/service/league-service";
+export { LeagueService } from "@/service/leagueService";
 
 export { generateUUIDWithPrefix } from "@/lib/app_utils";
 

@@ -43,10 +43,10 @@ import { useEffect, useRef, useState } from "react";
 import type { LeagueAffiliate } from "@/types/league";
 import { useQuery } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
-import { LeagueService } from "@/service/league-service";
+import { LeagueService } from "@/service/leagueService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { getActiveLeagueQueryOption } from "@/queries/league";
+import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 
 export type LeagueAffiliateCreate = {
   name: string;

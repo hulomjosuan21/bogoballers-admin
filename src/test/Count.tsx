@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { createSocket } from "@/service/socketio-service";
+import { createSocket } from "@/service/socketioService";
 import { toast } from "sonner";
 export default function Count() {
   const [count, setCount] = useState(0);

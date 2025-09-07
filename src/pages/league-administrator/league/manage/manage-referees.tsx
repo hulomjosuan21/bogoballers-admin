@@ -42,11 +42,11 @@ import {
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import type { LeagueReferee } from "@/types/league";
-import { LeagueService } from "@/service/league-service";
+import { LeagueService } from "@/service/leagueService";
 import { useQuery } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
 import { cn } from "@/lib/utils";
-import { getActiveLeagueQueryOption } from "@/queries/league";
+import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 
 export type LeagueRefereeCreate = {
   full_name: string;

@@ -4,7 +4,6 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageOfficials from "./manage-officials";
 import ManangeReferees from "./manage-referees";
 import ManageCourts from "./manage-courts";
-import { useQueries } from "@tanstack/react-query";
 import {
   Alert,
   AlertIcon,
@@ -14,27 +13,33 @@ import {
 import { RiSpamFill } from "@remixicon/react";
 
 import { Button } from "@/components/ui/button";
-import {
-  getActiveLeagueQueryOption,
-  getActiveLeagueResourceQueryOption,
-} from "@/queries/league";
+
 import { useMemo } from "react";
 import ErrorLoading from "@/components/error-loading";
+import { useActiveLeagueResource } from "@/hooks/useActiveLeague";
 
 export default function LeagueOfficialsPage() {
-  const [{ data: activeLeague }, { data, isLoading, error }] = useQueries({
-    queries: [getActiveLeagueQueryOption, getActiveLeagueResourceQueryOption],
-  });
+  const {
+    activeLeagueData,
+    activeLeagueResourceData,
+    activeLeagueResourceLoading,
+    activeLeagueResourceError,
+  } = useActiveLeagueResource();
+
   const hasActiveLeague = useMemo(() => {
-    return activeLeague != null && Object.keys(activeLeague).length > 0;
-  }, [activeLeague]);
+    return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
+  }, [activeLeagueData]);
+
   return (
     <ContentShell>
       <ContentHeader title="League Officials" />
 
       <ContentBody className="">
-        {isLoading || error ? (
-          <ErrorLoading isLoading={isLoading} error={error} />
+        {activeLeagueResourceLoading || activeLeagueResourceError ? (
+          <ErrorLoading
+            isLoading={activeLeagueResourceLoading}
+            error={activeLeagueResourceError}
+          />
         ) : (
           <>
             {!hasActiveLeague && (
@@ -64,15 +69,15 @@ export default function LeagueOfficialsPage() {
               </Alert>
             )}
             <ManageOfficials
-              data={data?.league_officials ?? []}
+              data={activeLeagueResourceData?.league_officials ?? []}
               hasActiveLeague={!hasActiveLeague}
             />
             <ManangeReferees
-              data={data?.league_referees ?? []}
+              data={activeLeagueResourceData?.league_referees ?? []}
               hasActiveLeague={!hasActiveLeague}
             />
             <ManageCourts
-              data={data?.league_courts ?? []}
+              data={activeLeagueResourceData?.league_courts ?? []}
               hasActiveLeague={!hasActiveLeague}
             />
           </>

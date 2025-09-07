@@ -1,4 +1,5 @@
-import { LeaguePlayerService } from "@/service/league-player-service";
+import { QUERY_KEYS } from "@/constants/queryKeys";
+import { LeaguePlayerService } from "@/service/leaguePlayerService";
 import { queryOptions } from "@tanstack/react-query";
 
 export const getAllLeaguePlayerForMatchQueryOption = ({
@@ -9,7 +10,10 @@ export const getAllLeaguePlayerForMatchQueryOption = ({
   leagueCategoryId?: string;
 }) =>
   queryOptions<LeaguePlayerService[] | null, Error>({
-    queryKey: ["league-player-for-match", leagueId, leagueCategoryId],
+    queryKey: QUERY_KEYS.ACTIVE_LEAGUE_PLAYER_FOR_MATCH(
+      leagueId,
+      leagueCategoryId
+    ),
     enabled: Boolean(leagueId || leagueCategoryId),
     queryFn: () =>
       LeaguePlayerService.getAll({

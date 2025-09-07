@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import LeagueCategoryCanvas from "./canvas";
 import {
   ContentBody,
@@ -13,25 +12,26 @@ import {
   useMemo,
 } from "./imports";
 import { CloudAlert } from "lucide-react";
-import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
-import { getActiveLeagueQueryOption } from "@/queries/league";
+import { useLeagueCategories } from "@/hooks/useLeagueCategories";
+import { useActiveLeague } from "@/hooks/useActiveLeague";
 
 export default function LeagueCategoryManagementPage() {
   const {
-    data: activeLeague,
-    isLoading: isLoadingLeague,
-    error: leagueError,
-  } = useQuery(getActiveLeagueQueryOption);
-  const hasActiveLeague = useMemo(() => {
-    return activeLeague != null && Object.keys(activeLeague).length > 0;
-  }, [activeLeague]);
+    activeLeagueId,
+    activeLeagueData,
+    activeLeagueLoading,
+    activeLeagueError,
+  } = useActiveLeague();
 
   const {
-    data: categories,
-    isLoading: isLoadingCategories,
-    error: categoriesError,
-    refetch: refetchCategories,
-  } = useQuery(getActiveLeagueCategoriesQueryOption(activeLeague?.league_id));
+    leagueCategoriesData,
+    leagueCategoriesError,
+    refetchLeagueCategories,
+  } = useLeagueCategories(activeLeagueId);
+
+  const hasActiveLeague = useMemo(() => {
+    return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
+  }, [activeLeagueData]);
 
   return (
     <>
@@ -64,10 +64,10 @@ export default function LeagueCategoryManagementPage() {
         </ContentShell>
       ) : (
         <LeagueCategoryCanvas
-          categories={categories}
-          isLoading={isLoadingLeague || isLoadingCategories}
-          error={leagueError ?? categoriesError}
-          refetch={refetchCategories}
+          categories={leagueCategoriesData}
+          isLoading={activeLeagueLoading}
+          error={activeLeagueError ?? leagueCategoriesError}
+          refetch={refetchLeagueCategories}
           viewOnly={false}
         />
       )}

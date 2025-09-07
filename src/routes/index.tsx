@@ -1,7 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 import {
   DashboardPage,
-  LeagueResourcePage,
   PlayerSubmissionPage,
   TeamSubmissionPage,
   SettingsPage,
@@ -41,10 +40,6 @@ export const leagueAdminRoutes: RouteObject[] = [
   {
     path: "pages/league/new",
     element: <LeagueCreationPage />,
-  },
-  {
-    path: "pages/league/resource",
-    element: <LeagueResourcePage />,
   },
   {
     path: "pages/league/teams",

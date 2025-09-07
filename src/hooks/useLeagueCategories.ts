@@ -1,5 +1,6 @@
+import { QUERY_KEYS } from "@/constants/queryKeys";
 import { queryClient } from "@/lib/queryClient";
-import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
+import { getActiveLeagueCategoriesQueryOption } from "@/queries/leagueCategoryQueryOption";
 import { useQuery } from "@tanstack/react-query";
 
 export const useLeagueCategories = (leagueId?: string) => {
@@ -10,12 +11,13 @@ export const useLeagueCategories = (leagueId?: string) => {
     leagueCategoriesLoading:
       query.isLoading || query.isFetching || query.isPending,
     refetchLeagueCategories: query.refetch,
+    leagueCategoriesError: query.error,
   };
 };
 
 export async function refetchLeagueCategories(leagueId?: string) {
   await queryClient.refetchQueries({
-    queryKey: ["active-league-categories", leagueId],
+    queryKey: QUERY_KEYS.ACTIVE_LEAGUE_CATEGORIES(leagueId),
     exact: true,
   });
 }

@@ -1,15 +1,17 @@
 import { ApiResponse } from "@/lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
 import type { CategoryModel } from "@/pages/league-administrator/league/category/types";
-import type { LeagueAdminModel } from "@/types/league-admin";
+import type { LeagueAdminModel } from "@/types/leagueAdmin";
 
 class LeagueAdministratorService {
   static async auth(): Promise<LeagueAdminModel> {
-    const response = await axiosClient.get("/league-administrator/auth", {
-      withCredentials: true,
-    });
-
-    return response.data as LeagueAdminModel;
+    const response = await axiosClient.get<LeagueAdminModel>(
+      "/league-administrator/auth",
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
   }
 
   static async logout() {

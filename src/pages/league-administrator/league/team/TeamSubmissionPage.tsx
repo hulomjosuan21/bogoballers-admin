@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { RiSpamFill } from "@remixicon/react";
 
 import ContentHeader from "@/components/content-header";
@@ -15,28 +14,30 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-import { getActiveLeagueQueryOption } from "@/queries/league";
-import { getActiveLeagueCategoriesQueryOption } from "@/queries/league-category";
-
 import { TeamSubmissionTable } from "./submission-table";
 import { CheckPlayerSheet } from "./components";
+import { useActiveLeague } from "@/hooks/useActiveLeague";
+import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 
 export default function TeamSubmissionPage() {
   const {
-    data: activeLeague,
-    isLoading,
-    error,
-  } = useQuery(getActiveLeagueQueryOption);
+    activeLeagueId,
+    activeLeagueData,
+    activeLeagueLoading,
+    activeLeagueError,
+  } = useActiveLeague();
 
-  const { data: categories, isLoading: isLoadingCategories } = useQuery(
-    getActiveLeagueCategoriesQueryOption(activeLeague?.league_id)
-  );
+  const {
+    leagueCategoriesData,
+    leagueCategoriesLoading,
+    leagueCategoriesError,
+  } = useLeagueCategories(activeLeagueId);
 
   const hasActiveLeague = useMemo(() => {
-    return activeLeague != null && Object.keys(activeLeague).length > 0;
-  }, [activeLeague]);
+    return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
+  }, [activeLeagueData]);
 
-  if (!categories || categories.length === 0) {
+  if (!leagueCategoriesData || leagueCategoriesData.length === 0) {
     return (
       <ContentShell>
         <ContentHeader title="Team Submission" />
@@ -56,8 +57,14 @@ export default function TeamSubmissionPage() {
       <ContentHeader title="Team Submission" />
 
       <ContentBody>
-        {isLoading || error ? (
-          <ErrorLoading isLoading={isLoading} error={error} />
+        {activeLeagueLoading ||
+        leagueCategoriesLoading ||
+        activeLeagueError ||
+        leagueCategoriesError ? (
+          <ErrorLoading
+            isLoading={activeLeagueLoading || leagueCategoriesLoading}
+            error={activeLeagueError || leagueCategoriesError}
+          />
         ) : (
           <>
             {!hasActiveLeague && (
@@ -88,10 +95,10 @@ export default function TeamSubmissionPage() {
             )}
 
             {hasActiveLeague && (
-              <Tabs defaultValue={categories[0].league_category_id}>
+              <Tabs defaultValue={leagueCategoriesData[0].league_category_id}>
                 <ScrollArea>
                   <TabsList className="text-foreground mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1 w-full justify-start">
-                    {categories.map((cat) => (
+                    {leagueCategoriesData.map((cat) => (
                       <TabsTrigger
                         key={cat.league_category_id}
                         value={cat.league_category_id}
@@ -104,7 +111,7 @@ export default function TeamSubmissionPage() {
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>
 
-                {categories.map((cat) => (
+                {leagueCategoriesData.map((cat) => (
                   <TabsContent
                     key={cat.league_category_id}
                     value={cat.league_category_id}
@@ -113,8 +120,8 @@ export default function TeamSubmissionPage() {
                     <CheckPlayerSheet />
                     <TeamSubmissionTable
                       leagueCategoryId={cat.league_category_id}
-                      leagueId={activeLeague?.league_id}
-                      isLoading={isLoadingCategories}
+                      leagueId={activeLeagueId}
+                      isLoading={leagueCategoriesLoading}
                     />
                   </TabsContent>
                 ))}

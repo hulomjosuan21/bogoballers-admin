@@ -1,10 +1,10 @@
 import { Input } from "@/components/ui/input";
-import { SearchService } from "@/service/search-service";
+import { SearchService } from "@/service/searchService";
 import { useState, useEffect, useRef, useTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2Icon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { QueryResultWrapper } from "@/types/search-results";
+import type { QueryResultWrapper } from "@/types/searchResults";
 import { useErrorToast } from "@/components/error-toast";
 import { SearchResultsList } from "./EntitySearchResultPages";
 
