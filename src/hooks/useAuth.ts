@@ -10,6 +10,7 @@ export function useAuthLeagueAdmin() {
     leagueAdmin: query.data,
     leagueAdminLoading: query.isLoading || query.isPending || query.isFetching,
     refetchLeagueAdmin: query.refetch,
+    leagueAdminError: query.error,
   };
 }
 
