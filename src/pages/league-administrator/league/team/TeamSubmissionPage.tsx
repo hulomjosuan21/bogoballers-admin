@@ -95,14 +95,16 @@ export default function TeamSubmissionPage() {
             )}
 
             {hasActiveLeague && (
-              <Tabs defaultValue={leagueCategoriesData[0].league_category_id}>
+              <Tabs
+                defaultValue={leagueCategoriesData[0].league_category_id}
+                className="text-sm text-muted-foreground"
+              >
                 <ScrollArea>
-                  <TabsList className="text-foreground mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1 w-full justify-start">
+                  <TabsList className="grid grid-cols-2">
                     {leagueCategoriesData.map((cat) => (
                       <TabsTrigger
                         key={cat.league_category_id}
                         value={cat.league_category_id}
-                        className="tab-trigger"
                       >
                         {cat.category_name}
                       </TabsTrigger>

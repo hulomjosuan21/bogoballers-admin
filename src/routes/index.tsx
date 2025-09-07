@@ -54,7 +54,7 @@ export const leagueAdminRoutes: RouteObject[] = [
     element: <LeagueMatchSetUnSchedulePage />,
   },
   {
-    path: "pages/league/player/submission",
+    path: "pages/league/player",
     element: <PlayerSubmissionPage />,
   },
   {

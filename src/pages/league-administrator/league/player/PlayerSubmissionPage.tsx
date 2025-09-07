@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { RiSpamFill } from "@remixicon/react";
 
 import ContentHeader from "@/components/content-header";
@@ -11,11 +11,19 @@ import {
   AlertToolbar,
 } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-
 import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function PlayerSubmissionPage() {
   const {
@@ -30,6 +38,8 @@ export default function PlayerSubmissionPage() {
     leagueCategoriesLoading,
     leagueCategoriesError,
   } = useLeagueCategories(activeLeagueId);
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const hasActiveLeague = useMemo(() => {
     return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
@@ -49,6 +59,7 @@ export default function PlayerSubmissionPage() {
       </ContentShell>
     );
   }
+
   return (
     <ContentShell>
       <ContentHeader title={`${activeLeagueData?.league_title} Players`} />
@@ -92,29 +103,58 @@ export default function PlayerSubmissionPage() {
             )}
 
             {hasActiveLeague && (
-              <Tabs defaultValue={leagueCategoriesData[0].league_category_id}>
+              <Tabs
+                defaultValue="all"
+                className="text-sm text-muted-foreground"
+              >
                 <ScrollArea>
-                  <TabsList className="text-foreground mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1 w-full justify-start">
-                    {leagueCategoriesData.map((cat) => (
-                      <TabsTrigger
-                        key={cat.league_category_id}
-                        value={cat.league_category_id}
-                        className="tab-trigger"
-                      >
-                        {cat.category_name}
-                      </TabsTrigger>
-                    ))}
+                  <TabsList className="grid grid-cols-2">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="request">Request</TabsTrigger>
                   </TabsList>
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>
 
-                {leagueCategoriesData.map((cat) => (
-                  <TabsContent
-                    key={cat.league_category_id}
-                    value={cat.league_category_id}
-                    className="pt-2"
-                  ></TabsContent>
-                ))}
+                <TabsContent value="all" className="space-y-2">
+                  <div className="flex items-center justify-end">
+                    <Select
+                      onValueChange={(val) => setSelectedCategory(val)}
+                      defaultValue={leagueCategoriesData[0].league_category_id}
+                    >
+                      <SelectTrigger size="sm">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>League Categories</SelectLabel>
+                          {leagueCategoriesData.map((cat) => (
+                            <SelectItem
+                              key={cat.league_category_id}
+                              value={cat.league_category_id}
+                            >
+                              {cat.category_name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="">
+                    {leagueCategoriesData.map(
+                      (cat) =>
+                        cat.league_category_id === selectedCategory && (
+                          <p
+                            key={cat.league_category_id}
+                            className="text-sm text-muted-foreground"
+                          >
+                            Showing data for <b>{cat.category_name}</b>
+                          </p>
+                        )
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="request">guest</TabsContent>
               </Tabs>
             )}
           </>

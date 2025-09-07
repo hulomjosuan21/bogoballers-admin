@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { TextEffect } from "@/components/ui/text-effect";
 import { HeroHeader } from "./header";
 import { AnimatedGroup } from "@/components/ui/animated-group";
+import { AppImage } from "@/assets";
 
 export default function HeroSection() {
   return (
@@ -128,7 +129,7 @@ export default function HeroSection() {
                     </Button>
                   </div>
                   <Button key={2} asChild size="sm" variant="ghost">
-                    <Link to="#link">
+                    <Link to="/league-administrator">
                       <span className="text-nowrap">Request a demo</span>
                     </Link>
                   </Button>
@@ -168,18 +169,12 @@ export default function HeroSection() {
                   className="bg-linear-to-b to-background absolute inset-0 z-10 from-transparent from-35%"
                 />
                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
-                  <div className="relative w-full aspect-[3/4] overflow-hidden rounded-2xl">
+                  <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl">
                     <img
                       className="w-full h-full object-cover"
-                      src="https://res.cloudinary.com/dod3lmxm6/image/upload/v1756956000/Gemini_Generated_Image_auk9v7auk9v7auk9_jxyfsw.png"
+                      src={AppImage.AiGenerateImageThree}
                       alt="app screen"
                     />
-                    <img
-                      className="absolute inset-0 w-full h-full object-cover dark:hidden"
-                      src="https://res.cloudinary.com/dod3lmxm6/image/upload/v1756956000/Gemini_Generated_Image_auk9v7auk9v7auk9_jxyfsw.png"
-                      alt="app screen"
-                    />
-
                     <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-background/100 to-transparent pointer-events-none" />
                   </div>
                 </div>

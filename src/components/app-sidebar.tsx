@@ -55,20 +55,9 @@ const data = {
       icon: GitBranchPlus,
     },
     {
-      title: "Player",
-      url: "#",
+      title: "Players",
+      url: "/league-administrator/pages/league/player",
       icon: UserRound,
-      isActive: true,
-      items: [
-        {
-          title: "All",
-          url: "#",
-        },
-        {
-          title: "Submission",
-          url: "/league-administrator/pages/league/player/submission",
-        },
-      ],
     },
     {
       title: "Team",

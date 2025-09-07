@@ -148,9 +148,9 @@ export default function ManageAffiliates({
         const photo = row.original.image;
         const name = row.original.name;
         return (
-          <Avatar className="rounded-sm">
+          <Avatar>
             <AvatarImage
-              className="object-cover"
+              className="object-cover rounded-sm"
               src={
                 typeof photo === "string" && photo.trim() !== ""
                   ? photo
@@ -158,7 +158,7 @@ export default function ManageAffiliates({
               }
               alt={name}
             />
-            <AvatarFallback>
+            <AvatarFallback className="rounded-sm">
               {name
                 .split(" ")
                 .map((word) => word[0])
@@ -243,7 +243,7 @@ export default function ManageAffiliates({
                 className={cn(editingIndex !== null && "hidden")}
                 size={"sm"}
               >
-                Add Affiliate
+                Add
               </Button>
             </DialogTrigger>
             <DialogContent aria-describedby={undefined}>
@@ -288,7 +288,7 @@ export default function ManageAffiliates({
                   />
                 </div>
                 <Button onClick={handleAddOrUpdate} className="w-full">
-                  {editingIndex !== null ? "Update Affiliate" : "Add Affiliate"}
+                  Continue
                 </Button>
               </div>
             </DialogContent>

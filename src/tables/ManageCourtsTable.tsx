@@ -277,7 +277,7 @@ export default function ManageCourts({
 
               <DialogFooter className="pt-4">
                 <Button onClick={handleSubmit} className="w-full">
-                  {editIndex !== null ? "Update" : "Add"}
+                  Continue
                 </Button>
               </DialogFooter>
             </DialogContent>

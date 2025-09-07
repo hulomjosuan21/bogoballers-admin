@@ -20,7 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useErrorToast } from "@/components/error-toast";
-import { Auth } from "@/assets";
+import { AppImage } from "@/assets";
 import LeagueAdministratorService from "@/service/leagueAdminService";
 import { toast } from "sonner";
 
@@ -144,10 +144,9 @@ export function LoginForm({
             </form>
           </Form>
 
-          {/* Right Image */}
           <div className="bg-muted relative hidden md:block">
             <img
-              src={Auth.LoginFormImage}
+              src={AppImage.AiGenerateImageFour}
               alt="Login illustration"
               loading="lazy"
               decoding="async"
@@ -156,8 +155,6 @@ export function LoginForm({
           </div>
         </CardContent>
       </Card>
-
-      {/* Footer */}
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
         By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
         and <Link to="#">Privacy Policy</Link>.

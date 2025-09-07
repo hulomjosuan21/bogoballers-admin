@@ -159,15 +159,15 @@ export default function ManageRefereesComponent({
         const value = row.original.photo;
         const name = row.original.full_name;
         return (
-          <Avatar className="rounded-sm">
+          <Avatar>
             <AvatarImage
-              className="object-cover"
+              className="object-cover rounded-sm"
               src={
                 typeof value === "string" ? value : URL.createObjectURL(value)
               }
               alt={name}
             />
-            <AvatarFallback>
+            <AvatarFallback className="rounded-sm">
               {name
                 .split(" ")
                 .map((w) => w[0])
@@ -316,7 +316,7 @@ export default function ManageRefereesComponent({
 
               <DialogFooter className="pt-4">
                 <Button onClick={handleSubmit} className="w-full">
-                  {editIndex !== null ? "Update" : "Add"}
+                  Continue
                 </Button>
               </DialogFooter>
             </DialogContent>
