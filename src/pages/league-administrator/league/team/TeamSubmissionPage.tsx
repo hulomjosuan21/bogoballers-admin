@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-import { TeamSubmissionTable } from "./submission-table";
-import { CheckPlayerSheet } from "./components";
+import { TeamSubmissionTable } from "@/tables/LeagueTeamSubmissionTable";
+import { CheckPlayerSheet } from "@/components/league-category-management/LeagueTeamManagementComponents";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 

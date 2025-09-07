@@ -1,12 +1,11 @@
 import axiosClient from "@/lib/axiosClient";
 import {
-  ApiResponse,
   type CreateLeagueCategory,
   type LeagueCategory,
+  type LeagueCategoryUpdatableFields,
   type SaveChangesPayload,
-} from "./imports";
-import type { LeagueCategoryUpdatableFields } from "./types";
-import type { LeagueCategoryRoundUpdatableFields } from "./components";
+} from "@/types/leagueCategoryTypes";
+import type { LeagueCategoryRoundUpdatableFields } from "@/components/league-category-management/LeagueCategoryManagementComponents";
 
 export class LeagueCategoryService {
   static async saveChanges(payload: SaveChangesPayload) {
@@ -23,12 +22,12 @@ export class LeagueCategoryService {
     leagueId: string;
     data: CreateLeagueCategory;
   }) {
-    const response = await axiosClient.post(
+    const response = await axiosClient.post<{ message: string }>(
       `/league/category/${leagueId}/add-category`,
       data
     );
 
-    return ApiResponse.fromJsonNoPayload(response.data);
+    return response.data;
   }
 
   static async updateLeagueCategory({
@@ -38,11 +37,11 @@ export class LeagueCategoryService {
     league_category_id: string;
     changes: Partial<LeagueCategoryUpdatableFields>;
   }) {
-    const response = await axiosClient.put(
+    const response = await axiosClient.put<{ message: string }>(
       `/league/category/${league_category_id}`,
       changes
     );
-    return ApiResponse.fromJsonNoPayload(response.data);
+    return response.data;
   }
 
   static async fetchActiveCategories(league_id: string) {
@@ -65,7 +64,10 @@ export class LeagueCategoryRoundService {
     roundId: string;
     changes: Partial<LeagueCategoryRoundUpdatableFields>;
   }) {
-    const response = await axiosClient.put(`/league/round/${roundId}`, changes);
-    return ApiResponse.fromJsonNoPayload(response.data);
+    const response = await axiosClient.put<{ message: string }>(
+      `/league/round/${roundId}`,
+      changes
+    );
+    return response.data;
   }
 }

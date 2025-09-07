@@ -1,6 +1,6 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import CreateLeagueForm from "./form";
+import CreateLeagueForm from "@/forms/LeagueCreationForm";
 import { Info } from "lucide-react";
 import {
   Alert,

@@ -5,7 +5,7 @@ export { default as PlayerSubmissionPage } from "./league-administrator/league/p
 export { default as TeamSubmissionPage } from "./league-administrator/league/team/TeamSubmissionPage";
 export { default as SettingsPage } from "./league-administrator/SettingPage";
 export { default as AnalyticsPage } from "./league-administrator/AnalyticsPage";
-export { default as LeagueAffiliatePage } from "./league-administrator/league/manage/LeagueAffiliate";
+export { default as LeagueAffiliatePage } from "./league-administrator/league/manage/LeagueAffiliatePage";
 export { default as LeagueOfficialsPage } from "./league-administrator/league/manage/OfficialsAndCourtsPage";
 export { default as LeagueMatchSetUnSchedulePage } from "./league-administrator/league/match/LeagueMatchSetSchedulePage";
 export { default as LeagueMatchScheduledPage } from "./league-administrator/league/match/LeagueMatchScheduledPage";

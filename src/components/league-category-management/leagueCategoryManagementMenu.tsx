@@ -1,4 +1,8 @@
-import { GripVertical, RoundFormatTypesEnum, RoundTypeEnum } from "./imports";
+import { GripVertical } from "lucide-react";
+import {
+  RoundFormatTypesEnum,
+  RoundTypeEnum,
+} from "@/types/leagueCategoryTypes";
 
 export function RoundNodeMenu({
   onDragStart,

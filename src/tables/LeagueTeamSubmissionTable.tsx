@@ -37,7 +37,10 @@ import { getAllLeagueTeamsSubmissionQueryOptions } from "@/queries/leagueTeamQue
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import { formatIsoDate } from "@/helpers/helpers";
 import { Badge } from "@/components/ui/badge";
-import { useCheckPlayerSheet, useUpdateTeamStore } from "./store";
+import {
+  useCheckPlayerSheet,
+  useUpdateTeamStore,
+} from "../stores/leagueTeamStores";
 import { toast } from "sonner";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { queryClient } from "@/lib/queryClient";

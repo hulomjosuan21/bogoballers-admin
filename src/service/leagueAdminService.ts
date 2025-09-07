@@ -1,6 +1,6 @@
 import { ApiResponse } from "@/lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
-import type { CategoryModel } from "@/pages/league-administrator/league/category/types";
+import type { CategoryModel } from "@/types/leagueCategoryTypes";
 import type { LeagueAdminModel } from "@/types/leagueAdmin";
 
 class LeagueAdministratorService {

@@ -3,11 +3,20 @@ import type {
   RefetchOptions,
 } from "@tanstack/react-query";
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+  getRoundOrder,
+  isValidOrderTransition,
+  RoundStateEnum,
+  RoundTypeEnum,
+  type CategoryOperation,
+  type FormatNodeData,
+  type LeagueCategory,
+  type LeagueCategoryRound,
+  type LeagueRoundFormat,
+  type NodeData,
+  type RoundFormatTypesEnum,
+  type RoundNodeData,
+} from "@/types/leagueCategoryTypes";
+import {
   ReactFlow,
   addEdge,
   applyEdgeChanges,
@@ -20,37 +29,34 @@ import {
   type EdgeChange,
   type Connection,
   useReactFlow,
-  type FormatNodeData,
-  type LeagueCategoryRound,
-  type LeagueRoundFormat,
-  type NodeData,
-  type RoundNodeData,
-  getRoundOrder,
-  isValidOrderTransition,
-  RoundFormatTypesEnum,
-  RoundStateEnum,
-  RoundTypeEnum,
-  type LeagueCategory,
-  toast,
+  BezierEdge,
+} from "@xyflow/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import {
   CategoryNode,
   FormatNode,
   RoundNode,
-  ContentBody,
-  ContentShell,
-  ContentHeader,
+} from "@/components/league-category-management/leagueCategoryManagementNodes";
+import { generateUUIDWithPrefix } from "@/lib/app_utils";
+import { LeagueCategoryService } from "@/service/leagueCategoryManagementService";
+import {
   FormatNodeMenu,
   RoundNodeMenu,
-  Loader2,
-  generateUUIDWithPrefix,
-  LeagueCategoryService,
-  Button,
-  STATUSES,
-  BezierEdge,
-} from "./imports";
-import type { CategoryOperation } from "./types";
-
+} from "@/components/league-category-management/leagueCategoryManagementMenu";
+import { ContentBody, ContentShell } from "@/layouts/ContentShell";
+import { default as ContentHeader } from "@/components/content-header";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
+
+export const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
+  [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,
+  [RoundTypeEnum.QuarterFinal]: RoundStateEnum.Upcoming,
+  [RoundTypeEnum.SemiFinal]: RoundStateEnum.Upcoming,
+  [RoundTypeEnum.Final]: RoundStateEnum.Upcoming,
+};
 
 type LeagueCategoryCanvasProps = {
   categories?: LeagueCategory[] | null;

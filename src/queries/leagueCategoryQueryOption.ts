@@ -1,6 +1,6 @@
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { LeagueCategoryService } from "@/pages/league-administrator/league/category/service";
-import type { LeagueCategory } from "@/pages/league-administrator/league/category/types";
+import { LeagueCategoryService } from "@/service/leagueCategoryManagementService";
+import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { queryOptions } from "@tanstack/react-query";
 
 export const getActiveLeagueCategoriesQueryOption = (league_id?: string) =>

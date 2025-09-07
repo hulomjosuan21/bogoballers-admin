@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import LeagueAdministratorService from "@/service/leagueAdminService";
 import type { LeagueAdminModel } from "@/types/leagueAdmin";
-import type { CategoryModel } from "@/pages/league-administrator/league/category/types";
+import type { CategoryModel } from "@/types/leagueCategoryTypes";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 
 export const authLeagueAdminQueryOption = queryOptions<LeagueAdminModel, Error>(

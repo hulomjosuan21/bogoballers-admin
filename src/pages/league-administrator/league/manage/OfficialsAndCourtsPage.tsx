@@ -1,9 +1,9 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 
-import ManageOfficials from "./manage-officials";
-import ManangeReferees from "./manage-referees";
-import ManageCourts from "./manage-courts";
+import ManageOfficials from "@/tables/ManageOfficialsTable";
+import ManangeReferees from "@/tables/ManageRefereesTable";
+import ManageCourts from "@/tables/ManageCourtsTable";
 import {
   Alert,
   AlertIcon,

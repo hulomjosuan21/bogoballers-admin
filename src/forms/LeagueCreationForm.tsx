@@ -38,7 +38,7 @@ import {
 } from "@/queries/leagueAdminQueryOption";
 import { Check, ChevronsUpDown } from "lucide-react";
 import MultipleSelector from "@/components/ui/multiselect";
-import type { CategoryModel } from "../category/types";
+import type { CategoryModel } from "../types/leagueCategoryTypes";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
 import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 

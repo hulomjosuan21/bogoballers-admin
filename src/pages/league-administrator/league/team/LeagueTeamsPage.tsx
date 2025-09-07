@@ -17,7 +17,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 import { getActiveLeagueCategoriesQueryOption } from "@/queries/leagueCategoryQueryOption";
-import LeagueTeamsTable from "./league-teams-table";
+import LeagueTeamsTable from "@/tables/LeagueTeamsTable";
 
 export default function LeagueTeamsPage() {
   const {

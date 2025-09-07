@@ -1,6 +1,6 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import ManageAffiliates from "./manange-affiliate";
+import ManageAffiliates from "@/tables/ManangeAffiliateTable";
 import {
   Alert,
   AlertIcon,

@@ -1,19 +1,23 @@
 import {
-  getRoundTypeByOrder,
   Handle,
-  RoundNodeSheet,
-  toast,
-  useRef,
-  type CategoryNodeData,
-  type Node,
-  type RoundNodeData,
   Position,
+  useReactFlow,
   type Connection,
   type Edge,
-  useReactFlow,
+  type Node,
+} from "@xyflow/react";
+import {
+  getRoundTypeByOrder,
+  type CategoryNodeData,
   type FormatNodeData,
-} from "./imports";
-import { LeagueCategoryNodeSheet } from "./components";
+  type RoundNodeData,
+} from "@/types/leagueCategoryTypes";
+import { useRef } from "react";
+import { toast } from "sonner";
+import {
+  LeagueCategoryNodeSheet,
+  RoundNodeSheet,
+} from "@/components/league-category-management/LeagueCategoryManagementComponents";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const { category, viewOnly } = data;

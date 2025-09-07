@@ -1,4 +1,4 @@
-import type { LeagueCategoryModel } from "@/pages/league-administrator/league/category/types";
+import type { LeagueCategoryModel } from "@/types/leagueCategoryTypes";
 import type { UserType } from "./user";
 import type { LeagueTeamModel } from "./team";
 

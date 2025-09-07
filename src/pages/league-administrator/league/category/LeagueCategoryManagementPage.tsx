@@ -1,20 +1,18 @@
-import LeagueCategoryCanvas from "./canvas";
+import LeagueCategoryCanvas from "./LeagueCategoryManagementXYFlowCanvas";
+import { ContentBody, ContentShell } from "@/layouts/ContentShell";
+import { default as ContentHeader } from "@/components/content-header";
+import { CloudAlert } from "lucide-react";
+import { useLeagueCategories } from "@/hooks/useLeagueCategories";
+import { useActiveLeague } from "@/hooks/useActiveLeague";
+import { useMemo } from "react";
 import {
-  ContentBody,
-  ContentHeader,
-  ContentShell,
   Alert,
   AlertIcon,
   AlertTitle,
   AlertToolbar,
-  RiSpamFill,
-  Button,
-  useMemo,
-} from "./imports";
-import { CloudAlert } from "lucide-react";
-import { useLeagueCategories } from "@/hooks/useLeagueCategories";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
-
+} from "@/components/ui/alert";
+import { RiSpamFill } from "@remixicon/react";
+import { Button } from "@/components/ui/button";
 export default function LeagueCategoryManagementPage() {
   const {
     activeLeagueId,

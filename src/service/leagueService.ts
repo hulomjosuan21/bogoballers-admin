@@ -10,9 +10,9 @@ import type {
 } from "@/types/league";
 import { ApiResponse } from "../lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
-import type { LeagueCreateOfficialCreate } from "@/pages/league-administrator/league/manage/manage-officials";
-import type { LeagueRefereeCreate } from "@/pages/league-administrator/league/manage/manage-referees";
-import type { LeagueAffiliateCreate } from "@/pages/league-administrator/league/manage/manange-affiliate";
+import type { LeagueCreateOfficialCreate } from "@/tables/ManageOfficialsTable";
+import type { LeagueRefereeCreate } from "@/tables/ManageRefereesTable";
+import type { LeagueAffiliateCreate } from "@/tables/ManangeAffiliateTable";
 
 type FieldKeyMap = {
   league_courts: LeagueCourt;

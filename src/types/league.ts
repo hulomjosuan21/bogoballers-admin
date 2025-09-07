@@ -1,4 +1,4 @@
-import type { LeagueCategory } from "@/pages/league-administrator/league/category/types";
+import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 
 export type LeagueOfficial = {
   full_name: string;

@@ -48,7 +48,10 @@ import {
   useState,
   type SetStateAction,
 } from "react";
-import type { Category, CreateCategory } from "./category/types";
+import type {
+  Category,
+  CreateCategory,
+} from "../../../types/leagueCategoryTypes";
 import { useQueries } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
 import CategoryService from "@/service/categoryService";

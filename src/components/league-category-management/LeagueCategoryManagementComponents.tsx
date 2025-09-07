@@ -1,16 +1,11 @@
+import { useEffect, useRef, useState } from "react";
+import { FolderCog, Settings2, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+
+import { useActiveLeague } from "@/hooks/useActiveLeague";
+import { useLeagueCategories } from "@/hooks/useLeagueCategories";
+import { toast } from "sonner";
 import {
-  Button,
-  Input,
-  Label,
-  LeagueCategoryService,
-  NoteBox,
-  RoundStateEnum,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Settings2,
   Sheet,
   SheetBody,
   SheetClose,
@@ -19,18 +14,28 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  toast,
-  useState,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { NoteBox } from "@/components/nodebox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  RoundStateEnum,
   type CategoryNodeData,
+  type LeagueCategoryUpdatableFields,
   type RoundNodeData,
-} from "./imports";
-import { useEffect, useRef } from "react";
-import { FolderCog, Trash2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import type { LeagueCategoryUpdatableFields } from "./types";
-import { LeagueCategoryRoundService } from "./service";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
-import { useLeagueCategories } from "@/hooks/useLeagueCategories";
+} from "@/types/leagueCategoryTypes";
+import {
+  LeagueCategoryRoundService,
+  LeagueCategoryService,
+} from "@/service/leagueCategoryManagementService";
 
 export function LeagueCategoryNodeSheet({
   data,
