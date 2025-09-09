@@ -1,22 +1,12 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-
 import ManageOfficials from "@/tables/ManageOfficialsTable";
 import ManangeReferees from "@/tables/ManageRefereesTable";
 import ManageCourts from "@/tables/ManageCourtsTable";
-import {
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertToolbar,
-} from "@/components/ui/alert";
-import { RiSpamFill } from "@remixicon/react";
-
-import { Button } from "@/components/ui/button";
-
 import { useMemo } from "react";
 import ErrorLoading from "@/components/error-loading";
 import { useActiveLeagueResource } from "@/hooks/useActiveLeague";
+import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 
 export default function LeagueOfficialsPage() {
   const {
@@ -42,32 +32,7 @@ export default function LeagueOfficialsPage() {
           />
         ) : (
           <>
-            {!hasActiveLeague && (
-              <Alert variant="secondary">
-                <AlertIcon>
-                  <RiSpamFill />
-                </AlertIcon>
-                <AlertTitle>No active league.</AlertTitle>
-                <AlertToolbar>
-                  <Button
-                    variant="inverse"
-                    mode="link"
-                    underlined="solid"
-                    size="sm"
-                    className="flex mt-0.5"
-                    onClick={() =>
-                      window.open(
-                        "/about/league",
-                        "_blank",
-                        "noopener,noreferrer"
-                      )
-                    }
-                  >
-                    Learn more
-                  </Button>
-                </AlertToolbar>
-              </Alert>
-            )}
+            {!hasActiveLeague && <NoActiveLeagueAlert />}
             <ManageOfficials
               data={activeLeagueResourceData?.league_officials ?? []}
               hasActiveLeague={!hasActiveLeague}

@@ -73,6 +73,7 @@ export interface LeagueCategoryRound {
   round_order: number;
   round_status: string;
   round_format?: LeagueRoundFormat | null;
+  format_config: Record<string, any> | null;
   position: {
     x: number;
     y: number;
@@ -181,13 +182,11 @@ const roundOrderMap: Record<RoundTypeEnum, number> = {
 };
 
 export enum RoundFormatTypesEnum {
-  RoundRobin = "Round Robin",
+  RoundRobin = "RoundRobin",
   Knockout = "Knockout",
-  DoubleElimination = "Double Elimination",
-  TwiceToBeat = "Twice to Beat",
-  BestOfThree = "Best of Three",
-  BestOfFive = "Best of Five",
-  BestOfSeven = "Best of Seven",
+  DoubleElimination = "DoubleElimination",
+  BestOf = "BestOf",
+  TwiceToBeat = "TwiceToBeat",
 }
 
 export function getRoundOrder(round: RoundTypeEnum): number {
@@ -233,6 +232,7 @@ export interface CategoryNodeData {
 export interface FormatNodeData {
   label: string;
   round_format?: LeagueRoundFormat;
+  format_config: Record<string, any> | null;
   round_id?: string;
   _isNew?: boolean;
   [key: string]: unknown;

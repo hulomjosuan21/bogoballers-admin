@@ -11,6 +11,7 @@ import {
   LeagueOfficialsPage,
   LeagueMatchSetUnSchedulePage,
   LeagueMatchScheduledPage,
+  LeagueUpdatePage,
 } from "@/pages";
 import AboutLeaguePage from "@/pages/public/learnings/AboutLeague";
 import LeaderboardPage from "@/pages/leaderboard/LeaderboardPage";
@@ -51,6 +52,7 @@ export const leagueAdminRoutes: RouteObject[] = [
     path: "pages/league/new",
     element: <LeagueCreationPage />,
   },
+  { path: "pages/league/active", element: <LeagueUpdatePage /> },
   {
     path: "pages/league/teams",
     element: <LeagueTeamsPage />,

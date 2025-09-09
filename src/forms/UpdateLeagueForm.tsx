@@ -1,21 +1,20 @@
 import { MultiSelect } from "@/components/multi-select";
 import { Label } from "@/components/ui/label";
 import { StaticData } from "@/data";
-import { useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateTimePicker } from "@/components/datetime-picker";
 import { DatePickerWithRange } from "@/components/date-range-picker";
 import { ImageUploadField } from "@/components/image-upload-field";
 import type { DateRange } from "react-day-picker";
-import dayjs from "dayjs";
 import { Separator } from "@/components/ui/separator";
 import { LeagueService } from "@/service/leagueService";
 import { toast } from "sonner";
 
 import { ButtonLoading } from "@/components/custom-buttons";
 import { disableOnLoading } from "@/lib/app_utils";
-import { useQueries } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -33,13 +32,11 @@ import {
 } from "@/components/ui/popover";
 import { authLeagueAdminQueryOption } from "@/queries/leagueAdminQueryOption";
 import { Check, ChevronsUpDown } from "lucide-react";
-import MultipleSelector from "@/components/ui/multiselect";
-import type { CategoryModel } from "../types/leagueCategoryTypes";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
-import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 import { getErrorMessage } from "@/lib/error";
-import { useNavigate } from "react-router-dom";
 import { useCategories } from "@/hooks/useLeagueAdmin";
+import type { LeagueType } from "@/types/league";
+import { refetchActiveLeague } from "@/hooks/useActiveLeague";
 
 function validateLeagueForm({
   leagueTitle,
@@ -78,16 +75,17 @@ function validateLeagueForm({
     throw new Error("At least one category must be selected.");
 }
 
-type Props = {
+export default function UpdateLeagueForm({
+  hasActive,
+  activeLeague,
+  activeLeagueLoading,
+}: {
   hasActive: boolean;
-};
-
-export default function CreateLeagueForm({ hasActive }: Props) {
-  const [leagueAdmin, activeLeague] = useQueries({
-    queries: [authLeagueAdminQueryOption, getActiveLeagueQueryOption],
-  });
+  activeLeague: LeagueType;
+  activeLeagueLoading: boolean;
+}) {
+  const leagueAdmin = useQuery(authLeagueAdminQueryOption);
   const { categoriesData } = useCategories();
-  const navigate = useNavigate();
 
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [leagueTitle, setLeagueTitle] = useState("");
@@ -100,16 +98,52 @@ export default function CreateLeagueForm({ hasActive }: Props) {
   const [overAllBudget, setOverAllBudget] = useState(0);
   const [registrationDadline, setRegistrationDeadline] = useState<Date>();
   const [openingDate, setOpeningDate] = useState<Date>();
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(),
-    to: dayjs().add(20, "day").toDate(),
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [rules, setRules] = useState<string[]>([]);
   const [isProcessing, setProcessing] = useState(false);
 
+  useEffect(() => {
+    if (activeLeague && !activeLeagueLoading) {
+      const league = activeLeague as LeagueType;
+
+      setLeagueTitle(league.league_title || "");
+      setLeagueDescription(league.league_description || "");
+      setLeagueAddress(league.league_address || "");
+      setOverAllBudget(league.league_budget || 0);
+      setLeagueBanner(league.banner_url || null);
+      setRules(league.sportsmanship_rules || []);
+
+      if (league.registration_deadline) {
+        setRegistrationDeadline(new Date(league.registration_deadline));
+      }
+      if (league.opening_date) {
+        setOpeningDate(new Date(league.opening_date));
+      }
+      if (league.league_schedule && league.league_schedule.length === 2) {
+        setDateRange({
+          from: new Date(league.league_schedule[0]),
+          to: new Date(league.league_schedule[1]),
+        });
+      }
+
+      if (league.categories && categoriesData) {
+        const selectedCats = league.categories.map((cat) => ({
+          value: cat.category_id,
+          label: cat.category_name,
+        }));
+        setCategories(selectedCats);
+      }
+    }
+  }, [activeLeague, activeLeagueLoading, categoriesData]);
+
   const handleSubmit = async () => {
+    if (!activeLeague?.league_id) {
+      toast.error("No league found to update");
+      return;
+    }
+
     setProcessing(true);
-    const createLeague = async () => {
+    const updateLeague = async () => {
       try {
         const categoryIds = selectedCategories.map((opt) => opt.value);
 
@@ -138,41 +172,56 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         );
         formData.append(
           "league_schedule",
-          JSON.stringify([dateRange?.from, dateRange?.to])
+          JSON.stringify([
+            dateRange?.from?.toISOString(),
+            dateRange?.to?.toISOString(),
+          ])
         );
         formData.append("sportsmanship_rules", JSON.stringify(rules));
+
         if (leagueBanner instanceof File) {
           formData.append("banner_image", leagueBanner);
         } else if (typeof leagueBanner === "string") {
           formData.append("banner_image", leagueBanner);
         }
-        const response = await LeagueService.createNewLeague(formData);
 
-        await activeLeague.refetch();
+        const response = await LeagueService.updateCurrent(
+          activeLeague!.league_id,
+          formData
+        );
+
+        await refetchActiveLeague();
         return response;
       } finally {
         setProcessing(false);
       }
     };
 
-    toast.promise(createLeague(), {
-      loading: `Creating League ${leagueTitle}...`,
+    toast.promise(updateLeague(), {
+      loading: `Updating League ${leagueTitle}...`,
       success: (res) => {
-        navigate("/league-administrator/pages/league/categories");
-        return res?.message;
+        return res.message || "League updated successfully!";
       },
       error: (err) => getErrorMessage(err) ?? "Something went wrong!",
     });
   };
 
-  const options = useMemo(
-    () =>
-      (categoriesData || []).map((cat: CategoryModel) => ({
-        value: cat.category_id,
-        label: cat.category_name,
-      })),
-    [categoriesData]
-  );
+  if (activeLeagueLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  if (!activeLeague) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">
+          No active league found to update.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <section
@@ -202,7 +251,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
               <Input
                 id="budget"
                 type="number"
-                defaultValue={overAllBudget}
+                value={overAllBudget}
                 onChange={(e) => {
                   const value = Number(e.target.value.trim());
                   setOverAllBudget(isNaN(value) ? 0 : value);
@@ -240,8 +289,8 @@ export default function CreateLeagueForm({ hasActive }: Props) {
                     !selectedAddress && "text-muted-foreground"
                   )}
                 >
-                  {leagueAdmin.data?.organization_address ||
-                    selectedAddress ||
+                  {selectedAddress ||
+                    leagueAdmin.data?.organization_address ||
                     "Select Address"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -328,13 +377,14 @@ export default function CreateLeagueForm({ hasActive }: Props) {
       >
         <Label htmlFor="description">League Description</Label>
         <Textarea
+          value={leagueDescription}
           onChange={(e) => setLeagueDescription(e.target.value)}
           id="description"
           className="h-24"
         />
 
         <p className="text-helper">
-          Briefly describe the league’s purpose, scope, and any notable
+          Briefly describe the league's purpose, scope, and any notable
           information that participants should know. This will be visible on the
           league's public page.
         </p>
@@ -351,6 +401,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
           id="rules"
           options={StaticData.SportsmanshipRules}
           onValueChange={(values) => setRules(values)}
+          defaultValue={rules}
           maxCount={8}
         />
 
@@ -361,33 +412,6 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         </p>
       </div>
 
-      <div
-        className={disableOnLoading({
-          condition: isProcessing,
-          baseClass: "grid space-y-2",
-        })}
-      >
-        <Label>Select League Categories</Label>
-        <MultipleSelector
-          commandProps={{
-            label: "Select categories",
-          }}
-          value={selectedCategories}
-          options={options}
-          onChange={(opts) => setCategories(opts)}
-          placeholder="Select categories"
-          hideClearAllButton
-          hidePlaceholderWhenSelected
-          emptyIndicator={
-            <p className="text-center text-sm">No categories found</p>
-          }
-        />
-        <p className="text-helper">
-          Define the competition category (e.g., category, fees). Participants
-          will register under these categories.
-        </p>
-      </div>
-
       <Separator />
 
       <ButtonLoading
@@ -395,7 +419,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         onClick={handleSubmit}
         className="w-full"
       >
-        Create
+        Update League
       </ButtonLoading>
     </section>
   );

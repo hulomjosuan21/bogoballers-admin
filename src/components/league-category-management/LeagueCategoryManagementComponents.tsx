@@ -204,6 +204,7 @@ export function LeagueCategoryNodeSheet({
 
 export type LeagueCategoryRoundUpdatableFields = {
   round_status: string;
+  format_config: Record<string, any> | null;
 };
 
 export function RoundNodeSheet({
@@ -278,6 +279,13 @@ export function RoundNodeSheet({
         <SheetBody className="flex-1">
           <div className="grid gap-4">
             <NoteBox>Status changes are tracked automatically.</NoteBox>
+            <NoteBox>
+              Changing to Ongoing will automatically generate matches base on
+              format.
+            </NoteBox>
+            <NoteBox>
+              Changing to Finished will automatically compute the results
+            </NoteBox>
 
             {/* Status Select */}
             <div className="grid gap-1">
@@ -305,6 +313,12 @@ export function RoundNodeSheet({
                 Set the current status of this round.
               </p>
             </div>
+
+            <NoteBox>Can only proceed to next round if Finished.</NoteBox>
+
+            <Button disabled={round.round_status != "Finished"}>
+              Proceed to next round
+            </Button>
           </div>
         </SheetBody>
         <SheetFooter className="flex justify-end gap-2">
