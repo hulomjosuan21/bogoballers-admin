@@ -8,6 +8,7 @@ import {
   type FormatNodeData,
 } from "@/types/leagueCategoryTypes";
 import { LeagueCategoryService } from "@/service/leagueCategoryManagementService";
+import { getErrorMessage } from "@/lib/error";
 
 export function buildSaveOperations(
   changedNodes: Node<NodeData>[],
@@ -163,29 +164,27 @@ export async function executeSaveOperations(
   operationsByCategory: Map<string, CategoryOperation[]>,
   onSuccess: () => Promise<void>
 ) {
-  try {
-    const promises: Promise<any>[] = [];
+  const promises: Promise<any>[] = [];
 
-    for (const [leagueCategoryId, operations] of operationsByCategory) {
-      if (operations.length > 0) {
-        promises.push(
-          LeagueCategoryService.saveChanges({
-            leagueCategoryId,
-            operations,
-          })
-        );
-      }
+  for (const [leagueCategoryId, operations] of operationsByCategory) {
+    if (operations.length > 0) {
+      promises.push(
+        LeagueCategoryService.saveChanges({
+          leagueCategoryId,
+          operations,
+        })
+      );
     }
-
-    await Promise.all(promises);
-
-    toast.success("All changes saved successfully");
-    await onSuccess();
-
-    return true;
-  } catch (error) {
-    toast.error("Failed to save changes");
-    console.error(error);
-    return false;
   }
+
+  return toast.promise(
+    Promise.all(promises).then(async () => {
+      await onSuccess();
+    }),
+    {
+      loading: "Saving changes...",
+      success: "All changes saved successfully",
+      error: (err) => getErrorMessage(err),
+    }
+  );
 }

@@ -62,7 +62,7 @@ export const getPredefinedFormatConfigs = (
       },
     },
     {
-      label: "• TwiceToBeat – Finals Format",
+      label: "• Finals Format",
       format_type: RoundFormatTypesEnum.TwiceToBeat,
       variant: "twicetobeat_final",
       format_config: {
