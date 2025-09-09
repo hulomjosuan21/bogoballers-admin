@@ -148,4 +148,19 @@ export class LeagueService {
 
     return response.data;
   }
+
+  static async updateCurrent(leagueId: string, formData: FormData) {
+    const response = await axiosClient.put<{ message: string }>(
+      `/league/update/${leagueId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      }
+    );
+
+    return response.data;
+  }
 }

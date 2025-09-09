@@ -46,7 +46,7 @@ const data = {
     },
     {
       title: "Current",
-      url: "#",
+      url: "/league-administrator/pages/league/active",
       icon: SquarePen,
     },
     {

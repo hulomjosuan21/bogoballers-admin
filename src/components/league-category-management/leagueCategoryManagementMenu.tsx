@@ -43,7 +43,7 @@ export function FormatNodeMenu({
   return (
     <div className="w-48 p-2 border rounded-md bg-card">
       <h3 className="text-xs font-semibold text-muted-foreground mb-2 tracking-wide">
-        Formats
+        Format types
       </h3>
       <div className="flex flex-col gap-2">
         {menuItems.map((value) => (

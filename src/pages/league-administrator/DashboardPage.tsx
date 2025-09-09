@@ -23,6 +23,14 @@ import {
   useActiveLeague,
   useActiveLeagueAnalytics,
 } from "@/hooks/useActiveLeague";
+import {
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertToolbar,
+} from "@/components/ui/alert";
+import { RiSpamFill } from "@remixicon/react";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardCardProps {
   title: string;
@@ -178,6 +186,8 @@ export default function DashboardPage() {
     useActiveLeagueAnalytics(activeLeagueId);
   const [showUpdates, setShowUpdates] = useState(true);
 
+  const navigate = useNavigate();
+
   return (
     <ContentShell>
       <ContentHeader title="Dashboard">
@@ -199,7 +209,7 @@ export default function DashboardPage() {
       </ContentHeader>
 
       <ContentBody>
-        {activeLeagueData && activeLeagueAnalyticsData && (
+        {activeLeagueData && activeLeagueAnalyticsData ? (
           <div
             className={`grid gap-6 ${
               showUpdates ? "lg:grid-cols-3" : "lg:grid-cols-2"
@@ -243,6 +253,27 @@ export default function DashboardPage() {
 
             {showUpdates && <RecentUpdates />}
           </div>
+        ) : (
+          <Alert variant="info">
+            <AlertIcon>
+              <RiSpamFill />
+            </AlertIcon>
+            <AlertTitle>Start new league.</AlertTitle>
+            <AlertToolbar>
+              <Button
+                variant="inverse"
+                mode="link"
+                underlined="solid"
+                size="sm"
+                className="flex mt-0.5"
+                onClick={() =>
+                  navigate("/league-administrator/pages/league/new")
+                }
+              >
+                Go to creation page
+              </Button>
+            </AlertToolbar>
+          </Alert>
         )}
       </ContentBody>
     </ContentShell>
