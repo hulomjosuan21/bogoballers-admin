@@ -9,4 +9,10 @@ export class PlayerService {
 
     return response.data;
   }
+
+  static async getAllPlayers() {
+    const response = await axiosClient.get<PlayerModel[]>("/player/all");
+
+    return response.data;
+  }
 }

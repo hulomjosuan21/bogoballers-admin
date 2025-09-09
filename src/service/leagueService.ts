@@ -114,13 +114,17 @@ export class LeagueService {
   }
 
   static async createNewLeague(formData: FormData) {
-    const response = await axiosClient.post("/league/create-new", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      withCredentials: true,
-    });
-    return ApiResponse.fromJsonNoPayload(response.data);
+    const response = await axiosClient.post<{ message: string }>(
+      "/league/create-new",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
   }
 
   static async fetchActiveLeague(): Promise<LeagueType | null> {

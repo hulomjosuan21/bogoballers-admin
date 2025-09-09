@@ -1,4 +1,5 @@
 import axiosClient from "@/lib/axiosClient";
+import type { Refund } from "@/stores/refundStore";
 import type { LeagueTeamForMatch, LeagueTeamModel } from "@/types/team";
 
 export class LeagueTeamService {
@@ -37,6 +38,24 @@ export class LeagueTeamService {
     return response.data;
   }
 
+  static async validateEntry(
+    leagueId?: string,
+    leagueCategoryId?: string,
+    leagueTeamId?: string
+  ) {
+    if (!leagueId || !leagueCategoryId || !leagueTeamId) {
+      throw new Error(
+        "Please fill out all required fields before validating an entry."
+      );
+    }
+
+    const response = await axiosClient.put<{ message: string }>(
+      `/league-team/validate-entry/${leagueId}/${leagueCategoryId}/${leagueTeamId}`
+    );
+
+    return response.data;
+  }
+
   static async getAllForMatch({
     leagueId,
     leagueCategoryId,
@@ -46,6 +65,15 @@ export class LeagueTeamService {
   }) {
     const response = await axiosClient.get<LeagueTeamForMatch[]>(
       `/league-team/all/${leagueId}/${leagueCategoryId}?status=Accepted`
+    );
+
+    return response.data;
+  }
+
+  static async refund(payload: Refund) {
+    const response = await axiosClient.post<{ message: string }>(
+      `/league-team/refund?remove=${payload.remove}`,
+      payload.data
     );
 
     return response.data;

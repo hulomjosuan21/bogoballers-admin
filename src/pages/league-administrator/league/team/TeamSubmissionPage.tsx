@@ -15,7 +15,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 import { TeamSubmissionTable } from "@/tables/LeagueTeamSubmissionTable";
-import { CheckPlayerSheet } from "@/components/league-category-management/LeagueTeamManagementComponents";
+import {
+  LeagueTeamSheetSheetSubmissionSheet,
+  RefundDialog,
+} from "@/components/league-team/LeagueTeamManagementComponents";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 
@@ -119,7 +122,8 @@ export default function TeamSubmissionPage() {
                     value={cat.league_category_id}
                     className="pt-2"
                   >
-                    <CheckPlayerSheet />
+                    <LeagueTeamSheetSheetSubmissionSheet />
+                    <RefundDialog />
                     <TeamSubmissionTable
                       leagueCategoryId={cat.league_category_id}
                       leagueId={activeLeagueId}

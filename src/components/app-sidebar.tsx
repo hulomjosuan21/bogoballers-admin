@@ -66,7 +66,7 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "All",
+          title: "Official teams",
           url: "/league-administrator/pages/league/teams",
         },
         {

@@ -9,7 +9,6 @@ import { DatePickerWithRange } from "@/components/date-range-picker";
 import { ImageUploadField } from "@/components/image-upload-field";
 import type { DateRange } from "react-day-picker";
 import dayjs from "dayjs";
-import { useErrorToast } from "@/components/error-toast";
 import { Separator } from "@/components/ui/separator";
 import { LeagueService } from "@/service/leagueService";
 import { toast } from "sonner";
@@ -41,6 +40,8 @@ import MultipleSelector from "@/components/ui/multiselect";
 import type { CategoryModel } from "../types/leagueCategoryTypes";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
 import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
+import { getErrorMessage } from "@/lib/error";
+import { useNavigate } from "react-router-dom";
 
 function validateLeagueForm({
   leagueTitle,
@@ -90,6 +91,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
   const { data: LeagueAdminCategories } = useQuery(
     leagueAdminCategoriesQueryOption
   );
+  const navigate = useNavigate();
 
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [leagueTitle, setLeagueTitle] = useState("");
@@ -109,63 +111,62 @@ export default function CreateLeagueForm({ hasActive }: Props) {
   const [rules, setRules] = useState<string[]>([]);
   const [isProcessing, setProcessing] = useState(false);
 
-  const handleError = useErrorToast();
-
   const handleSubmit = async () => {
     setProcessing(true);
-    try {
-      const categoryIds = selectedCategories.map((opt) => opt.value);
+    const createLeague = async () => {
+      try {
+        const categoryIds = selectedCategories.map((opt) => opt.value);
 
-      validateLeagueForm({
-        leagueTitle,
-        overAllBudget,
-        leagueDescription,
-        rules,
-        registrationDadline,
-        openingDate,
-        dateRange,
-        leagueBanner,
-        categories: categoryIds,
-      });
+        validateLeagueForm({
+          leagueTitle,
+          overAllBudget,
+          leagueDescription,
+          rules,
+          registrationDadline,
+          openingDate,
+          dateRange,
+          leagueBanner,
+          categories: categoryIds,
+        });
 
-      const formData = new FormData();
-      formData.append("league_title", leagueTitle);
-      formData.append("league_budget", String(overAllBudget));
-      formData.append("league_description", leagueDescription);
-      formData.append("league_address", selectedAddress);
-      formData.append("opening_date", openingDate!.toISOString());
-      formData.append("categories", JSON.stringify(categoryIds));
-      formData.append(
-        "registration_deadline",
-        registrationDadline!.toISOString()
-      );
-      formData.append(
-        "league_schedule",
-        JSON.stringify([dateRange?.from, dateRange?.to])
-      );
-      formData.append("sportsmanship_rules", JSON.stringify(rules));
-      if (leagueBanner instanceof File) {
-        formData.append("banner_image", leagueBanner);
-      } else if (typeof leagueBanner === "string") {
-        formData.append("banner_image", leagueBanner);
+        const formData = new FormData();
+        formData.append("league_title", leagueTitle);
+        formData.append("league_budget", String(overAllBudget));
+        formData.append("league_description", leagueDescription);
+        formData.append("league_address", selectedAddress);
+        formData.append("opening_date", openingDate!.toISOString());
+        formData.append("categories", JSON.stringify(categoryIds));
+        formData.append(
+          "registration_deadline",
+          registrationDadline!.toISOString()
+        );
+        formData.append(
+          "league_schedule",
+          JSON.stringify([dateRange?.from, dateRange?.to])
+        );
+        formData.append("sportsmanship_rules", JSON.stringify(rules));
+        if (leagueBanner instanceof File) {
+          formData.append("banner_image", leagueBanner);
+        } else if (typeof leagueBanner === "string") {
+          formData.append("banner_image", leagueBanner);
+        }
+        const response = await LeagueService.createNewLeague(formData);
+
+        await activeLeague.refetch();
+        return response;
+      } finally {
+        setProcessing(false);
       }
-      // for (let [key, value] of formData.entries()) {
-      //   console.log(key, value);
-      // }
-      const res = await LeagueService.createNewLeague(formData);
+    };
 
-      await activeLeague.refetch();
-      toast.success(res.message);
-    } catch (err) {
-      if (err instanceof Error) {
-        handleError(err);
-      } else {
-        console.error();
-        handleError(`Unexpected error: ${err}`);
-      }
-    } finally {
-      setProcessing(false);
-    }
+    toast.promise(createLeague(), {
+      loading: `Creating League ${leagueTitle}...`,
+      success: (res) => {
+        navigate("/league-administrator/pages/league/categories");
+        return res?.message;
+      },
+      error: (err) => getErrorMessage(err) ?? "Something went wrong!",
+    });
   };
 
   const options = useMemo(

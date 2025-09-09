@@ -16,6 +16,8 @@ import AboutLeaguePage from "@/pages/public/learnings/AboutLeague";
 import LeaderboardPage from "@/pages/leaderboard/LeaderboardPage";
 import SearchScreen from "@/pages/public/SearchPage";
 import LeagueTeamsPage from "@/pages/league-administrator/league/team/LeagueTeamsPage";
+import AllPlayersPage from "@/pages/AllPlayersPage";
+import AllTeamsPage from "@/pages/AllTeamsPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -29,6 +31,14 @@ export const publicRoutes: RouteObject[] = [
   {
     path: "/find",
     element: <SearchScreen />,
+  },
+  {
+    path: "/player/all",
+    element: <AllPlayersPage />,
+  },
+  {
+    path: "/team/all",
+    element: <AllTeamsPage />,
   },
 ];
 

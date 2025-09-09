@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { RiSpamFill } from "@remixicon/react";
 
 import ContentHeader from "@/components/content-header";
@@ -14,47 +13,45 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-
-import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
-import { getActiveLeagueCategoriesQueryOption } from "@/queries/leagueCategoryQueryOption";
 import LeagueTeamsTable from "@/tables/LeagueTeamsTable";
+import { LeagueTeamReadyForMatchSection } from "@/components/league-team/LeagueTeamReadyForMatch";
+import { useToggleOfficialLeagueTeamSection } from "@/stores/leagueTeamStores";
+import { ToggleState } from "@/stores/toggleStore";
+import { useLeagueCategories } from "@/hooks/useLeagueCategories";
+import { useActiveLeague } from "@/hooks/useActiveLeague";
 
 export default function LeagueTeamsPage() {
   const {
-    data: activeLeague,
-    isLoading,
-    error,
-  } = useQuery(getActiveLeagueQueryOption);
+    activeLeagueId,
+    activeLeagueData,
+    activeLeagueLoading,
+    activeLeagueError,
+  } = useActiveLeague();
 
-  const { data: categories, isLoading: isLoadingCategory } = useQuery(
-    getActiveLeagueCategoriesQueryOption(activeLeague?.league_id)
-  );
+  const {
+    leagueCategoriesData,
+    leagueCategoriesLoading,
+    leagueCategoriesError,
+  } = useLeagueCategories(activeLeagueId);
 
   const hasActiveLeague = useMemo(() => {
-    return activeLeague != null && Object.keys(activeLeague).length > 0;
-  }, [activeLeague]);
+    return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
+  }, [activeLeagueData]);
+  const { state, data } = useToggleOfficialLeagueTeamSection();
 
-  if (!categories || categories.length === 0) {
-    return (
-      <ContentShell>
-        <ContentHeader title="Team Submission" />
-        <ContentBody>
-          <div className="centered-container">
-            <p className="text-muted-foreground text-sm">
-              No categories available.
-            </p>
-          </div>
-        </ContentBody>
-      </ContentShell>
-    );
-  }
   return (
     <ContentShell>
-      <ContentHeader title={`${activeLeague?.league_title} Teams`} />
+      <ContentHeader title="Official Teams" />
 
       <ContentBody>
-        {isLoading || error ? (
-          <ErrorLoading isLoading={isLoading} error={error} />
+        {activeLeagueLoading ||
+        leagueCategoriesLoading ||
+        activeLeagueError ||
+        leagueCategoriesError ? (
+          <ErrorLoading
+            isLoading={activeLeagueLoading || leagueCategoriesLoading}
+            error={activeLeagueError || leagueCategoriesError}
+          />
         ) : (
           <>
             {!hasActiveLeague && (
@@ -84,37 +81,44 @@ export default function LeagueTeamsPage() {
               </Alert>
             )}
 
-            {hasActiveLeague && (
-              <Tabs defaultValue={categories[0].league_category_id}>
-                <ScrollArea>
-                  <TabsList className="text-foreground mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1 w-full justify-start">
-                    {categories.map((cat) => (
-                      <TabsTrigger
+            {hasActiveLeague && leagueCategoriesData && (
+              <div className="space-y-4">
+                {state === ToggleState.SHOW_LEAGUE_TEAM && data ? (
+                  <LeagueTeamReadyForMatchSection data={data} />
+                ) : (
+                  <Tabs
+                    defaultValue={leagueCategoriesData[0].league_category_id}
+                  >
+                    <ScrollArea>
+                      <TabsList className="grid grid-cols-2">
+                        {leagueCategoriesData.map((cat) => (
+                          <TabsTrigger
+                            key={cat.league_category_id}
+                            value={cat.league_category_id}
+                          >
+                            {cat.category_name}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                      <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+
+                    {leagueCategoriesData.map((cat) => (
+                      <TabsContent
                         key={cat.league_category_id}
                         value={cat.league_category_id}
-                        className="tab-trigger"
+                        className="pt-2"
                       >
-                        {cat.category_name}
-                      </TabsTrigger>
+                        <LeagueTeamsTable
+                          leagueCategoryId={cat.league_category_id}
+                          leagueId={activeLeagueId}
+                          isLoading={leagueCategoriesLoading}
+                        />
+                      </TabsContent>
                     ))}
-                  </TabsList>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-
-                {categories.map((cat) => (
-                  <TabsContent
-                    key={cat.league_category_id}
-                    value={cat.league_category_id}
-                    className="pt-2"
-                  >
-                    <LeagueTeamsTable
-                      leagueCategoryId={cat.league_category_id}
-                      leagueId={activeLeague?.league_id}
-                      isLoading={isLoadingCategory}
-                    />
-                  </TabsContent>
-                ))}
-              </Tabs>
+                  </Tabs>
+                )}
+              </div>
             )}
           </>
         )}

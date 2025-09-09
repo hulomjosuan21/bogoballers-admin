@@ -29,11 +29,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { LeagueTeamForMatch } from "@/types/team";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getAllLeagueTeamForMatchQueryOption } from "@/queries/leagueTeamQueryOption";
+import { getErrorMessage } from "@/lib/error";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, MoreVertical } from "lucide-react";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
+import {
+  refetchAllLeagueReadyForMatch,
+  useGetAllLeagueTeamsReadyForMatch,
+} from "@/hooks/useLeagueTeam";
+import { useAlertDialog } from "@/hooks/userAlertDialog";
+import { toast } from "sonner";
+import {
+  useRemoveLeagueTeamStore,
+  useToggleOfficialLeagueTeamSection,
+} from "@/stores/leagueTeamStores";
+import { ToggleState } from "@/stores/toggleStore";
 
 type Props = {
   leagueId?: string;
@@ -41,7 +51,13 @@ type Props = {
   isLoading: boolean;
 };
 
-export const columns: ColumnDef<LeagueTeamForMatch>[] = [
+export const columns = ({
+  leagueId,
+  leagueCategoryId,
+}: {
+  leagueId?: string;
+  leagueCategoryId?: string;
+}): ColumnDef<LeagueTeamForMatch>[] => [
   {
     accessorKey: "team_name",
     header: ({ column }) => (
@@ -100,7 +116,38 @@ export const columns: ColumnDef<LeagueTeamForMatch>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: () => {
+    cell: ({ row }) => {
+      const team = row.original;
+
+      const { openDialog } = useAlertDialog();
+      const { deleteApi } = useRemoveLeagueTeamStore();
+
+      const handleRemove = async () => {
+        const confirm = await openDialog({
+          confirmText: "Confirm",
+          cancelText: "Cancel",
+        });
+        if (!confirm) return;
+
+        const removeTeam = async () => {
+          const result = await deleteApi(team.league_team_id);
+          await refetchAllLeagueReadyForMatch(leagueId, leagueCategoryId);
+          return result;
+        };
+
+        toast.promise(removeTeam(), {
+          loading: "Removing team status...",
+          success: (res) => res,
+          error: (err) => getErrorMessage(err) ?? "Something went wrong!",
+        });
+      };
+
+      const { toggle } = useToggleOfficialLeagueTeamSection();
+
+      const handleToggleLeague = () => {
+        toggle(team, ToggleState.SHOW_LEAGUE_TEAM);
+      };
+
       return (
         <div className="text-right">
           <DropdownMenu>
@@ -112,10 +159,12 @@ export const columns: ColumnDef<LeagueTeamForMatch>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem>Details</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleToggleLeague}>
+                Details
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Ban</DropdownMenuItem>
-              <DropdownMenuItem>Remove</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRemove}>Remove</DropdownMenuItem>
               <DropdownMenuItem>Remove & Refund</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -130,11 +179,9 @@ export default function LeagueTeamsTable({
   leagueCategoryId,
   isLoading,
 }: Props) {
-  const { data } = useQuery(
-    getAllLeagueTeamForMatchQueryOption({
-      leagueCategoryId: leagueCategoryId,
-      leagueId: leagueId,
-    })
+  const { allLeagueTeamReadyForMatchData } = useGetAllLeagueTeamsReadyForMatch(
+    leagueId,
+    leagueCategoryId
   );
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -143,8 +190,11 @@ export default function LeagueTeamsTable({
   const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
-    data: data ?? ([] as LeagueTeamForMatch[]),
-    columns,
+    data: allLeagueTeamReadyForMatchData,
+    columns: columns({
+      leagueId: leagueId,
+      leagueCategoryId: leagueCategoryId,
+    }),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -200,10 +250,7 @@ export default function LeagueTeamsTable({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={6 + 1} className="h-24 text-center">
                   {isLoading ? "Loading..." : "No data."}
                 </TableCell>
               </TableRow>

@@ -18,6 +18,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -32,18 +33,22 @@ import { DataTablePagination } from "@/components/data-table-pagination";
 
 import type { LeagueTeamModel } from "@/types/team";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getAllLeagueTeamsSubmissionQueryOptions } from "@/queries/leagueTeamQueryOption";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import { formatIsoDate } from "@/helpers/helpers";
 import { Badge } from "@/components/ui/badge";
 import {
   useCheckPlayerSheet,
-  useUpdateTeamStore,
+  useUpdateLeagueTeamStore,
+  useRemoveLeagueTeamStore,
+  useRefundDialog,
 } from "../stores/leagueTeamStores";
 import { toast } from "sonner";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
-import { queryClient } from "@/lib/queryClient";
+import {
+  refetchAllLeagueTeamSubmission,
+  useGetAllLeagueTeamsSubmission,
+} from "@/hooks/useLeagueTeam";
+import { LeagueTeamService } from "@/service/leagueTeamService";
 
 interface TeamSubmissionTableProps {
   leagueId?: string;
@@ -170,16 +175,10 @@ export const columns = ({
 
       const { dialogOpen } = useCheckPlayerSheet();
 
-      const { refetch } = useQuery(
-        getAllLeagueTeamsSubmissionQueryOptions({
-          leagueId,
-          leagueCategoryId,
-        })
-      );
-
       const { openDialog } = useAlertDialog();
 
-      const { updateApi } = useUpdateTeamStore();
+      const { updateApi } = useUpdateLeagueTeamStore();
+      const { deleteApi } = useRemoveLeagueTeamStore();
 
       const handleUpdate = async (data: Partial<LeagueTeamModel>) => {
         const confirm = await openDialog({
@@ -187,25 +186,59 @@ export const columns = ({
           cancelText: "Cancel",
         });
         if (!confirm) return;
-        toast.promise(
-          updateApi(team.league_team_id, data).then((res) => {
-            refetch();
-            return res;
-          }),
-          {
-            loading: "Updating payment status...",
-            success: (res) => res,
-            error: (err) => getErrorMessage(err) ?? "Something went wrong!",
-          }
-        );
-        await queryClient.refetchQueries({
-          queryKey: ["league-team-submission", leagueId, leagueCategoryId],
+
+        const updateTeam = async () => {
+          const result = await updateApi(team.league_team_id, data);
+          await refetchAllLeagueTeamSubmission(leagueId, leagueCategoryId);
+          return result;
+        };
+
+        toast.promise(updateTeam(), {
+          loading: "Updating payment status...",
+          success: (res) => res,
+          error: (err) => getErrorMessage(err) ?? "Something went wrong!",
         });
       };
 
-      // const paidPending = ["Paid On Site", "Paid Online"].includes(
-      //   team.payment_status
-      // );
+      const handleRemove = async () => {
+        const confirm = await openDialog({
+          confirmText: "Confirm",
+          cancelText: "Cancel",
+        });
+        if (!confirm) return;
+
+        const removeTeam = async () => {
+          const result = await deleteApi(team.league_team_id);
+          await refetchAllLeagueTeamSubmission(leagueId, leagueCategoryId);
+          return result;
+        };
+
+        toast.promise(removeTeam(), {
+          loading: "Removing team status...",
+          success: (res) => res,
+          error: (err) => getErrorMessage(err) ?? "Something went wrong!",
+        });
+      };
+
+      const handleAccept = async () => {
+        const acceptTeam = async () => {
+          const result = await LeagueTeamService.validateEntry(
+            leagueId,
+            leagueCategoryId,
+            team.league_team_id
+          );
+          await refetchAllLeagueTeamSubmission(leagueId, leagueCategoryId);
+          return result;
+        };
+
+        toast.promise(acceptTeam(), {
+          loading: "Validating team entry...",
+          success: (res) => res.message,
+          error: (err) => getErrorMessage(err) ?? "Something went wrong!",
+        });
+      };
+
+      const { dialogOpen: dialogRefundOpen } = useRefundDialog();
 
       return (
         <div className="text-right">
@@ -221,10 +254,41 @@ export const columns = ({
               <DropdownMenuItem onClick={() => dialogOpen(team)}>
                 Details
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Set payment status</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => handleUpdate({ status: "Accepted" })}
+                onClick={() => handleUpdate({ payment_status: "Paid On Site" })}
               >
-                Accept
+                Paid On Site
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleUpdate({ payment_status: "Paid Online" })}
+              >
+                Paid Online
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleUpdate({ payment_status: "No Charge" })}
+              >
+                No Charge
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleAccept}>Accept</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRemove}>Remove</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  dialogRefundOpen({
+                    leagueCategoryId: leagueCategoryId!,
+                    leagueId: leagueCategoryId!,
+                    remove: true,
+                    message: "",
+                    data: {
+                      amount: 0,
+                      league_team_id: team.league_team_id,
+                    },
+                  })
+                }
+              >
+                Remove & Refund
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -239,11 +303,9 @@ export function TeamSubmissionTable({
   leagueCategoryId,
   isLoading,
 }: TeamSubmissionTableProps) {
-  const { data } = useQuery(
-    getAllLeagueTeamsSubmissionQueryOptions({
-      leagueId,
-      leagueCategoryId,
-    })
+  const { allLeagueTeamSubmissionData } = useGetAllLeagueTeamsSubmission(
+    leagueId,
+    leagueCategoryId
   );
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -252,7 +314,7 @@ export function TeamSubmissionTable({
   const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
-    data: data ?? ([] as LeagueTeamModel[]),
+    data: allLeagueTeamSubmissionData,
     columns: columns({
       leagueId: leagueId,
       leagueCategoryId: leagueCategoryId,

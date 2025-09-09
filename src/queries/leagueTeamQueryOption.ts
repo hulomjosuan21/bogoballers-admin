@@ -1,3 +1,4 @@
+import { QUERY_KEYS } from "@/constants/queryKeys";
 import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeamForMatch, LeagueTeamModel } from "@/types/team";
 import { queryOptions } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ export const getAllLeagueTeamsSubmissionQueryOptions = ({
   leagueCategoryId?: string;
 }) =>
   queryOptions<LeagueTeamModel[] | null, Error>({
-    queryKey: ["league-team-submission", leagueId, leagueCategoryId],
+    queryKey: QUERY_KEYS.LEAGUE_TEAM_SUBMISSION(leagueId, leagueCategoryId),
     enabled: Boolean(leagueId || leagueCategoryId),
     queryFn: () =>
       LeagueTeamService.getAllSubmission({
@@ -32,7 +33,7 @@ export const getAllLeagueTeamForMatchQueryOption = ({
   leagueCategoryId?: string;
 }) =>
   queryOptions<LeagueTeamForMatch[] | null, Error>({
-    queryKey: ["league-team-for-match", leagueId, leagueCategoryId],
+    queryKey: QUERY_KEYS.LEAGUE_TEAM_FOR_MATCH(leagueId, leagueCategoryId),
     enabled: Boolean(leagueId || leagueCategoryId),
     queryFn: () =>
       LeagueTeamService.getAllForMatch({

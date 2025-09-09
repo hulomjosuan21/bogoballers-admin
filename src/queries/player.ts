@@ -9,4 +9,22 @@ export const getPlayerLeaderboardQueryOption = queryOptions<
 >({
   queryKey: QUERY_KEYS.PLAYER_LEADERBOARD,
   queryFn: PlayerService.get_player_leaderboar,
+  staleTime: 0,
+  refetchOnMount: true,
+  refetchOnWindowFocus: true,
+  refetchOnReconnect: true,
+  retry: false,
+});
+
+export const getAllPlayersQueryOptions = queryOptions<
+  PlayerModel[] | null,
+  Error
+>({
+  queryKey: QUERY_KEYS.PLAYERS_ALL,
+  queryFn: PlayerService.getAllPlayers,
+  staleTime: 0,
+  refetchOnMount: true,
+  refetchOnWindowFocus: true,
+  refetchOnReconnect: true,
+  retry: false,
 });
