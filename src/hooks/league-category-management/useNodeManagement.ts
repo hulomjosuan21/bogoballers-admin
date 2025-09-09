@@ -25,10 +25,9 @@ import {
   type RoundNodeData,
 } from "@/types/leagueCategoryTypes";
 import { generateUUIDWithPrefix } from "@/lib/app_utils";
-
+import { getPredefinedFormatConfigs } from "@/constants/getPredefinedFormatConfigs";
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
-
 export const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
   [RoundTypeEnum.Elimination]: RoundStateEnum.Upcoming,
   [RoundTypeEnum.QuarterFinal]: RoundStateEnum.Upcoming,
@@ -39,24 +38,22 @@ export const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
 interface UseNodeManagementProps {
   categories?: LeagueCategory[] | null;
   viewOnly?: boolean;
+  nTeams: number;
 }
 
 export function useNodeManagement({
+  nTeams,
   categories,
   viewOnly = false,
 }: UseNodeManagementProps) {
   const reactFlowInstance = useReactFlow();
-
   const [nodes, setNodes] = useState<Node<NodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [deletedNodeIds, setDeletedNodeIds] = useState<Set<string>>(new Set());
   const [selectedNodes, setSelectedNodes] = useState<Node<NodeData>[]>([]);
-
   const originalNodesRef = useRef<Node<NodeData>[]>([]);
   const initialNodesRef = useRef<Node<NodeData>[]>([]);
   const categoriesRef = useRef<LeagueCategory[]>([]);
-
-  // Initialize nodes and edges from categories
   const initializeFromCategories = useCallback(() => {
     if (!categories) return;
 
@@ -145,8 +142,6 @@ export function useNodeManagement({
     setEdges(newEdges);
     setDeletedNodeIds(new Set());
   }, [categories, viewOnly]);
-
-  // Get changed nodes for save operations
   const getChangedNodes = useCallback(() => {
     const changed: Node<NodeData>[] = [];
 
@@ -190,8 +185,6 @@ export function useNodeManagement({
 
     return changed;
   }, [nodes]);
-
-  // Get deleted nodes for save operations
   const getDeletedNodes = useCallback(() => {
     return initialNodesRef.current.filter(
       (node) =>
@@ -199,8 +192,6 @@ export function useNodeManagement({
         (node.type === "roundNode" || node.type === "formatNode")
     );
   }, [deletedNodeIds]);
-
-  // Find category rounds
   const findCategoryRounds = useCallback(
     (categoryId: string) => {
       return nodes.filter(
@@ -209,8 +200,6 @@ export function useNodeManagement({
     },
     [nodes]
   );
-
-  // Handle node changes
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       if (viewOnly) return;
@@ -315,8 +304,6 @@ export function useNodeManagement({
     },
     [nodes, viewOnly]
   );
-
-  // Handle edge changes
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
       if (viewOnly) return;
@@ -400,7 +387,6 @@ export function useNodeManagement({
     [nodes, viewOnly]
   );
 
-  // Handle connections
   const onConnect = useCallback(
     (connection: Connection) => {
       if (viewOnly) return;
@@ -416,18 +402,35 @@ export function useNodeManagement({
       ) {
         const round = (sourceNode.data as RoundNodeData).round;
         const formatLabel = (targetNode.data as FormatNodeData).label;
+        const formatVariant = (targetNode.data as FormatNodeData).variant;
 
         const roundFormat: LeagueRoundFormat = {
           format_type: formatLabel as RoundFormatTypesEnum,
           pairing_method: "random",
           round_id: round.round_id,
           position: targetNode.position,
+          format_config: null,
         };
+
+        const presets = getPredefinedFormatConfigs(nTeams);
+        const defaultPreset = presets.find(
+          (preset) => preset.variant === formatVariant
+        );
+        const defaultConfig = defaultPreset?.format_config ?? null;
 
         setNodes((nds) =>
           nds.map((n) => {
             if (n.id === sourceNode.id && n.type === "roundNode") {
-              const updatedRound = { ...round, round_format: roundFormat };
+              const updatedRound = {
+                ...round,
+                round_format: {
+                  ...roundFormat,
+                  format_config: {
+                    label: defaultPreset?.label,
+                    ...defaultConfig,
+                  },
+                },
+              };
               return {
                 ...n,
                 data: { ...n.data, round: updatedRound } as RoundNodeData,
@@ -438,8 +441,12 @@ export function useNodeManagement({
                 ...n,
                 data: {
                   ...n.data,
-                  round_format: roundFormat,
+                  round_format: {
+                    ...roundFormat,
+                    format_config: defaultConfig,
+                  },
                   round_id: round.round_id,
+                  format_config: defaultConfig,
                 } as FormatNodeData,
               };
             }
@@ -514,7 +521,6 @@ export function useNodeManagement({
     [nodes, findCategoryRounds, viewOnly]
   );
 
-  // Handle node drag stop
   const onNodeDragStop = useCallback(
     (_e: React.MouseEvent, node: Node<NodeData>) => {
       if (viewOnly || node.type === "categoryNode") return;
@@ -556,8 +562,6 @@ export function useNodeManagement({
     },
     [viewOnly]
   );
-
-  // Handle selection change
   const onSelectionChange = useCallback(
     ({ nodes: selected }: { nodes: Node<NodeData>[] }) => {
       if (viewOnly) return;
@@ -565,8 +569,6 @@ export function useNodeManagement({
     },
     [viewOnly]
   );
-
-  // Delete selected nodes
   const deleteSelectedNodes = useCallback(async () => {
     if (viewOnly) return;
 
@@ -586,8 +588,6 @@ export function useNodeManagement({
     onNodesChange(removeChanges);
     setSelectedNodes([]);
   }, [selectedNodes, onNodesChange, viewOnly]);
-
-  // Handle drop
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       if (viewOnly) return;
@@ -670,6 +670,9 @@ export function useNodeManagement({
         const newNodeId = `format-${Date.now()}-${Math.random()
           .toString(36)
           .slice(2, 9)}`;
+
+        const variant = event.dataTransfer.getData("variant");
+
         newNode = {
           id: newNodeId,
           type: "formatNode",
@@ -678,7 +681,8 @@ export function useNodeManagement({
           extent: "parent",
           position: dropPosition,
           data: {
-            label,
+            label: label,
+            variant: variant,
             _isNew: true,
             format_config: null,
           } satisfies FormatNodeData,
@@ -689,18 +693,15 @@ export function useNodeManagement({
     [nodes, reactFlowInstance, viewOnly]
   );
 
-  // Check for unsaved changes
   const hasUnsavedChanges = useMemo(() => {
     return getChangedNodes().length > 0 || deletedNodeIds.size > 0;
   }, [getChangedNodes, deletedNodeIds]);
 
-  // Get total changes count
   const getTotalChangesCount = useMemo(() => {
     return getChangedNodes().length + deletedNodeIds.size;
   }, [getChangedNodes, deletedNodeIds]);
 
   return {
-    // State
     nodes,
     edges,
     deletedNodeIds,
@@ -708,14 +709,10 @@ export function useNodeManagement({
     originalNodesRef,
     initialNodesRef,
     categoriesRef,
-
-    // State setters - explicitly exported for other hooks
     setNodes,
     setEdges,
     setDeletedNodeIds,
     setSelectedNodes,
-
-    // Actions
     initializeFromCategories,
     getChangedNodes,
     getDeletedNodes,
@@ -726,12 +723,8 @@ export function useNodeManagement({
     onSelectionChange,
     deleteSelectedNodes,
     onDrop,
-
-    // Computed values
     hasUnsavedChanges,
     getTotalChangesCount,
-
-    // Helper functions
     findCategoryRounds,
   };
 }

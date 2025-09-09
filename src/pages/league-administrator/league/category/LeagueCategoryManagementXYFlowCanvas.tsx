@@ -17,15 +17,22 @@ import {
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { default as ContentHeader } from "@/components/content-header";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Menu } from "lucide-react";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
-// Custom hooks
 import { useNodeManagement } from "@/hooks/league-category-management/useNodeManagement";
 import { useEdgeStyling } from "@/hooks/league-category-management/useEdgeStyling";
 import { useKeyboardShortcuts } from "@/hooks/league-category-management/useKeyboardShortcuts";
 import { useDragDropActions } from "@/hooks/league-category-management/useDragDropActions";
 import { useSaveOperations } from "@/hooks/league-category-management/useSaveOperations";
+import { NoteBox } from "@/components/nodebox";
 
 type LeagueCategoryCanvasProps = {
   categories?: LeagueCategory[] | null;
@@ -36,6 +43,7 @@ type LeagueCategoryCanvasProps = {
   ) => Promise<QueryObserverResult<LeagueCategory[] | null, Error>>;
   viewOnly?: boolean;
 };
+const nTeams = 8;
 
 export default function LeagueCategoryCanvas({
   categories,
@@ -65,7 +73,7 @@ export default function LeagueCategoryCanvas({
     onDrop,
     hasUnsavedChanges,
     getTotalChangesCount,
-  } = useNodeManagement({ categories, viewOnly });
+  } = useNodeManagement({ categories, viewOnly, nTeams: nTeams });
 
   useEdgeStyling({ nodes, setEdges });
 
@@ -168,6 +176,7 @@ export default function LeagueCategoryCanvas({
             onDragStart={(e, label) => onDragStart(e, "round", label)}
           />
           <FormatNodeMenu
+            nTeam={nTeams}
             onDragStart={(e, label) => onDragStart(e, "format", label)}
           />
         </div>
@@ -183,6 +192,23 @@ export default function LeagueCategoryCanvas({
             Save Changes ({getTotalChangesCount})
           </Button>
         )}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant={"outline"} size={"sm"}>
+              <Menu />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side={"top"} aria-describedby={undefined}>
+            <SheetHeader>
+              <SheetTitle />
+            </SheetHeader>
+
+            <div className="mt-4 space-y-2">
+              <NoteBox label="Test">0</NoteBox>
+              <NoteBox label="Test">0</NoteBox>
+            </div>
+          </SheetContent>
+        </Sheet>
       </ContentHeader>
       <ContentBody className="flex-row">
         {isLoading ? (

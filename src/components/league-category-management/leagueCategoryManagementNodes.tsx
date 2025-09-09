@@ -8,31 +8,25 @@ import {
 } from "@xyflow/react";
 import {
   getRoundTypeByOrder,
-  RoundFormatTypesEnum,
   type CategoryNodeData,
   type FormatNodeData,
   type RoundNodeData,
 } from "@/types/leagueCategoryTypes";
-import { useRef, useState, useTransition } from "react";
+import { useRef } from "react";
 import { toast } from "sonner";
 import {
   LeagueCategoryNodeSheet,
   RoundNodeSheet,
 } from "@/components/league-category-management/LeagueCategoryManagementComponents";
-import { Button } from "../ui/button";
-import { Settings2 } from "lucide-react";
-import { Input } from "../ui/input";
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
-import { LeagueCategoryRoundService } from "@/service/leagueCategoryManagementService";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const { category, viewOnly } = data;
 
   return (
     <div className="border-2 rounded-md flex flex-col overflow-hidden w-[1280px] h-[720px]">
-      <div className="bg-primary text-sm py-1 px-4 flex justify-between items-center gap-2">
+      <div className="bg-primary/50 text-sm py-1 px-4 flex justify-between items-center gap-2">
         <p>
-          <strong>Category:</strong> {category.category_name}
+          <strong className="">Category:</strong> {category.category_name}
         </p>
         <LeagueCategoryNodeSheet data={data} disable={viewOnly} />
       </div>
@@ -163,10 +157,6 @@ export function RoundNode({
 export function FormatNode({ data }: { data: FormatNodeData }) {
   const { getEdges } = useReactFlow();
   const errorShownRef = useRef(false);
-  const [open, setOpen] = useState(false);
-  const [values, setValues] = useState<Record<string, any>>(
-    data.format_config ?? {}
-  );
 
   const validateConnection = (conn: Connection | Edge) => {
     const edges = getEdges();
@@ -193,51 +183,17 @@ export function FormatNode({ data }: { data: FormatNodeData }) {
         errorShownRef.current = false;
       }}
     >
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold">Format: {data.label}</span>
-        {!data._isNew && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                aria-label="format-settings"
-              >
-                <Settings2 className="w-4 h-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <FormatConfigForm
-                formatType={data.label as RoundFormatTypesEnum}
-                roundId={data.round_id}
-                values={values}
-                setValues={setValues}
-                onSuccess={() => setOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
+      <span className="text-xs font-semibold">Format: {data.label}</span>
 
-      {Object.keys(values).length > 0 && (
-        <div className="text-xs text-muted-foreground flex flex-col gap-1 mt-1">
-          {Object.entries(values).map(([key, value]) => (
-            <div key={key}>
-              <span className="font-medium">{key.replaceAll("_", " ")}:</span>{" "}
-              <span>
-                {Array.isArray(value) ? value.join(", ") : String(value)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {data._isNew && Object.keys(values).length === 0 && (
+      {data._isNew ? (
         <span className="text-xs text-primary font-medium">
           (New - unsaved)
         </span>
-      )}
+      ) : data.format_config ? (
+        <span className="text-xs text-primary font-medium">
+          {data.format_config["label"]}
+        </span>
+      ) : null}
 
       <Handle
         id="top"
@@ -245,172 +201,6 @@ export function FormatNode({ data }: { data: FormatNodeData }) {
         position={Position.Top}
         isValidConnection={validateConnection}
       />
-    </div>
-  );
-}
-
-export function FormatConfigForm({
-  formatType,
-  roundId,
-  values,
-  setValues,
-  onSuccess,
-}: {
-  formatType: RoundFormatTypesEnum;
-  roundId?: string;
-  values: Record<string, any>;
-  setValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
-  onSuccess?: () => void;
-}) {
-  const handleInputChange = (key: string, value: any) => {
-    setValues((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const [isPending, startTransition] = useTransition();
-
-  const handleChange = () => {
-    startTransition(() => {
-      const promise = LeagueCategoryRoundService.updateRound({
-        roundId: roundId!,
-        changes: { format_config: values },
-      });
-
-      toast.promise(promise, {
-        loading: "Configuring format...",
-        success: (data) => {
-          onSuccess?.();
-          return data.message;
-        },
-        error: "Failed to config format",
-      });
-    });
-  };
-
-  return (
-    <div className="flex flex-col gap-2 mt-4">
-      {formatType === RoundFormatTypesEnum.RoundRobin && (
-        <>
-          <Input
-            placeholder="Groups"
-            type="number"
-            value={values.groups ?? ""}
-            onChange={(e) =>
-              handleInputChange("groups", Number(e.target.value))
-            }
-          />
-          <Input
-            placeholder="Games per Team"
-            type="number"
-            value={values.games_per_team ?? ""}
-            onChange={(e) =>
-              handleInputChange("games_per_team", Number(e.target.value))
-            }
-          />
-          <Input
-            placeholder="Advances per Group"
-            type="number"
-            value={values.advances_per_group ?? ""}
-            onChange={(e) =>
-              handleInputChange("advances_per_group", Number(e.target.value))
-            }
-          />
-        </>
-      )}
-
-      {formatType === RoundFormatTypesEnum.Knockout && (
-        <>
-          <Input
-            placeholder="Seeding (random/ranking)"
-            onChange={(e) => handleInputChange("seeding", e.target.value)}
-          />
-          <Input
-            placeholder="Advances"
-            type="number"
-            value={values.advances ?? ""}
-            onChange={(e) =>
-              handleInputChange("advances", Number(e.target.value))
-            }
-          />
-          <Input
-            placeholder="Single Elimination (true/false)"
-            value={values.single_elim ?? ""}
-            onChange={(e) =>
-              handleInputChange("single_elim", e.target.value === "true")
-            }
-          />
-        </>
-      )}
-
-      {formatType === RoundFormatTypesEnum.BestOf && (
-        <>
-          <Input
-            placeholder="Number of Games (e.g. 3, 5, 7)"
-            type="number"
-            value={values.games ?? ""}
-            onChange={(e) => handleInputChange("games", Number(e.target.value))}
-          />
-          <Input
-            placeholder="Advances"
-            type="number"
-            value={values.advances ?? ""}
-            onChange={(e) =>
-              handleInputChange("advances", Number(e.target.value))
-            }
-          />
-        </>
-      )}
-
-      {formatType === RoundFormatTypesEnum.DoubleElimination && (
-        <>
-          <Input
-            placeholder="Max Loss"
-            type="number"
-            value={values.max_loss ?? ""}
-            onChange={(e) =>
-              handleInputChange("max_loss", Number(e.target.value))
-            }
-          />
-          <Input
-            placeholder="Advances"
-            type="number"
-            value={values.advances ?? ""}
-            onChange={(e) =>
-              handleInputChange("advances", Number(e.target.value))
-            }
-          />
-          <Input
-            placeholder="Brackets (comma-separated)"
-            value={values.brackets?.join(", ") ?? ""}
-            onChange={(e) =>
-              handleInputChange(
-                "brackets",
-                e.target.value.split(",").map((b) => b.trim())
-              )
-            }
-          />
-        </>
-      )}
-
-      {formatType === RoundFormatTypesEnum.TwiceToBeat && (
-        <>
-          <Input
-            placeholder="Advantaged Team ID"
-            onChange={(e) =>
-              handleInputChange("advantaged_team", e.target.value)
-            }
-          />
-          <Input
-            placeholder="Challenger Team ID"
-            onChange={(e) =>
-              handleInputChange("challenger_team", e.target.value)
-            }
-          />
-        </>
-      )}
-
-      <Button disabled={isPending} onClick={handleChange}>
-        Config
-      </Button>
     </div>
   );
 }

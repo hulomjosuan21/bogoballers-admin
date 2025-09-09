@@ -17,7 +17,6 @@ export function buildSaveOperations(
 ) {
   const operationsByCategory = new Map<string, CategoryOperation[]>();
 
-  // Process changed nodes
   for (const node of changedNodes) {
     if (!node.parentId) continue;
 
@@ -126,7 +125,6 @@ export function buildSaveOperations(
     }
   }
 
-  // Process deleted nodes
   for (const node of deletedNodes) {
     if (!node.parentId) continue;
 

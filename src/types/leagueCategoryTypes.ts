@@ -147,6 +147,7 @@ export interface SaveChangesPayload {
 export interface LeagueRoundFormat {
   format_type: RoundFormatTypesEnum;
   pairing_method: string;
+  format_config: Record<string, any> | null;
   round_id: string;
   position: {
     x: number;
@@ -234,6 +235,7 @@ export interface FormatNodeData {
   round_format?: LeagueRoundFormat;
   format_config: Record<string, any> | null;
   round_id?: string;
+  variant?: string;
   _isNew?: boolean;
   [key: string]: unknown;
 }
