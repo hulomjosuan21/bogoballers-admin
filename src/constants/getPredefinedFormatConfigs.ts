@@ -20,16 +20,6 @@ export const getPredefinedFormatConfigs = (
       },
     },
     {
-      label: "• 2 Groups, Top 2 Advance",
-      format_type: RoundFormatTypesEnum.RoundRobin,
-      variant: "roundrobin_2groups",
-      format_config: {
-        groups: 2,
-        games_per_team: Math.max(Math.ceil(nTeam / 2) - 1, 0),
-        advances_per_group: 2,
-      },
-    },
-    {
       label: "• Single Elim, Random Seeding",
       format_type: RoundFormatTypesEnum.Knockout,
       variant: "knockout_singleelim",

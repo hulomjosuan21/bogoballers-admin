@@ -19,6 +19,7 @@ import SearchScreen from "@/pages/public/SearchPage";
 import LeagueTeamsPage from "@/pages/league-administrator/league/team/LeagueTeamsPage";
 import AllPlayersPage from "@/pages/AllPlayersPage";
 import AllTeamsPage from "@/pages/AllTeamsPage";
+import TestGrid from "@/test/TestGrid";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -40,6 +41,10 @@ export const publicRoutes: RouteObject[] = [
   {
     path: "/team/all",
     element: <AllTeamsPage />,
+  },
+  {
+    path: "/test/grid",
+    element: <TestGrid />,
   },
 ];
 

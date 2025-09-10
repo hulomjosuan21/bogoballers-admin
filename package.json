@@ -94,6 +94,8 @@
     "@tiptap/starter-kit": "^3.0.9",
     "@tiptap/suggestion": "^3.0.9",
     "@xyflow/react": "^12.8.2",
+    "ag-grid-community": "^34.1.2",
+    "ag-grid-react": "^34.1.2",
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
