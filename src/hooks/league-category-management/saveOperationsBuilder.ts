@@ -7,7 +7,7 @@ import {
   type RoundNodeData,
   type FormatNodeData,
 } from "@/types/leagueCategoryTypes";
-import { LeagueCategoryService } from "@/service/leagueCategoryManagementService";
+import { LeagueCategoryRoundService } from "@/service/leagueCategoryManagementService";
 import { getErrorMessage } from "@/lib/error";
 
 export function buildSaveOperations(
@@ -169,7 +169,7 @@ export async function executeSaveOperations(
   for (const [leagueCategoryId, operations] of operationsByCategory) {
     if (operations.length > 0) {
       promises.push(
-        LeagueCategoryService.saveChanges({
+        LeagueCategoryRoundService.saveChanges({
           leagueCategoryId,
           operations,
         })

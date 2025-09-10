@@ -36,7 +36,8 @@ import {
   LeagueCategoryRoundService,
   LeagueCategoryService,
 } from "@/service/leagueCategoryManagementService";
-
+import { useAlertDialog } from "@/hooks/userAlertDialog";
+import { getErrorMessage } from "@/lib/error";
 export function LeagueCategoryNodeSheet({
   data,
   disable,
@@ -205,6 +206,7 @@ export function LeagueCategoryNodeSheet({
 export type LeagueCategoryRoundUpdatableFields = {
   round_status: string;
   format_config: Record<string, any> | null;
+  auto_proceed: boolean;
 };
 
 export function RoundNodeSheet({
@@ -224,6 +226,8 @@ export function RoundNodeSheet({
   const [status, setStatus] = useState(round.round_status);
   const originalStatus = useRef(round.round_status);
 
+  const { openDialog } = useAlertDialog();
+
   useEffect(() => {
     setStatus(round.round_status);
     originalStatus.current = round.round_status;
@@ -241,12 +245,32 @@ export function RoundNodeSheet({
 
     const updateRound = async () => {
       try {
-        const response = await LeagueCategoryRoundService.updateRound({
-          roundId: round.round_id,
-          changes: { round_status: status },
-        });
-        await refetchLeagueCategories();
-        return response.message;
+        if (status !== originalStatus.current) {
+          const confirm = await openDialog({
+            title: "Confirm Round Progression",
+            description:
+              "Updating this round will automatically adjust the status of the previous or next round accordingly.",
+            confirmText: "Yes",
+            cancelText: "No",
+          });
+
+          let changes;
+          if (confirm) {
+            changes = { round_status: status, auto_proceed: true };
+          } else {
+            changes = { round_status: status, auto_proceed: false };
+          }
+
+          const response = await LeagueCategoryRoundService.progressRound({
+            roundId: round.round_id,
+            changes: changes,
+          });
+
+          await refetchLeagueCategories();
+          return response;
+        }
+
+        return "No updates required";
       } finally {
         setPending(false);
       }
@@ -255,7 +279,7 @@ export function RoundNodeSheet({
     toast.promise(updateRound(), {
       loading: "Updating round...",
       success: (message) => message,
-      error: "Failed to update round",
+      error: (err) => getErrorMessage(err),
     });
   };
 
@@ -287,7 +311,6 @@ export function RoundNodeSheet({
               Changing to Finished will automatically compute the results
             </NoteBox>
 
-            {/* Status Select */}
             <div className="grid gap-1">
               <Label>Status</Label>
               <Select
@@ -313,12 +336,6 @@ export function RoundNodeSheet({
                 Set the current status of this round.
               </p>
             </div>
-
-            <NoteBox>Can only proceed to next round if Finished.</NoteBox>
-
-            <Button disabled={round.round_status != "Finished"}>
-              Proceed to next round
-            </Button>
           </div>
         </SheetBody>
         <SheetFooter className="flex justify-end gap-2">

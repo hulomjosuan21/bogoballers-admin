@@ -404,6 +404,7 @@ export function useNodeManagement({
         const formatLabel = (targetNode.data as FormatNodeData).label;
         const formatVariant = (targetNode.data as FormatNodeData).variant;
         const roundOrder = round.round_order;
+        const rountStatus = round.round_status;
 
         const roundFormat: LeagueRoundFormat = {
           format_type: formatLabel as RoundFormatTypesEnum,
@@ -426,6 +427,7 @@ export function useNodeManagement({
                 ...round,
                 round_format: {
                   round_order: roundOrder,
+                  round_status: rountStatus,
                   ...roundFormat,
                   format_config: {
                     label: defaultPreset?.label,

@@ -8,13 +8,6 @@ import {
 import type { LeagueCategoryRoundUpdatableFields } from "@/components/league-category-management/LeagueCategoryManagementComponents";
 
 export class LeagueCategoryService {
-  static async saveChanges(payload: SaveChangesPayload) {
-    return axiosClient.post(
-      `/league/category/${payload.leagueCategoryId}/save-changes`,
-      payload
-    );
-  }
-
   static async createCategory({
     leagueId,
     data,
@@ -69,5 +62,26 @@ export class LeagueCategoryRoundService {
       changes
     );
     return response.data;
+  }
+
+  static async progressRound({
+    roundId,
+    changes,
+  }: {
+    roundId: string;
+    changes: Partial<LeagueCategoryRoundUpdatableFields>;
+  }) {
+    const response = await axiosClient.put<{ message: string }>(
+      `/league/round/progression/${roundId}`,
+      changes
+    );
+    return response.data.message;
+  }
+
+  static async saveChanges(payload: SaveChangesPayload) {
+    return axiosClient.post(
+      `/league/round/${payload.leagueCategoryId}/save-changes`,
+      payload
+    );
   }
 }
