@@ -646,13 +646,20 @@ export function useNodeManagement({
         const order = getRoundOrder(label as RoundTypeEnum);
         const created: LeagueCategoryRound = {
           round_id: roundId,
-          category_id: targetCategory.id,
+          league_category_id: targetCategory.id,
           round_name: label as RoundTypeEnum,
           round_order: order,
           round_status: STATUSES[label as RoundTypeEnum],
           round_format: null,
           format_config: null,
           position: dropPosition,
+          public_round_id: "",
+          matches_generated: false,
+          format_type: null,
+          format_options: null,
+          next_round_id: null,
+          league_category_round_created_at: "",
+          league_category_round_updated_at: "",
         };
 
         newNode = {

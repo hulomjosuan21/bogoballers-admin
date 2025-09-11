@@ -1,4 +1,5 @@
-import type { LeagueCategory } from "@/types/leagueCategoryTypes";
+import type { LeagueAdministator } from "./leagueAdmin";
+import type { LeagueCategory } from "./leagueCategoryTypes";
 
 export type LeagueOfficial = {
   full_name: string;
@@ -27,25 +28,20 @@ export type LeagueCourt = {
   is_available: boolean;
 };
 export interface LeagueResource {
-  league_id: string;
   league_courts: LeagueCourt[];
   league_officials: LeagueOfficial[];
   league_referees: LeagueReferee[];
   league_affiliates: LeagueAffiliate[];
 }
 
-export interface LeagueOption {
-  player_residency_certificate_valid_until: string;
-  player_residency_certificate_required: boolean;
-}
-
-export type League = {
+export interface League extends LeagueResource {
   league_id: string;
+  public_league_id: string;
   league_administrator_id: string;
   league_title: string;
   league_description: string;
-  league_budget: number;
   league_address: string;
+  league_budget: number;
   registration_deadline: string;
   opening_date: string;
   league_schedule: [string, string];
@@ -53,37 +49,36 @@ export type League = {
   status: string;
   season_year: number;
   sportsmanship_rules: string[];
-  created_at: string;
-  updated_at: string;
-  categories: LeagueCategory[];
-};
-
-export interface LeagueType extends League {}
-
-export interface ProfitChartPoint {
-  date: string;
-  amount: number;
+  league_created_at: string;
+  league_updated_at: string;
+  creator: LeagueAdministator;
+  league_categories: LeagueCategory[];
 }
 
-export interface TotalProfit {
-  amount: number;
-  last_update: string | null;
-  chart: ProfitChartPoint[];
-}
+// export interface ProfitChartPoint {
+//   date: string;
+//   amount: number;
+// }
 
-export interface LeagueAnalytics {
-  active_league: LeagueType;
-  total_profit: TotalProfit;
-  total_accepted_teams: {
-    count: number;
-    last_update: string | null;
-  };
-  total_players: {
-    count: number;
-    last_update: string | null;
-  };
-  total_categories: {
-    count: number;
-    last_update: string | null;
-  };
-}
+// export interface TotalProfit {
+//   amount: number;
+//   last_update: string | null;
+//   chart: ProfitChartPoint[];
+// }
+
+// export interface LeagueAnalytics {
+//   active_league: LeagueType;
+//   total_profit: TotalProfit;
+//   total_accepted_teams: {
+//     count: number;
+//     last_update: string | null;
+//   };
+//   total_players: {
+//     count: number;
+//     last_update: string | null;
+//   };
+//   total_categories: {
+//     count: number;
+//     last_update: string | null;
+//   };
+// }

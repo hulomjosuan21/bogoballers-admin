@@ -10,7 +10,7 @@ interface UseSaveOperationsProps {
   getChangedNodes: () => Node<NodeData>[];
   getDeletedNodes: () => Node<NodeData>[];
   nodes: Node<NodeData>[];
-  initialNodesRef: React.MutableRefObject<Node<NodeData>[]>;
+  initialNodesRef: React.RefObject<Node<NodeData>[]>;
   setDeletedNodeIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   refetch: () => Promise<any>;
 }
