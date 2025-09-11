@@ -35,14 +35,21 @@ export const useActiveLeagueResource = () => {
     activeLeagueData: queryOne.data,
     activeLeagueResourceData: queryTwo.data,
     activeLeagueResourceLoading:
-      queryOne.isLoading ||
-      queryOne.isFetching ||
-      queryOne.isPending ||
-      queryTwo.isLoading ||
-      queryTwo.isFetching ||
-      queryTwo.isPending,
+      queryOne.isLoading || queryOne.isFetching || queryOne.isPending,
     activeLeagueResourceError: queryOne.error || queryTwo.error,
     refetchActiveLeagueResource: queryTwo.refetch,
+  };
+};
+
+export const useLeagueResource = () => {
+  const query = useQuery(getActiveLeagueResourceQueryOption);
+
+  return {
+    leagueResource: query.data,
+    leagueResourceLoading:
+      query.isLoading || query.isPending || query.isFetching,
+    leagueResourceError: query.error,
+    refetchLeagueResource: query.refetch,
   };
 };
 

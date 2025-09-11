@@ -1,5 +1,4 @@
 import ContentHeader from "@/components/content-header";
-import EventCalendar from "@/components/event-calendar";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 
 export default function LeagueMatchSetUnSchedulePage() {
@@ -7,9 +6,7 @@ export default function LeagueMatchSetUnSchedulePage() {
     <ContentShell>
       <ContentHeader title="Set Schedule"></ContentHeader>
 
-      <ContentBody>
-        <EventCalendar initialEvents={[]} isPublic />
-      </ContentBody>
+      <ContentBody></ContentBody>
     </ContentShell>
   );
 }

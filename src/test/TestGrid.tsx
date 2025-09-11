@@ -4,7 +4,7 @@ import {
   type ColDef,
   type ICellRendererParams,
 } from "ag-grid-community";
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { Button } from "@/components/ui/button";
 import { Loader2Icon, Minus, Plus } from "lucide-react";
@@ -17,41 +17,7 @@ interface Player {
 }
 
 export default function TestGrid() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Update state when user exits fullscreen with ESC
-  useEffect(() => {
-    const handleChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    setIsLoading;
-    document.addEventListener("fullscreenchange", handleChange);
-    return () => document.removeEventListener("fullscreenchange", handleChange);
-  }, []);
-
-  const toggleFullscreen = () => {
-    if (!isFullscreen && containerRef.current) {
-      // Enter fullscreen
-      if (containerRef.current.requestFullscreen) {
-        containerRef.current.requestFullscreen();
-      } else if ((containerRef.current as any).webkitRequestFullscreen) {
-        (containerRef.current as any).webkitRequestFullscreen(); // Safari
-      } else if ((containerRef.current as any).msRequestFullscreen) {
-        (containerRef.current as any).msRequestFullscreen(); // IE11
-      }
-    } else {
-      // Exit fullscreen
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if ((document as any).webkitExitFullscreen) {
-        (document as any).webkitExitFullscreen();
-      } else if ((document as any).msExitFullscreen) {
-        (document as any).msExitFullscreen();
-      }
-    }
-  };
 
   const [team1, setTeam1] = useState<Player[]>([
     { name: "Alice - 2", score: 10 },
@@ -128,9 +94,6 @@ export default function TestGrid() {
   return (
     <div className="ag-theme-alpine-dark grid grid-rows-[48px,1fr] w-screen h-screen">
       <header className="flex items-center justify-between px-2">
-        <Button onClick={toggleFullscreen} size={"sm"}>
-          {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-        </Button>
         <Button
           variant={"dashed"}
           onClick={() => setIsLoading((prev) => !prev)}
