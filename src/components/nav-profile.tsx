@@ -18,14 +18,18 @@ import {
 } from "@/components/ui/sidebar";
 import { useState } from "react";
 import { Logo } from "@/assets";
-import type { LeagueAdminType } from "@/types/leagueAdmin";
 import LeagueAdministratorService from "@/service/leagueAdminService";
 import { toast } from "sonner";
 import { useErrorToast } from "./error-toast";
 import { useNavigate } from "react-router-dom";
 import { queryClient } from "@/lib/queryClient";
+import type { LeagueAdministator } from "@/types/leagueAdmin";
 
-export function NavProfile({ leagueAdmin }: { leagueAdmin: LeagueAdminType }) {
+export function NavProfile({
+  leagueAdmin,
+}: {
+  leagueAdmin: LeagueAdministator;
+}) {
   const { isMobile } = useSidebar();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const handleError = useErrorToast();
@@ -90,13 +94,13 @@ export function NavProfile({ leagueAdmin }: { leagueAdmin: LeagueAdminType }) {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
-                    {leagueAdmin.user.email}
+                    {leagueAdmin.account.email}
                   </span>
                   <span className="truncate text-xs">
-                    {leagueAdmin.user.account_type.replace(/_/g, " ")}
+                    {leagueAdmin.account.account_type.replace(/_/g, " ")}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {leagueAdmin.user.contact_number}
+                    {leagueAdmin.account.contact_number}
                   </span>
                 </div>
               </div>

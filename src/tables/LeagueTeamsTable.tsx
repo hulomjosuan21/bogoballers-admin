@@ -27,7 +27,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { LeagueTeamForMatch } from "@/types/team";
 import { useState } from "react";
 import { getErrorMessage } from "@/lib/error";
 import { Button } from "@/components/ui/button";
@@ -44,6 +43,7 @@ import {
   useToggleOfficialLeagueTeamSection,
 } from "@/stores/leagueTeamStores";
 import { ToggleState } from "@/stores/toggleStore";
+import type { LeagueTeam } from "@/types/team";
 
 type Props = {
   leagueId?: string;
@@ -57,7 +57,7 @@ export const columns = ({
 }: {
   leagueId?: string;
   leagueCategoryId?: string;
-}): ColumnDef<LeagueTeamForMatch>[] => [
+}): ColumnDef<LeagueTeam>[] => [
   {
     accessorKey: "team_name",
     header: ({ column }) => (

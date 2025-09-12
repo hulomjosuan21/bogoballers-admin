@@ -21,23 +21,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function PlayerSubmissionPage() {
   const {
-    activeLeagueId,
     activeLeagueData,
     activeLeagueLoading,
     activeLeagueError,
+    activeLeagueCategories,
   } = useActiveLeague();
-
-  const {
-    leagueCategoriesData,
-    leagueCategoriesLoading,
-    leagueCategoriesError,
-  } = useLeagueCategories(activeLeagueId);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -45,7 +38,7 @@ export default function PlayerSubmissionPage() {
     return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
   }, [activeLeagueData]);
 
-  if (!leagueCategoriesData || leagueCategoriesData.length === 0) {
+  if (!activeLeagueCategories || activeLeagueCategories.length === 0) {
     return (
       <ContentShell>
         <ContentHeader title="Team Submission" />
@@ -65,13 +58,10 @@ export default function PlayerSubmissionPage() {
       <ContentHeader title={`${activeLeagueData?.league_title} Players`} />
 
       <ContentBody>
-        {activeLeagueLoading ||
-        leagueCategoriesLoading ||
-        activeLeagueError ||
-        leagueCategoriesError ? (
+        {activeLeagueLoading || activeLeagueError ? (
           <ErrorLoading
-            isLoading={activeLeagueLoading || leagueCategoriesLoading}
-            error={activeLeagueError || leagueCategoriesError}
+            isLoading={activeLeagueLoading}
+            error={activeLeagueError}
           />
         ) : (
           <>
@@ -119,7 +109,9 @@ export default function PlayerSubmissionPage() {
                   <div className="flex items-center justify-end">
                     <Select
                       onValueChange={(val) => setSelectedCategory(val)}
-                      defaultValue={leagueCategoriesData[0].league_category_id}
+                      defaultValue={
+                        activeLeagueCategories[0].league_category_id
+                      }
                     >
                       <SelectTrigger size="sm">
                         <SelectValue placeholder="Select category" />
@@ -127,7 +119,7 @@ export default function PlayerSubmissionPage() {
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>League Categories</SelectLabel>
-                          {leagueCategoriesData.map((cat) => (
+                          {activeLeagueCategories.map((cat) => (
                             <SelectItem
                               key={cat.league_category_id}
                               value={cat.league_category_id}
@@ -141,7 +133,7 @@ export default function PlayerSubmissionPage() {
                   </div>
 
                   <div className="">
-                    {leagueCategoriesData.map(
+                    {activeLeagueCategories.map(
                       (cat) =>
                         cat.league_category_id === selectedCategory && (
                           <p

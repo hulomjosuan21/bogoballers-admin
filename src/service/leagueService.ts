@@ -1,12 +1,10 @@
 import type {
-  LeagueType,
   LeagueAffiliate,
   LeagueCourt,
   LeagueOfficial,
-  LeagueOption,
   LeagueReferee,
-  LeagueResource,
   LeagueAnalytics,
+  League,
 } from "@/types/league";
 import { ApiResponse } from "../lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
@@ -38,38 +36,6 @@ export class LeagueService {
     );
 
     return res.data;
-  }
-
-  static async updateOption({
-    leagueId,
-    data,
-  }: {
-    leagueId: string;
-    data: Partial<LeagueOption>;
-  }) {
-    const res = await axiosClient.put(`/league/${leagueId}/option`, {
-      option: data,
-    });
-
-    return ApiResponse.fromJsonNoPayload(res.data);
-  }
-
-  static async exportLeaguePDF(leagueId: string) {
-    const res = await axiosClient.get(`/league/${leagueId}/export-pdf`, {
-      responseType: "blob",
-    });
-
-    const blob = res.data as Blob;
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `league_${leagueId}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    window.URL.revokeObjectURL(url);
   }
 
   static async updateSingleLeagueResourceField<K extends keyof FieldKeyMap>(
@@ -127,39 +93,10 @@ export class LeagueService {
     return response.data;
   }
 
-  static async fetchActiveLeague(): Promise<LeagueType | null> {
-    const response = await axiosClient.get<LeagueType>("/league/active");
-
-    if (!response.data || Object.keys(response.data).length === 0) {
-      return null;
-    }
-
-    return response.data;
-  }
-
-  static async fetchActiveLeagueResource(): Promise<LeagueResource | null> {
-    const response = await axiosClient.get<LeagueResource>(
-      "/league/active?resource=true"
-    );
-
-    if (!response.data || Object.keys(response.data).length === 0) {
-      return null;
-    }
-
-    return response.data;
-  }
-
-  static async updateCurrent(leagueId: string, formData: FormData) {
-    const response = await axiosClient.put<{ message: string }>(
-      `/league/update/${leagueId}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true,
-      }
-    );
+  static async fetchActive() {
+    const response = await axiosClient.post<League>("/league/active", {
+      status: "Scheduled",
+    });
 
     return response.data;
   }

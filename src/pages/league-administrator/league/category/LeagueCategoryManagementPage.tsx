@@ -2,7 +2,6 @@ import LeagueCategoryCanvas from "./LeagueCategoryManagementXYFlowCanvas";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { default as ContentHeader } from "@/components/content-header";
 import { CloudAlert } from "lucide-react";
-import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { useMemo } from "react";
 import {
@@ -15,17 +14,11 @@ import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 export default function LeagueCategoryManagementPage() {
   const {
-    activeLeagueId,
     activeLeagueData,
     activeLeagueLoading,
     activeLeagueError,
+    activeLeagueCategories,
   } = useActiveLeague();
-
-  const {
-    leagueCategoriesData,
-    leagueCategoriesError,
-    refetchLeagueCategories,
-  } = useLeagueCategories(activeLeagueId);
 
   const hasActiveLeague = useMemo(() => {
     return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
@@ -62,10 +55,9 @@ export default function LeagueCategoryManagementPage() {
         </ContentShell>
       ) : (
         <LeagueCategoryCanvas
-          categories={leagueCategoriesData}
+          categories={activeLeagueCategories}
           isLoading={activeLeagueLoading}
-          error={activeLeagueError ?? leagueCategoriesError}
-          refetch={refetchLeagueCategories}
+          error={activeLeagueError}
           viewOnly={false}
         />
       )}

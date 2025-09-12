@@ -15,9 +15,9 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import type { PlayerModel } from "@/types/player";
 import { useQuery } from "@tanstack/react-query";
 import { getPlayerLeaderboardQueryOption } from "@/queries/player";
+import type { Player } from "@/types/player";
 export default function PlayerLeaderboard() {
   const { data } = useQuery(getPlayerLeaderboardQueryOption);
 
@@ -30,7 +30,7 @@ export default function PlayerLeaderboard() {
   ]);
   const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([]);
 
-  const columns = useMemo<ColumnDef<PlayerModel>[]>(
+  const columns = useMemo<ColumnDef<Player>[]>(
     () => [
       {
         accessorKey: "name",
@@ -106,7 +106,7 @@ export default function PlayerLeaderboard() {
     columns,
     data: data ?? [],
     pageCount: Math.ceil((data?.length || 0) / pagination.pageSize),
-    getRowId: (row: PlayerModel) => row.player_id,
+    getRowId: (row: Player) => row.player_id,
     state: { pagination, sorting, columnOrder },
     manualSorting: true,
     onPaginationChange: setPagination,

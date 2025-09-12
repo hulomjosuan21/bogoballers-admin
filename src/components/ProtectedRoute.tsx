@@ -74,7 +74,7 @@ export function ProtectedRoute() {
     );
   }
 
-  if (!leagueAdmin.user.is_verified) {
+  if (!leagueAdmin.account.is_verified) {
     return (
       <div className="flex flex-col items-center justify-center h-screen px-4 text-center space-y-4">
         <p className="text-sm text-muted-foreground">

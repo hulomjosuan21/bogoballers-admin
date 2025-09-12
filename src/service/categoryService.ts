@@ -1,6 +1,6 @@
 import { ApiResponse } from "@/lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
-import type { CreateCategory } from "@/types/leagueCategoryTypes";
+import type { CreateCategory } from "@/types/category";
 
 export default class CategoryService {
   static async create(leagueAdminId: string, payload: CreateCategory) {

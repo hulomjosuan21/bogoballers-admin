@@ -3,9 +3,8 @@ import { queryClient } from "@/lib/queryClient";
 import {
   getActiveLeagueAnalyticsQueryOption,
   getActiveLeagueQueryOption,
-  getActiveLeagueResourceQueryOption,
 } from "@/queries/leagueQueryOption";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export const useActiveLeague = () => {
   const query = useQuery(getActiveLeagueQueryOption);
@@ -13,6 +12,7 @@ export const useActiveLeague = () => {
   return {
     activeLeagueId: query.data?.league_id,
     activeLeagueData: query.data,
+    activeLeagueCategories: query.data?.league_categories ?? [],
     activeLeagueLoading: query.isLoading || query.isFetching || query.isPending,
     refetchActiveLeague: query.refetch,
     activeLeagueError: query.error,
@@ -22,40 +22,6 @@ export const useActiveLeague = () => {
 export async function refetchActiveLeague() {
   await queryClient.refetchQueries({
     queryKey: QUERY_KEYS.ACTIVE_LEAGUE,
-    exact: true,
-  });
-}
-
-export const useActiveLeagueResource = () => {
-  const [queryOne, queryTwo] = useQueries({
-    queries: [getActiveLeagueQueryOption, getActiveLeagueResourceQueryOption],
-  });
-
-  return {
-    activeLeagueData: queryOne.data,
-    activeLeagueResourceData: queryTwo.data,
-    activeLeagueResourceLoading:
-      queryOne.isLoading || queryOne.isFetching || queryOne.isPending,
-    activeLeagueResourceError: queryOne.error || queryTwo.error,
-    refetchActiveLeagueResource: queryTwo.refetch,
-  };
-};
-
-export const useLeagueResource = () => {
-  const query = useQuery(getActiveLeagueResourceQueryOption);
-
-  return {
-    leagueResource: query.data,
-    leagueResourceLoading:
-      query.isLoading || query.isPending || query.isFetching,
-    leagueResourceError: query.error,
-    refetchLeagueResource: query.refetch,
-  };
-};
-
-export async function refetchActiveLeagueResource() {
-  await queryClient.refetchQueries({
-    queryKey: QUERY_KEYS.ACTIVE_LEAGUE_RESOURCE,
     exact: true,
   });
 }

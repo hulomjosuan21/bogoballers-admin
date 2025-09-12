@@ -6,7 +6,6 @@ import {
   StatusLabel,
 } from "@/components/ui/kibo-ui/status";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import type { LeagueType } from "@/types/league";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ProfitAreaChart } from "@/charts/DashboardProfitChart";
 import {
@@ -31,6 +30,7 @@ import {
 } from "@/components/ui/alert";
 import { RiSpamFill } from "@remixicon/react";
 import { useNavigate } from "react-router-dom";
+import type { League } from "@/types/league";
 
 interface DashboardCardProps {
   title: string;
@@ -39,13 +39,7 @@ interface DashboardCardProps {
   icon?: LucideIcon;
 }
 
-const LeagueSection = ({
-  league,
-  wrap,
-}: {
-  league: LeagueType;
-  wrap: boolean;
-}) => {
+const LeagueSection = ({ league, wrap }: { league: League; wrap: boolean }) => {
   const leagueStatus = (status: string) => {
     const map: Record<
       string,

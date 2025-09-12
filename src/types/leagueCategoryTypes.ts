@@ -1,43 +1,4 @@
-export type Category = {
-  allow_guest_player: boolean;
-  allow_guest_team: boolean;
-  allowed_address: string | null;
-  allowed_documents: string[] | null;
-  category_id: string;
-  category_name: string;
-  check_address: boolean;
-  check_player_age: boolean;
-  document_valid_until: string | null;
-  guest_player_fee_amount: number;
-  player_gender: string;
-  player_min_age: number | null;
-  player_max_age: number | null;
-  requires_valid_document: boolean;
-  team_entrance_fee_amount: number;
-};
-
-export type CreateCategory = {
-  category_name: string;
-  check_player_age: boolean;
-  player_min_age: number | null;
-  player_max_age: number | null;
-  player_gender: string;
-  check_address: boolean;
-  allowed_address: string | null;
-  allow_guest_team: boolean;
-  team_entrance_fee_amount: number;
-  allow_guest_player: boolean;
-  guest_player_fee_amount: number;
-  requires_valid_document: boolean;
-  allowed_documents: string[] | null;
-  document_valid_until: string | null;
-};
-
-export interface CategoryModel extends Category {
-  league_administrator_id: string;
-  created_at: string;
-  updated_at: string;
-}
+import type { Category } from "./category";
 
 export interface CreateLeagueCategory {
   category_name: string;
@@ -51,8 +12,8 @@ export interface LeagueCategory extends Category {
   league_id: string;
   max_team: number;
   accept_teams: boolean;
-  created_at: string;
-  updated_at: string;
+  league_category_created_at: string;
+  league_category_updated_at: string;
   rounds: LeagueCategoryRound[];
 }
 
@@ -68,17 +29,23 @@ export type LeagueCategoryUpdatableFields = {
 
 export interface LeagueCategoryRound {
   round_id: string;
-  category_id: string;
+  public_round_id: string;
+  league_category_id: string;
   round_name: string;
   round_order: number;
   round_status: string;
-  round_format?: LeagueRoundFormat | null;
+  matches_generated: boolean;
+  format_type: string | null;
+  round_format: LeagueRoundFormat | null;
   format_config: Record<string, any> | null;
+  format_options: Record<string, any> | null;
   position: {
     x: number;
     y: number;
   };
-  next_round_id?: string | null;
+  next_round_id: string | null;
+  league_category_round_created_at: string;
+  league_category_round_updated_at: string;
 }
 
 export type CategoryOperation =

@@ -3,16 +3,12 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageAffiliates from "@/tables/ManangeAffiliateTable";
 import { useMemo } from "react";
 import ErrorLoading from "@/components/error-loading";
-import { useActiveLeagueResource } from "@/hooks/useActiveLeague";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
+import { useActiveLeague } from "@/hooks/useActiveLeague";
 
 export default function LeagueAffiliatePage() {
-  const {
-    activeLeagueData,
-    activeLeagueResourceData,
-    activeLeagueResourceLoading,
-    activeLeagueResourceError,
-  } = useActiveLeagueResource();
+  const { activeLeagueData, activeLeagueLoading, activeLeagueError } =
+    useActiveLeague();
 
   const hasActiveLeague = useMemo(() => {
     return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
@@ -23,16 +19,16 @@ export default function LeagueAffiliatePage() {
       <ContentHeader title="Sponsors & Partners"></ContentHeader>
 
       <ContentBody>
-        {activeLeagueResourceLoading || activeLeagueResourceError ? (
+        {activeLeagueLoading || activeLeagueError ? (
           <ErrorLoading
-            isLoading={activeLeagueResourceLoading}
-            error={activeLeagueResourceError}
+            isLoading={activeLeagueLoading}
+            error={activeLeagueError}
           />
         ) : (
           <>
             {!hasActiveLeague && <NoActiveLeagueAlert />}
             <ManageAffiliates
-              data={activeLeagueResourceData?.league_affiliates ?? []}
+              data={activeLeagueData?.league_affiliates ?? []}
               hasActiveLeague={!hasActiveLeague}
             />
           </>

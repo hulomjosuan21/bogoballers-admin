@@ -1,19 +1,14 @@
-import type { UserType } from "./user";
+import type { User } from "./user";
 
-export type LeagueAdmin = {
+export type LeagueAdministator = {
+  league_administrator_id: string;
+  public_league_administrator_id: string;
   user_id: string;
   organization_name: string;
   organization_type: string;
   organization_address: string;
-  organization_logo_url: string | null;
-  user: UserType;
+  organization_logo_url: string;
+  league_admin_created_at: string;
+  league_admin_updated_at: string;
+  account: User;
 };
-
-export interface LeagueAdminType extends LeagueAdmin {
-  created_at: string;
-  updated_at: string;
-}
-
-export interface LeagueAdminModel extends LeagueAdminType {
-  league_administrator_id: string;
-}

@@ -1,11 +1,12 @@
-import type { LeagueCategoryModel } from "@/types/leagueCategoryTypes";
-import type { UserType } from "./user";
-import type { LeagueTeamModel } from "./team";
+import type { LeagueTeam } from "./team";
+import type { User } from "./user";
 
-export type Player = {
+export interface Player {
   player_id: string;
+  public_player_id: string;
   user_id: string;
   full_name: string;
+  profile_image_url: string;
   gender: string;
   birth_date: string;
   player_address: string;
@@ -14,38 +15,37 @@ export type Player = {
   position: string[];
   height_in: number;
   weight_kg: number;
-  valid_documents: string[];
   total_games_played: number;
   total_points_scored: number;
   total_assists: number;
   total_rebounds: number;
   total_join_league: number;
-  profile_image_url: string;
-};
-
-export interface PlayerType extends Player {
   is_ban: boolean;
   is_allowed: boolean;
-  user: UserType;
+  valid_documents: string[] | null;
+  user: User;
+  player_created_at: string;
+  player_updated_at: string;
 }
 
-export interface PlayerModel extends PlayerType {
-  created_at: string;
-  updated_at: string;
-}
-
-export interface PlayerTeamModel extends PlayerModel {
-  team_id: string;
+export interface PlayerTeam extends Player {
   player_team_id: string;
-  is_accepted: boolean;
+  team_id: string;
   is_team_captain: boolean;
+  is_accepted: string;
+  player_team_created_at: string;
+  player_team_updated_at: string;
 }
 
-export interface LeaguePlayer extends PlayerTeamModel {
+export interface LeaguePlayer extends PlayerTeam {
   league_player_id: string;
   league_id: string;
   league_category_id: string;
   league_team_id: string;
-  league_category: LeagueCategoryModel;
-  league_team: LeagueTeamModel;
+  total_points: number;
+  is_ban_in_league: boolean;
+  is_allowed_in_league: boolean;
+  league_team: LeagueTeam;
+  league_player_created_at: string;
+  league_player_updated_at: string;
 }

@@ -3,7 +3,6 @@ import { FolderCog, Settings2, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 import { useActiveLeague } from "@/hooks/useActiveLeague";
-import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 import { toast } from "sonner";
 import {
   Sheet,
@@ -46,9 +45,8 @@ export function LeagueCategoryNodeSheet({
   disable: boolean;
 }) {
   const { category } = data;
-  const { activeLeagueId } = useActiveLeague();
+  const { refetchActiveLeague } = useActiveLeague();
   const [isPending, setPending] = useState(false);
-  const { refetchLeagueCategories } = useLeagueCategories(activeLeagueId);
 
   const [maxTeam, setMaxTeam] = useState<
     LeagueCategoryUpdatableFields["max_team"]
@@ -98,7 +96,7 @@ export function LeagueCategoryNodeSheet({
           league_category_id: category.league_category_id,
           changes,
         });
-        await refetchLeagueCategories();
+        await refetchActiveLeague();
       } finally {
         setPending(false);
       }
@@ -117,7 +115,7 @@ export function LeagueCategoryNodeSheet({
     const deleteCategory = async () => {
       try {
         await LeagueCategoryService.deleteCategory(category.league_category_id);
-        await refetchLeagueCategories();
+        await refetchActiveLeague();
       } finally {
         setPending(false);
       }
@@ -218,8 +216,7 @@ export function RoundNodeSheet({
 }) {
   const { round } = data;
 
-  const { activeLeagueId } = useActiveLeague();
-  const { refetchLeagueCategories } = useLeagueCategories(activeLeagueId);
+  const { refetchActiveLeague } = useActiveLeague();
 
   const [isPending, setPending] = useState(false);
 
@@ -266,7 +263,7 @@ export function RoundNodeSheet({
             changes: changes,
           });
 
-          await refetchLeagueCategories();
+          await refetchActiveLeague();
           return response;
         }
 

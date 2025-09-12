@@ -1,0 +1,36 @@
+export type CreateCategory = {
+  category_name: string;
+  check_player_age: boolean;
+  player_min_age: number | null;
+  player_max_age: number | null;
+  player_gender: string;
+  check_address: boolean;
+  allowed_address: string | null;
+  allow_guest_team: boolean;
+  team_entrance_fee_amount: number;
+  allow_guest_player: boolean;
+  guest_player_fee_amount: number;
+  requires_valid_document: boolean;
+  allowed_documents: string[] | null;
+  document_valid_until: string | null;
+};
+export type Category = {
+  category_id: string;
+  category_name: string;
+  league_administrator_id: string;
+  check_player_age: boolean;
+  player_min_age: number | null;
+  player_max_age: number | null;
+  player_gender: string;
+  check_address: boolean;
+  allowed_address: string | null;
+  allow_guest_team: boolean;
+  allow_guest_player: boolean;
+  guest_player_fee_amount: number;
+  team_entrance_fee_amount: number;
+  requires_valid_document: boolean;
+  allowed_documents: string[] | null;
+  document_valid_until: string | null;
+  category_created_at: string;
+  category_updated_at: string;
+};

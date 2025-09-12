@@ -1,10 +1,10 @@
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { PlayerService } from "@/service/playerService";
-import type { PlayerModel } from "@/types/player";
+import type { Player } from "@/types/player";
 import { queryOptions } from "@tanstack/react-query";
 
 export const getPlayerLeaderboardQueryOption = queryOptions<
-  PlayerModel[] | null,
+  Player[] | null,
   Error
 >({
   queryKey: QUERY_KEYS.PLAYER_LEADERBOARD,
@@ -16,10 +16,7 @@ export const getPlayerLeaderboardQueryOption = queryOptions<
   retry: false,
 });
 
-export const getAllPlayersQueryOptions = queryOptions<
-  PlayerModel[] | null,
-  Error
->({
+export const getAllPlayersQueryOptions = queryOptions<Player[] | null, Error>({
   queryKey: QUERY_KEYS.PLAYERS_ALL,
   queryFn: PlayerService.getAllPlayers,
   staleTime: 0,

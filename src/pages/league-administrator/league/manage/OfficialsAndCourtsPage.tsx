@@ -5,16 +5,12 @@ import ManangeReferees from "@/tables/ManageRefereesTable";
 import ManageCourts from "@/tables/ManageCourtsTable";
 import { useMemo } from "react";
 import ErrorLoading from "@/components/error-loading";
-import { useActiveLeagueResource } from "@/hooks/useActiveLeague";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
+import { useActiveLeague } from "@/hooks/useActiveLeague";
 
 export default function LeagueOfficialsPage() {
-  const {
-    activeLeagueData,
-    activeLeagueResourceData,
-    activeLeagueResourceLoading,
-    activeLeagueResourceError,
-  } = useActiveLeagueResource();
+  const { activeLeagueData, activeLeagueLoading, activeLeagueError } =
+    useActiveLeague();
 
   const hasActiveLeague = useMemo(() => {
     return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
@@ -25,24 +21,24 @@ export default function LeagueOfficialsPage() {
       <ContentHeader title="League Officials" />
 
       <ContentBody className="">
-        {activeLeagueResourceLoading || activeLeagueResourceError ? (
+        {activeLeagueLoading || activeLeagueError ? (
           <ErrorLoading
-            isLoading={activeLeagueResourceLoading}
-            error={activeLeagueResourceError}
+            isLoading={activeLeagueLoading}
+            error={activeLeagueError}
           />
         ) : (
           <>
             {!hasActiveLeague && <NoActiveLeagueAlert />}
             <ManageOfficials
-              data={activeLeagueResourceData?.league_officials ?? []}
+              data={activeLeagueData?.league_officials ?? []}
               hasActiveLeague={!hasActiveLeague}
             />
             <ManangeReferees
-              data={activeLeagueResourceData?.league_referees ?? []}
+              data={activeLeagueData?.league_referees ?? []}
               hasActiveLeague={!hasActiveLeague}
             />
             <ManageCourts
-              data={activeLeagueResourceData?.league_courts ?? []}
+              data={activeLeagueData?.league_courts ?? []}
               hasActiveLeague={!hasActiveLeague}
             />
           </>

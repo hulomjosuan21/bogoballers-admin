@@ -5,14 +5,14 @@ import {
   buildSaveOperations,
   executeSaveOperations,
 } from "./saveOperationsBuilder";
+import { useActiveLeague } from "../useActiveLeague";
 
 interface UseSaveOperationsProps {
   getChangedNodes: () => Node<NodeData>[];
   getDeletedNodes: () => Node<NodeData>[];
   nodes: Node<NodeData>[];
-  initialNodesRef: React.MutableRefObject<Node<NodeData>[]>;
+  initialNodesRef: React.RefObject<Node<NodeData>[]>;
   setDeletedNodeIds: React.Dispatch<React.SetStateAction<Set<string>>>;
-  refetch: () => Promise<any>;
 }
 
 export function useSaveOperations({
@@ -21,8 +21,9 @@ export function useSaveOperations({
   nodes,
   initialNodesRef,
   setDeletedNodeIds,
-  refetch,
 }: UseSaveOperationsProps) {
+  const { refetchActiveLeague } = useActiveLeague();
+
   const saveChanges = useCallback(async () => {
     const changedNodes = getChangedNodes();
     const deletedNodes = getDeletedNodes();
@@ -42,7 +43,7 @@ export function useSaveOperations({
       operationsByCategory,
       async () => {
         setDeletedNodeIds(new Set());
-        await refetch();
+        await refetchActiveLeague();
       }
     );
 
@@ -58,7 +59,6 @@ export function useSaveOperations({
     nodes,
     initialNodesRef,
     setDeletedNodeIds,
-    refetch,
   ]);
 
   return { saveChanges };

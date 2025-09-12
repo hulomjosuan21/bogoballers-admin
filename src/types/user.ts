@@ -6,9 +6,7 @@ export interface User {
   contact_number: string;
   is_verified: string;
   account_type: AccountTypeEnum;
-}
-
-export interface UserType extends User {
-  created_at: string;
-  updated_at: string;
+  display_name: string | null;
+  user_created_at: string;
+  user_updated_at: string;
 }

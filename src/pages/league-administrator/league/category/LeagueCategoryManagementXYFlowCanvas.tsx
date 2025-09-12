@@ -1,7 +1,3 @@
-import type {
-  QueryObserverResult,
-  RefetchOptions,
-} from "@tanstack/react-query";
 import { ReactFlow, Background, Controls, BezierEdge } from "@xyflow/react";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
@@ -38,9 +34,7 @@ type LeagueCategoryCanvasProps = {
   categories?: LeagueCategory[] | null;
   isLoading: boolean;
   error: unknown;
-  refetch: (
-    options?: RefetchOptions | undefined
-  ) => Promise<QueryObserverResult<LeagueCategory[] | null, Error>>;
+
   viewOnly?: boolean;
 };
 const nTeams = 8;
@@ -49,7 +43,6 @@ export default function LeagueCategoryCanvas({
   categories,
   isLoading,
   error,
-  refetch,
   viewOnly = false,
 }: LeagueCategoryCanvasProps) {
   const {
@@ -91,7 +84,6 @@ export default function LeagueCategoryCanvas({
     nodes,
     initialNodesRef,
     setDeletedNodeIds,
-    refetch,
   });
 
   useEffect(() => {

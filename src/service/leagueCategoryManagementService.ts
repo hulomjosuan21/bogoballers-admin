@@ -16,7 +16,7 @@ export class LeagueCategoryService {
     data: CreateLeagueCategory;
   }) {
     const response = await axiosClient.post<{ message: string }>(
-      `/league/category/${leagueId}/add-category`,
+      `/league-category/${leagueId}/add-category`,
       data
     );
 
@@ -31,7 +31,7 @@ export class LeagueCategoryService {
     changes: Partial<LeagueCategoryUpdatableFields>;
   }) {
     const response = await axiosClient.put<{ message: string }>(
-      `/league/category/${league_category_id}`,
+      `/league-category/${league_category_id}`,
       changes
     );
     return response.data;
@@ -39,7 +39,7 @@ export class LeagueCategoryService {
 
   static async fetchActiveCategories(league_id: string) {
     const response = await axiosClient.get<LeagueCategory[]>(
-      `/league/category/${league_id}`
+      `/league-category/${league_id}`
     );
     return response.data;
   }
@@ -58,7 +58,7 @@ export class LeagueCategoryRoundService {
     changes: Partial<LeagueCategoryRoundUpdatableFields>;
   }) {
     const response = await axiosClient.put<{ message: string }>(
-      `/league/round/${roundId}`,
+      `/league-round/${roundId}`,
       changes
     );
     return response.data;
@@ -72,7 +72,7 @@ export class LeagueCategoryRoundService {
     changes: Partial<LeagueCategoryRoundUpdatableFields>;
   }) {
     const response = await axiosClient.put<{ message: string }>(
-      `/league/round/progression/${roundId}`,
+      `/league-round/progression/${roundId}`,
       changes
     );
     return response.data.message;
@@ -80,7 +80,7 @@ export class LeagueCategoryRoundService {
 
   static async saveChanges(payload: SaveChangesPayload) {
     return axiosClient.post(
-      `/league/round/${payload.leagueCategoryId}/save-changes`,
+      `/league-round/${payload.leagueCategoryId}/save-changes`,
       payload
     );
   }
