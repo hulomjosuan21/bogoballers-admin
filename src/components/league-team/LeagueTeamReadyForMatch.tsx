@@ -1,5 +1,4 @@
 import { useToggleOfficialLeagueTeamSection } from "@/stores/leagueTeamStores";
-import type { LeagueTeamForMatch } from "@/types/team";
 import { Button } from "../ui/button";
 import {
   ChevronLeft,
@@ -29,9 +28,10 @@ import {
 import type { LeaguePlayer } from "@/types/player";
 import { useMemo } from "react";
 import { Badge } from "../ui/badge";
+import type { LeagueTeam } from "@/types/team";
 
 type Props = {
-  data: LeagueTeamForMatch;
+  data: LeagueTeam;
 };
 
 export function LeagueTeamReadyForMatchSection({ data }: Props) {

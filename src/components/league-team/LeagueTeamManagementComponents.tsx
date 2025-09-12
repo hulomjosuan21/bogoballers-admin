@@ -33,7 +33,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import type { PlayerTeamModel } from "@/types/player";
 import { Badge } from "../ui/badge";
 import {
   ChevronLeft,
@@ -55,7 +54,7 @@ import { Input } from "../ui/input";
 import type { Refund } from "@/stores/refundStore";
 import { LeagueTeamService } from "@/service/leagueTeamService";
 import { toast } from "sonner";
-import { refetchAllLeagueTeamSubmission } from "@/hooks/useLeagueTeam";
+import type { PlayerTeam } from "@/types/player";
 
 export function LeagueTeamSheetSheetSubmissionSheet() {
   const { isOpen, data, dialogClose } = useCheckPlayerSheet();
@@ -98,9 +97,9 @@ export function LeagueTeamSheetSheetSubmissionSheet() {
 export function LeagueTeamPlayerDataGrid({
   players,
 }: {
-  players: PlayerTeamModel[];
+  players: PlayerTeam[];
 }) {
-  const columns = useMemo<ColumnDef<PlayerTeamModel>[]>(
+  const columns = useMemo<ColumnDef<PlayerTeam>[]>(
     () => [
       {
         accessorKey: "full_name",
@@ -121,17 +120,18 @@ export function LeagueTeamPlayerDataGrid({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="ml-2" align="end">
                     <DropdownMenuLabel>Documents</DropdownMenuLabel>
-                    {documents.map((doc, i) => (
-                      <DropdownMenuItem key={i} asChild>
-                        <Link
-                          to={doc}
-                          target="_blank"
-                          className="block max-w-[200px] truncate"
-                        >
-                          {doc.length > 20 ? doc.slice(0, 20) + "…" : doc}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
+                    {documents &&
+                      documents.map((doc, i) => (
+                        <DropdownMenuItem key={i} asChild>
+                          <Link
+                            to={doc}
+                            target="_blank"
+                            className="block max-w-[200px] truncate"
+                          >
+                            {doc.length > 20 ? doc.slice(0, 20) + "…" : doc}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -252,10 +252,6 @@ export function RefundDialog() {
     const refundTeam = async () => {
       try {
         const result = await LeagueTeamService.refund(payload);
-        await refetchAllLeagueTeamSubmission(
-          data.leagueId,
-          data.leagueCategoryId
-        );
         return result;
         dialogClose();
       } finally {

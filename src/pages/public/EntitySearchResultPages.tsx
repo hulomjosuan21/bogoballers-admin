@@ -1,21 +1,17 @@
 import type { Permission } from "@/enums/permission";
-import type {
-  QueryLeague,
-  QueryLeagueAdmin,
-  QueryPlayer,
-  QueryResult,
-  QueryTeam,
-} from "@/types/searchResults";
+import type { QueryResult } from "@/types/searchResults";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import type { Player } from "@/types/player";
+import type { Team } from "@/types/team";
+import type { LeagueAdministator } from "@/types/leagueAdmin";
+import type { League } from "@/types/league";
 
 interface BaseSearchResultScreen<T> {
   permissions: Permission[];
   result: T;
 }
-
-type SearchResult = QueryPlayer | QueryTeam | QueryLeagueAdmin | QueryLeague;
-
+type SearchResult = Player | Team | LeagueAdministator | League;
 interface CustomBadgeProps {
   text: string;
   variant?: "default" | "secondary" | "destructive" | "outline";
@@ -28,7 +24,7 @@ const CustomBadge: React.FC<CustomBadgeProps> = ({
   return <Badge variant={variant}>{text}</Badge>;
 };
 
-interface PlayerSearchResultProps extends BaseSearchResultScreen<QueryPlayer> {}
+interface PlayerSearchResultProps extends BaseSearchResultScreen<Player> {}
 
 const PlayerSearchResultListItem: React.FC<PlayerSearchResultProps> = ({
   result,
@@ -57,7 +53,7 @@ const PlayerSearchResultListItem: React.FC<PlayerSearchResultProps> = ({
   );
 };
 
-interface TeamSearchResultProps extends BaseSearchResultScreen<QueryTeam> {}
+interface TeamSearchResultProps extends BaseSearchResultScreen<Team> {}
 
 const TeamSearchResultListItem: React.FC<TeamSearchResultProps> = ({
   result,
@@ -87,7 +83,7 @@ const TeamSearchResultListItem: React.FC<TeamSearchResultProps> = ({
 };
 
 interface LeagueAdminSearchResultProps
-  extends BaseSearchResultScreen<QueryLeagueAdmin> {}
+  extends BaseSearchResultScreen<LeagueAdministator> {}
 
 const LeagueAdministratorSearchResultListItem: React.FC<
   LeagueAdminSearchResultProps
@@ -118,7 +114,7 @@ const LeagueAdministratorSearchResultListItem: React.FC<
   );
 };
 
-interface LeagueSearchResultProps extends BaseSearchResultScreen<QueryLeague> {}
+interface LeagueSearchResultProps extends BaseSearchResultScreen<League> {}
 
 const LeagueSearchResultListItem: React.FC<LeagueSearchResultProps> = ({
   result,
@@ -164,28 +160,28 @@ const SearchResultItem: React.FC<SearchResultItemProps> = ({
     case "player":
       return (
         <PlayerSearchResultListItem
-          result={result as QueryPlayer}
+          result={result as Player}
           permissions={permissions}
         />
       );
     case "team":
       return (
         <TeamSearchResultListItem
-          result={result as QueryTeam}
+          result={result as Team}
           permissions={permissions}
         />
       );
     case "league_administrator":
       return (
         <LeagueAdministratorSearchResultListItem
-          result={result as QueryLeagueAdmin}
+          result={result as LeagueAdministator}
           permissions={permissions}
         />
       );
     case "league":
       return (
         <LeagueSearchResultListItem
-          result={result as QueryLeague}
+          result={result as League}
           permissions={permissions}
         />
       );

@@ -8,7 +8,7 @@ import {
 import { useState, useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus, UndoDot } from "lucide-react";
+import { UndoDot } from "lucide-react";
 import { Input, InputAddon, InputGroup } from "@/components/ui/input";
 import {
   Select,
@@ -66,7 +66,7 @@ export default function AutoFitGrid() {
     { qtr: "1st", team_fouls: 0, score: 10 },
   ]);
 
-  const [s1, s3] = useState<Summary[]>([{ reb: 0, ast: 0, f: 0, tp: 0 }]);
+  const [s1, __] = useState<Summary[]>([{ reb: 0, ast: 0, f: 0, tp: 0 }]);
 
   const updateScore = (
     team: "team1" | "team2",

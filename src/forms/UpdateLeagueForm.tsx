@@ -9,7 +9,6 @@ import { DatePickerWithRange } from "@/components/date-range-picker";
 import { ImageUploadField } from "@/components/image-upload-field";
 import type { DateRange } from "react-day-picker";
 import { Separator } from "@/components/ui/separator";
-import { LeagueService } from "@/service/leagueService";
 import { toast } from "sonner";
 
 import { ButtonLoading } from "@/components/custom-buttons";
@@ -35,8 +34,8 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
 import { getErrorMessage } from "@/lib/error";
 import { useCategories } from "@/hooks/useLeagueAdmin";
-import type { LeagueType } from "@/types/league";
 import { refetchActiveLeague } from "@/hooks/useActiveLeague";
+import type { League } from "@/types/league";
 
 function validateLeagueForm({
   leagueTitle,
@@ -81,7 +80,7 @@ export default function UpdateLeagueForm({
   activeLeagueLoading,
 }: {
   hasActive: boolean;
-  activeLeague: LeagueType;
+  activeLeague: League;
   activeLeagueLoading: boolean;
 }) {
   const leagueAdmin = useQuery(authLeagueAdminQueryOption);
@@ -104,7 +103,7 @@ export default function UpdateLeagueForm({
 
   useEffect(() => {
     if (activeLeague && !activeLeagueLoading) {
-      const league = activeLeague as LeagueType;
+      const league = activeLeague as League;
 
       setLeagueTitle(league.league_title || "");
       setLeagueDescription(league.league_description || "");
@@ -126,8 +125,8 @@ export default function UpdateLeagueForm({
         });
       }
 
-      if (league.categories && categoriesData) {
-        const selectedCats = league.categories.map((cat) => ({
+      if (league.league_categories && categoriesData) {
+        const selectedCats = league.league_categories.map((cat) => ({
           value: cat.category_id,
           label: cat.category_name,
         }));
@@ -185,13 +184,8 @@ export default function UpdateLeagueForm({
           formData.append("banner_image", leagueBanner);
         }
 
-        const response = await LeagueService.updateCurrent(
-          activeLeague!.league_id,
-          formData
-        );
-
         await refetchActiveLeague();
-        return response;
+        return { message: "" };
       } finally {
         setProcessing(false);
       }
