@@ -1,69 +1,38 @@
-# React + TypeScript + Vite
+# BogoBallers
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🔹 Overview
+A centralised platform to manage basketball leagues & enhance player participation in **Bogo City**. This system aims to make all the processes of barangay and city-wide basketball leagues easier, improve the data process, and provide a better experience for **players**, **league administrators**, **coaches**, **basketball teams**, and **spectators**.
 
-Currently, two official plugins are available:
+**BogoBallers: Basketball League Management System** aims to improve and assist league administrators, team managers, players, and spectators through the use of digital tools like a web system and application.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔹 Technology Stack
 
-## Expanding the ESLint configuration
+- **Backend:** Python with Quart and SocketIO  
+- **Database:** PostgreSQL  
+- **Caching:** Redis
+- **Rate Limiting:** Limiter
+- **Background Tasks:** APScheduler  
+- **Frontend Web:** Vite, React, TypeScript
+- **Frontend Mobile:** Flutter, Dart 
+- **Containerization:** Docker + Docker Compose
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🔹 Features
+- Manage leagues, teams, and player registrations  
+- Real-time score updates and notifications  
+- Scheduling and match management  
+- Role-based access for administrators, managers, and players  
+- Live statistics and analytics  
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🔹 Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Prerequisites
+- Docker & Docker Compose installed  
+- PostgreSQL and Redis services  
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Running the Project
+```bash
+hypercorn src.server:app --bind 0.0.0.0:5000 --workers 4 --log-level info
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm start
 ```
