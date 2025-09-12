@@ -8,6 +8,17 @@ import {
 import type { LeagueCategoryRoundUpdatableFields } from "@/components/league-category-management/LeagueCategoryManagementComponents";
 
 export class LeagueCategoryService {
+  static async getMany(leagueId: string, data?: Partial<LeagueCategory>) {
+    const hasData = data && Object.keys(data).length > 0;
+
+    const response = await axiosClient.post<LeagueCategory[]>(
+      `/league-category/all/${leagueId}`,
+      hasData ? data : undefined
+    );
+
+    return response.data;
+  }
+
   static async createCategory({
     leagueId,
     data,

@@ -56,16 +56,10 @@ export class LeagueTeamService {
     return response.data;
   }
 
-  static async getAllForMatch({
-    leagueId,
-    leagueCategoryId,
-  }: {
-    leagueId?: string;
-    leagueCategoryId?: string;
-  }) {
-    const response = await axiosClient.get<LeagueTeam[]>(
-      `/league-team/all/${leagueId}/${leagueCategoryId}?status=Accepted`
-    );
+  static async getMany(leagueCategoryId: string, data?: Object) {
+    const url = `/league-team/all/${leagueCategoryId}`;
+
+    const response = await axiosClient.post<LeagueTeam[]>(url, data || {});
 
     return response.data;
   }

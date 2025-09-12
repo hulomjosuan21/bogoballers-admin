@@ -6,6 +6,7 @@ import {
   executeSaveOperations,
 } from "./saveOperationsBuilder";
 import { useActiveLeague } from "../useActiveLeague";
+import { refetchActiveLeagueCategories } from "../useLeagueCategories";
 
 interface UseSaveOperationsProps {
   getChangedNodes: () => Node<NodeData>[];
@@ -22,7 +23,7 @@ export function useSaveOperations({
   initialNodesRef,
   setDeletedNodeIds,
 }: UseSaveOperationsProps) {
-  const { refetchActiveLeague } = useActiveLeague();
+  const { activeLeagueId } = useActiveLeague();
 
   const saveChanges = useCallback(async () => {
     const changedNodes = getChangedNodes();
@@ -43,7 +44,7 @@ export function useSaveOperations({
       operationsByCategory,
       async () => {
         setDeletedNodeIds(new Set());
-        await refetchActiveLeague();
+        await refetchActiveLeagueCategories(activeLeagueId);
       }
     );
 

@@ -1,67 +1,26 @@
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { queryClient } from "@/lib/queryClient";
-import {
-  getAllLeagueTeamForMatchQueryOption,
-  getAllLeagueTeamsSubmissionQueryOptions,
-} from "@/queries/leagueTeamQueryOption";
+import { getLeagueTeamQueryOptions } from "@/queries/leagueTeamQueryOption";
+import type { LeagueTeam } from "@/types/team";
 import { useQuery } from "@tanstack/react-query";
 
-export const useGetAllLeagueTeamsSubmission = (
-  leagueId?: string,
-  leagueCategoryId?: string
-) => {
-  const query = useQuery(
-    getAllLeagueTeamsSubmissionQueryOptions({
-      leagueId,
-      leagueCategoryId,
-    })
-  );
+export const useLeagueTeam = (leagueCategoryId?: string, data?: Object) => {
+  const query = useQuery(getLeagueTeamQueryOptions(leagueCategoryId, data));
 
   return {
-    allLeagueTeamSubmissionData: query.data ?? [],
-    allLeagueTeamSubmissionLoading:
-      query.isLoading || query.isPending || query.isFetching,
-    allLeagueTeamSubmissionError: query.error,
-    refetchAllLeagueTeamSubmission: query.refetch,
+    leagueTeamData: query.data,
+    leagueTeamLoading: query.isLoading || query.isFetching || query.isPending,
+    leagueTeamError: query.error,
+    refetchLeagueTeam: query.refetch,
   };
 };
 
-export async function refetchAllLeagueTeamSubmission(
-  leagueId?: string,
-  leagueCategoryId?: string
+export async function refetchLeagueTeam(
+  leagueCategoryId?: string,
+  data?: Object
 ) {
   await queryClient.refetchQueries({
-    queryKey: QUERY_KEYS.LEAGUE_TEAM_SUBMISSION(leagueId, leagueCategoryId),
-    exact: true,
-  });
-}
-
-export const useGetAllLeagueTeamsReadyForMatch = (
-  leagueId?: string,
-  leagueCategoryId?: string
-) => {
-  const query = useQuery(
-    getAllLeagueTeamForMatchQueryOption({
-      leagueId,
-      leagueCategoryId,
-    })
-  );
-
-  return {
-    allLeagueTeamReadyForMatchData: query.data ?? [],
-    allLeagueTeamReadyForMatchLoading:
-      query.isLoading || query.isPending || query.isFetching,
-    allLeagueTeamReadyForMatchError: query.error,
-    refetchAllLeagueTeamReadyForMatch: query.refetch,
-  };
-};
-
-export async function refetchAllLeagueReadyForMatch(
-  leagueId?: string,
-  leagueCategoryId?: string
-) {
-  await queryClient.refetchQueries({
-    queryKey: QUERY_KEYS.LEAGUE_TEAM_FOR_MATCH(leagueId, leagueCategoryId),
+    queryKey: QUERY_KEYS.LEAGUE_TEAM(leagueCategoryId, data),
     exact: true,
   });
 }

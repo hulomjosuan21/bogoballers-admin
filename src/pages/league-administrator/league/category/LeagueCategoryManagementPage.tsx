@@ -12,17 +12,22 @@ import {
 } from "@/components/ui/alert";
 import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
+import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 export default function LeagueCategoryManagementPage() {
+  const { activeLeagueId } = useActiveLeague();
+
   const {
-    activeLeagueData,
-    activeLeagueLoading,
-    activeLeagueError,
     activeLeagueCategories,
-  } = useActiveLeague();
+    activeLeagueCategoriesLoading,
+    activeLeagueCategoriesError,
+  } = useActiveLeagueCategories(activeLeagueId);
 
   const hasActiveLeague = useMemo(() => {
-    return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
-  }, [activeLeagueData]);
+    return (
+      activeLeagueCategories != null &&
+      Object.keys(activeLeagueCategories).length > 0
+    );
+  }, [activeLeagueCategories]);
 
   return (
     <>
@@ -56,8 +61,8 @@ export default function LeagueCategoryManagementPage() {
       ) : (
         <LeagueCategoryCanvas
           categories={activeLeagueCategories}
-          isLoading={activeLeagueLoading}
-          error={activeLeagueError}
+          isLoading={activeLeagueCategoriesLoading}
+          error={activeLeagueCategoriesError}
           viewOnly={false}
         />
       )}

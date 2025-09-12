@@ -37,6 +37,7 @@ import {
 } from "@/service/leagueCategoryManagementService";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { getErrorMessage } from "@/lib/error";
+import { refetchActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 export function LeagueCategoryNodeSheet({
   data,
   disable,
@@ -216,7 +217,7 @@ export function RoundNodeSheet({
 }) {
   const { round } = data;
 
-  const { refetchActiveLeague } = useActiveLeague();
+  const { activeLeagueId } = useActiveLeague();
 
   const [isPending, setPending] = useState(false);
 
@@ -263,7 +264,7 @@ export function RoundNodeSheet({
             changes: changes,
           });
 
-          await refetchActiveLeague();
+          await refetchActiveLeagueCategories(activeLeagueId);
           return response;
         }
 

@@ -27,15 +27,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { getErrorMessage } from "@/lib/error";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, MoreVertical } from "lucide-react";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
-import {
-  refetchAllLeagueReadyForMatch,
-  useGetAllLeagueTeamsReadyForMatch,
-} from "@/hooks/useLeagueTeam";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { toast } from "sonner";
 import {
@@ -44,144 +40,19 @@ import {
 } from "@/stores/leagueTeamStores";
 import { ToggleState } from "@/stores/toggleStore";
 import type { LeagueTeam } from "@/types/team";
+import { useLeagueTeam } from "@/hooks/useLeagueTeam";
 
 type Props = {
   leagueId?: string;
   leagueCategoryId?: string;
-  isLoading: boolean;
 };
 
-export const columns = ({
-  leagueId,
-  leagueCategoryId,
-}: {
-  leagueId?: string;
-  leagueCategoryId?: string;
-}): ColumnDef<LeagueTeam>[] => [
-  {
-    accessorKey: "team_name",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Team Name
-        <ArrowUpDown className="ml-1 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const team = row.original;
-      return (
-        <div className="flex items-center gap-2">
-          {team.team_logo_url ? (
-            <ImageZoom>
-              <img
-                src={team.team_logo_url}
-                alt={team.team_name}
-                className="h-8 w-8 rounded-sm object-cover cursor-pointer"
-              />
-            </ImageZoom>
-          ) : (
-            <div className="h-8 w-8 rounded-md bg-muted" />
-          )}
-          <span className="font-medium">{team.team_name}</span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "league_players",
-    header: "Players count",
-    cell: ({ row }) => {
-      const team = row.original;
-      return <span>{team.league_players.length}</span>;
-    },
-  },
-  {
-    accessorKey: "wins",
-    header: "Total wins",
-  },
-  {
-    accessorKey: "points",
-    header: "Total points",
-  },
-  {
-    accessorKey: "losses",
-    header: "Total losses",
-  },
-  {
-    accessorKey: "draws",
-    header: "Total draws",
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const team = row.original;
-
-      const { openDialog } = useAlertDialog();
-      const { deleteApi } = useRemoveLeagueTeamStore();
-
-      const handleRemove = async () => {
-        const confirm = await openDialog({
-          confirmText: "Confirm",
-          cancelText: "Cancel",
-        });
-        if (!confirm) return;
-
-        const removeTeam = async () => {
-          const result = await deleteApi(team.league_team_id);
-          await refetchAllLeagueReadyForMatch(leagueId, leagueCategoryId);
-          return result;
-        };
-
-        toast.promise(removeTeam(), {
-          loading: "Removing team status...",
-          success: (res) => res,
-          error: (err) => getErrorMessage(err) ?? "Something went wrong!",
-        });
-      };
-
-      const { toggle } = useToggleOfficialLeagueTeamSection();
-
-      const handleToggleLeague = () => {
-        toggle(team, ToggleState.SHOW_LEAGUE_TEAM);
-      };
-
-      return (
-        <div className="text-right">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={handleToggleLeague}>
-                Details
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Ban</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleRemove}>Remove</DropdownMenuItem>
-              <DropdownMenuItem>Remove & Refund</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
-    },
-  },
-];
-
-export default function LeagueTeamsTable({
-  leagueId,
-  leagueCategoryId,
-  isLoading,
-}: Props) {
-  const { allLeagueTeamReadyForMatchData } = useGetAllLeagueTeamsReadyForMatch(
-    leagueId,
-    leagueCategoryId
+export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
+  const { leagueTeamLoading, leagueTeamData } = useLeagueTeam(
+    leagueCategoryId,
+    {
+      type: "Official",
+    }
   );
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -189,12 +60,124 @@ export default function LeagueTeamsTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
+  const columns: ColumnDef<LeagueTeam>[] = useMemo(
+    () => [
+      {
+        accessorKey: "team_name",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Team Name
+            <ArrowUpDown className="ml-1 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const team = row.original;
+          return (
+            <div className="flex items-center gap-2">
+              {team.team_logo_url ? (
+                <ImageZoom>
+                  <img
+                    src={team.team_logo_url}
+                    alt={team.team_name}
+                    className="h-8 w-8 rounded-sm object-cover cursor-pointer"
+                  />
+                </ImageZoom>
+              ) : (
+                <div className="h-8 w-8 rounded-md bg-muted" />
+              )}
+              <span className="font-medium">{team.team_name}</span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "league_players",
+        header: "Players count",
+        cell: ({ row }) => {
+          const team = row.original;
+          return <span>{team.league_players?.length || 0}</span>;
+        },
+      },
+      {
+        accessorKey: "wins",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Total wins
+            <ArrowUpDown className="ml-1 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.wins || 0}</span>
+        ),
+      },
+      {
+        accessorKey: "points",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Total points
+            <ArrowUpDown className="ml-1 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.points || 0}</span>
+        ),
+      },
+      {
+        accessorKey: "losses",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Total losses
+            <ArrowUpDown className="ml-1 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.losses || 0}</span>
+        ),
+      },
+      {
+        accessorKey: "draws",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Total draws
+            <ArrowUpDown className="ml-1 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.draws || 0}</span>
+        ),
+      },
+      {
+        id: "actions",
+        enableHiding: false,
+        cell: ({ row }) => <ActionCell row={row} />,
+      },
+    ],
+    []
+  );
+
+  // FIX 3: Ensure we have valid data
+  const tableData = useMemo(() => {
+    return leagueTeamData || [];
+  }, [leagueTeamData]);
+
   const table = useReactTable({
-    data: allLeagueTeamReadyForMatchData,
-    columns: columns({
-      leagueId: leagueId,
-      leagueCategoryId: leagueCategoryId,
-    }),
+    data: tableData, // Use actual data instead of empty array
+    columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -250,8 +233,8 @@ export default function LeagueTeamsTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6 + 1} className="h-24 text-center">
-                  {isLoading ? "Loading..." : "No data."}
+                <TableCell colSpan={7} className="h-24 text-center">
+                  {leagueTeamLoading ? "Loading..." : "No data."}
                 </TableCell>
               </TableRow>
             )}
@@ -259,6 +242,89 @@ export default function LeagueTeamsTable({
         </Table>
       </div>
       <DataTablePagination showPageSize={false} table={table} />
+    </div>
+  );
+}
+
+// FIX 4: Extract ActionCell to prevent hooks being called conditionally
+function ActionCell({ row }: { row: any }) {
+  const team = row.original;
+
+  const { openDialog } = useAlertDialog();
+  const { deleteApi } = useRemoveLeagueTeamStore();
+  const { toggle } = useToggleOfficialLeagueTeamSection();
+
+  const handleRemove = useCallback(async () => {
+    const confirm = await openDialog({
+      confirmText: "Confirm",
+      cancelText: "Cancel",
+    });
+    if (!confirm) return;
+
+    const removeTeam = async () => {
+      const result = await deleteApi(team.league_team_id);
+      return result;
+    };
+
+    toast.promise(removeTeam(), {
+      loading: "Removing team...",
+      success: (res) => res,
+      error: (err) => getErrorMessage(err) ?? "Something went wrong!",
+    });
+  }, [team.league_team_id, deleteApi, openDialog]);
+
+  const handleToggleLeague = useCallback(() => {
+    toggle(team, ToggleState.SHOW_LEAGUE_TEAM);
+  }, [team, toggle]);
+
+  const handleBan = useCallback(async () => {
+    const confirm = await openDialog({
+      confirmText: "Ban Team",
+      cancelText: "Cancel",
+      title: "Ban Team",
+      description: `Are you sure you want to ban "${team.team_name}"? This action may affect their league standings.`,
+    });
+    if (!confirm) return;
+
+    // TODO: Implement ban functionality
+    toast.info("Ban functionality not implemented yet");
+  }, [team.team_name, openDialog]);
+
+  const handleRemoveAndRefund = useCallback(async () => {
+    const confirm = await openDialog({
+      confirmText: "Remove & Refund",
+      cancelText: "Cancel",
+      title: "Remove Team and Process Refund",
+      description: `Are you sure you want to remove "${team.team_name}" and process a refund?`,
+    });
+    if (!confirm) return;
+
+    // TODO: Implement remove and refund functionality
+    toast.info("Remove & Refund functionality not implemented yet");
+  }, [team.team_name, openDialog]);
+
+  return (
+    <div className="text-right">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem onClick={handleToggleLeague}>
+            Details
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleBan}>Ban</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleRemove}>Remove</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleRemoveAndRefund}>
+            Remove & Refund
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

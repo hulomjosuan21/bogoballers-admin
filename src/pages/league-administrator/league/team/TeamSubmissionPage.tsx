@@ -12,12 +12,8 @@ import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 
 export default function TeamSubmissionPage() {
-  const {
-    activeLeagueId,
-    activeLeagueData,
-    activeLeagueLoading,
-    activeLeagueCategories,
-  } = useActiveLeague();
+  const { activeLeagueId, activeLeagueData, activeLeagueCategories } =
+    useActiveLeague();
 
   const hasActiveLeague = useMemo(
     () => activeLeagueData != null && Object.keys(activeLeagueData).length > 0,
@@ -31,29 +27,33 @@ export default function TeamSubmissionPage() {
     <ContentShell>
       <ContentHeader title="Team Submission" />
       <ContentBody>
-        {shouldShowTabs ? (
+        {shouldShowTabs && activeLeagueCategories ? (
           <Tabs
-            defaultValue={activeLeagueCategories?.[0]?.league_category_id}
+            defaultValue={
+              activeLeagueCategories.length > 0
+                ? activeLeagueCategories[0].league_category_id
+                : "fallback"
+            }
             className="text-sm text-muted-foreground"
           >
             <ScrollArea>
               <TabsList className="grid grid-cols-2">
-                {activeLeagueCategories?.map((cat) => (
+                {activeLeagueCategories.map((cat) => (
                   <TabsTrigger
                     key={cat.league_category_id}
                     value={cat.league_category_id}
                   >
-                    {cat.category_name}
+                    {cat.category_name ?? "Unnamed Category"}
                   </TabsTrigger>
                 ))}
               </TabsList>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
 
-            {activeLeagueCategories?.map((cat) => (
+            {activeLeagueCategories.map((cat) => (
               <TabsContent
-                key={cat.league_category_id}
-                value={cat.league_category_id}
+                key={cat.league_category_id ?? "fallback"}
+                value={cat.league_category_id ?? "fallback"}
                 className="pt-2"
               >
                 <LeagueTeamSheetSheetSubmissionSheet />
@@ -61,7 +61,6 @@ export default function TeamSubmissionPage() {
                 <TeamSubmissionTable
                   leagueCategoryId={cat.league_category_id}
                   leagueId={activeLeagueId}
-                  isLoading={activeLeagueLoading}
                 />
               </TabsContent>
             ))}

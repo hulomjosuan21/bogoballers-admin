@@ -4,7 +4,7 @@ export interface User {
   user_id: string;
   email: string;
   contact_number: string;
-  is_verified: string;
+  is_verified: boolean;
   account_type: AccountTypeEnum;
   display_name: string | null;
   user_created_at: string;
