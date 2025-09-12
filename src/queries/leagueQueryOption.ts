@@ -1,31 +1,11 @@
-import type {
-  LeagueType,
-  LeagueResource,
-  LeagueAnalytics,
-} from "@/types/league";
+import type { League, LeagueAnalytics } from "@/types/league";
 import { LeagueService } from "@/service/leagueService";
 import { queryOptions } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 
-export const getActiveLeagueQueryOption = queryOptions<
-  LeagueType | null,
-  Error
->({
+export const getActiveLeagueQueryOption = queryOptions<League, Error>({
   queryKey: QUERY_KEYS.ACTIVE_LEAGUE,
-  queryFn: LeagueService.fetchActiveLeague,
-  staleTime: Infinity,
-  retry: false,
-  refetchOnWindowFocus: false,
-  refetchOnMount: false,
-  refetchOnReconnect: false,
-});
-
-export const getActiveLeagueResourceQueryOption = queryOptions<
-  LeagueResource | null,
-  Error
->({
-  queryKey: QUERY_KEYS.ACTIVE_LEAGUE_RESOURCE,
-  queryFn: LeagueService.fetchActiveLeagueResource,
+  queryFn: LeagueService.fetchActive,
   staleTime: Infinity,
   retry: false,
   refetchOnWindowFocus: false,

@@ -7,15 +7,16 @@ import LeagueTeamsTable from "@/tables/LeagueTeamsTable";
 import { LeagueTeamReadyForMatchSection } from "@/components/league-team/LeagueTeamReadyForMatch";
 import { useToggleOfficialLeagueTeamSection } from "@/stores/leagueTeamStores";
 import { ToggleState } from "@/stores/toggleStore";
-import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 
 export default function LeagueTeamsPage() {
-  const { activeLeagueId, activeLeagueData } = useActiveLeague();
-
-  const { leagueCategoriesData, leagueCategoriesLoading } =
-    useLeagueCategories(activeLeagueId);
+  const {
+    activeLeagueId,
+    activeLeagueData,
+    activeLeagueLoading,
+    activeLeagueCategories,
+  } = useActiveLeague();
 
   const { state, data } = useToggleOfficialLeagueTeamSection();
 
@@ -25,7 +26,7 @@ export default function LeagueTeamsPage() {
   );
 
   const shouldShowTabs =
-    hasActiveLeague && (leagueCategoriesData?.length ?? 0) > 0;
+    hasActiveLeague && (activeLeagueCategories?.length ?? 0) > 0;
 
   return (
     <ContentShell>
@@ -37,12 +38,12 @@ export default function LeagueTeamsPage() {
           <LeagueTeamReadyForMatchSection data={data} />
         ) : (
           <Tabs
-            defaultValue={leagueCategoriesData?.[0]?.league_category_id}
+            defaultValue={activeLeagueCategories?.[0]?.league_category_id}
             className="text-sm text-muted-foreground"
           >
             <ScrollArea>
               <TabsList className="grid grid-cols-2">
-                {leagueCategoriesData?.map((cat) => (
+                {activeLeagueCategories?.map((cat) => (
                   <TabsTrigger
                     key={cat.league_category_id}
                     value={cat.league_category_id}
@@ -54,7 +55,7 @@ export default function LeagueTeamsPage() {
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
 
-            {leagueCategoriesData?.map((cat) => (
+            {activeLeagueCategories?.map((cat) => (
               <TabsContent
                 key={cat.league_category_id}
                 value={cat.league_category_id}
@@ -63,7 +64,7 @@ export default function LeagueTeamsPage() {
                 <LeagueTeamsTable
                   leagueCategoryId={cat.league_category_id}
                   leagueId={activeLeagueId}
-                  isLoading={leagueCategoriesLoading}
+                  isLoading={activeLeagueLoading}
                 />
               </TabsContent>
             ))}

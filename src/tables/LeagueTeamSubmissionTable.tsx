@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/data-table-pagination";
 
-import type { LeagueTeamModel } from "@/types/team";
 import { useState } from "react";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import { formatIsoDate } from "@/helpers/helpers";
@@ -44,11 +43,12 @@ import {
 } from "../stores/leagueTeamStores";
 import { toast } from "sonner";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
+import { LeagueTeamService } from "@/service/leagueTeamService";
+import type { LeagueTeam } from "@/types/team";
 import {
   refetchAllLeagueTeamSubmission,
   useGetAllLeagueTeamsSubmission,
 } from "@/hooks/useLeagueTeam";
-import { LeagueTeamService } from "@/service/leagueTeamService";
 
 interface TeamSubmissionTableProps {
   leagueId?: string;
@@ -62,7 +62,7 @@ export const columns = ({
 }: {
   leagueId?: string;
   leagueCategoryId?: string;
-}): ColumnDef<LeagueTeamModel>[] => [
+}): ColumnDef<LeagueTeam>[] => [
   {
     accessorKey: "team_name",
     header: ({ column }) => (
@@ -99,7 +99,7 @@ export const columns = ({
     header: "Email",
     cell: ({ row }) => {
       const team = row.original;
-      return <span>{team.user.email}</span>;
+      return <span>{team.creator.email}</span>;
     },
   },
   {
@@ -107,7 +107,7 @@ export const columns = ({
     header: "Contact #",
     cell: ({ row }) => {
       const team = row.original;
-      return <span>{team.user.contact_number}</span>;
+      return <span>{team.creator.contact_number}</span>;
     },
   },
   {
@@ -180,7 +180,7 @@ export const columns = ({
       const { updateApi } = useUpdateLeagueTeamStore();
       const { deleteApi } = useRemoveLeagueTeamStore();
 
-      const handleUpdate = async (data: Partial<LeagueTeamModel>) => {
+      const handleUpdate = async (data: Partial<LeagueTeam>) => {
         const confirm = await openDialog({
           confirmText: "Confirm",
           cancelText: "Cancel",

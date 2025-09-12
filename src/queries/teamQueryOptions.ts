@@ -1,9 +1,9 @@
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { TeamService } from "@/service/teamService";
-import type { TeamModel } from "@/types/team";
+import type { Team } from "@/types/team";
 import { queryOptions } from "@tanstack/react-query";
 
-export const getAllTeamsQueryOptions = queryOptions<TeamModel[] | null, Error>({
+export const getAllTeamsQueryOptions = queryOptions<Team[] | null, Error>({
   queryKey: QUERY_KEYS.TEAMS_ALL,
   queryFn: TeamService.getAllTeams,
   staleTime: 0,

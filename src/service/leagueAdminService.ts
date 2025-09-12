@@ -1,11 +1,11 @@
 import { ApiResponse } from "@/lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
-import type { CategoryModel } from "@/types/leagueCategoryTypes";
-import type { LeagueAdminModel } from "@/types/leagueAdmin";
+import type { Category } from "@/types/category";
+import type { LeagueAdministator } from "@/types/leagueAdmin";
 
 class LeagueAdministratorService {
-  static async auth(): Promise<LeagueAdminModel> {
-    const response = await axiosClient.get<LeagueAdminModel>(
+  static async auth(): Promise<LeagueAdministator> {
+    const response = await axiosClient.get<LeagueAdministator>(
       "/league-administrator/auth",
       {
         withCredentials: true,
@@ -62,7 +62,7 @@ class LeagueAdministratorService {
   }
 
   static async fetchCategories() {
-    const response = await axiosClient.get<CategoryModel[]>("/category/all");
+    const response = await axiosClient.get<Category[]>("/category/all");
     return response.data;
   }
 }

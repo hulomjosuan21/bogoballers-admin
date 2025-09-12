@@ -1,6 +1,6 @@
 import axiosClient from "@/lib/axiosClient";
 import type { Refund } from "@/stores/refundStore";
-import type { LeagueTeamForMatch, LeagueTeamModel } from "@/types/team";
+import type { LeagueTeam } from "@/types/team";
 
 export class LeagueTeamService {
   static async updateOne({
@@ -8,7 +8,7 @@ export class LeagueTeamService {
     data,
   }: {
     id: string;
-    data: Partial<LeagueTeamModel>;
+    data: Partial<LeagueTeam>;
   }) {
     const response = await axiosClient.put<{ message: string }>(
       `/league-team/update/${id}`,
@@ -31,7 +31,7 @@ export class LeagueTeamService {
     leagueId?: string;
     leagueCategoryId?: string;
   }) {
-    const response = await axiosClient.get<LeagueTeamModel[]>(
+    const response = await axiosClient.get<LeagueTeam[]>(
       `/league-team/all/submission/${leagueId}/${leagueCategoryId}`
     );
 
@@ -63,7 +63,7 @@ export class LeagueTeamService {
     leagueId?: string;
     leagueCategoryId?: string;
   }) {
-    const response = await axiosClient.get<LeagueTeamForMatch[]>(
+    const response = await axiosClient.get<LeagueTeam[]>(
       `/league-team/all/${leagueId}/${leagueCategoryId}?status=Accepted`
     );
 

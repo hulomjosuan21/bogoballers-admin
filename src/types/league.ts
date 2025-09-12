@@ -55,30 +55,30 @@ export interface League extends LeagueResource {
   league_categories: LeagueCategory[];
 }
 
-// export interface ProfitChartPoint {
-//   date: string;
-//   amount: number;
-// }
+export interface ProfitChartPoint {
+  date: string;
+  amount: number;
+}
 
-// export interface TotalProfit {
-//   amount: number;
-//   last_update: string | null;
-//   chart: ProfitChartPoint[];
-// }
+export interface TotalProfit {
+  amount: number;
+  last_update: string | null;
+  chart: ProfitChartPoint[];
+}
 
-// export interface LeagueAnalytics {
-//   active_league: LeagueType;
-//   total_profit: TotalProfit;
-//   total_accepted_teams: {
-//     count: number;
-//     last_update: string | null;
-//   };
-//   total_players: {
-//     count: number;
-//     last_update: string | null;
-//   };
-//   total_categories: {
-//     count: number;
-//     last_update: string | null;
-//   };
-// }
+export interface LeagueAnalytics {
+  active_league: League;
+  total_profit: TotalProfit;
+  total_accepted_teams: {
+    count: number;
+    last_update: string | null;
+  };
+  total_players: {
+    count: number;
+    last_update: string | null;
+  };
+  total_categories: {
+    count: number;
+    last_update: string | null;
+  };
+}

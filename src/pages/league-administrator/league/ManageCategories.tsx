@@ -48,10 +48,7 @@ import {
   useState,
   type SetStateAction,
 } from "react";
-import type {
-  Category,
-  CreateCategory,
-} from "../../../types/leagueCategoryTypes";
+
 import { useQueries } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
 import CategoryService from "@/service/categoryService";
@@ -96,6 +93,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { Category, CreateCategory } from "@/types/category";
 
 export default function ManageCategories() {
   const [categories, leagueAdmin] = useQueries({

@@ -9,14 +9,15 @@ import {
   RefundDialog,
 } from "@/components/league-team/LeagueTeamManagementComponents";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
-import { useLeagueCategories } from "@/hooks/useLeagueCategories";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 
 export default function TeamSubmissionPage() {
-  const { activeLeagueId, activeLeagueData } = useActiveLeague();
-
-  const { leagueCategoriesData, leagueCategoriesLoading } =
-    useLeagueCategories(activeLeagueId);
+  const {
+    activeLeagueId,
+    activeLeagueData,
+    activeLeagueLoading,
+    activeLeagueCategories,
+  } = useActiveLeague();
 
   const hasActiveLeague = useMemo(
     () => activeLeagueData != null && Object.keys(activeLeagueData).length > 0,
@@ -24,7 +25,7 @@ export default function TeamSubmissionPage() {
   );
 
   const shouldShowTabs =
-    hasActiveLeague && (leagueCategoriesData?.length ?? 0) > 0;
+    hasActiveLeague && (activeLeagueCategories?.length ?? 0) > 0;
 
   return (
     <ContentShell>
@@ -32,12 +33,12 @@ export default function TeamSubmissionPage() {
       <ContentBody>
         {shouldShowTabs ? (
           <Tabs
-            defaultValue={leagueCategoriesData?.[0]?.league_category_id}
+            defaultValue={activeLeagueCategories?.[0]?.league_category_id}
             className="text-sm text-muted-foreground"
           >
             <ScrollArea>
               <TabsList className="grid grid-cols-2">
-                {leagueCategoriesData?.map((cat) => (
+                {activeLeagueCategories?.map((cat) => (
                   <TabsTrigger
                     key={cat.league_category_id}
                     value={cat.league_category_id}
@@ -49,7 +50,7 @@ export default function TeamSubmissionPage() {
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
 
-            {leagueCategoriesData?.map((cat) => (
+            {activeLeagueCategories?.map((cat) => (
               <TabsContent
                 key={cat.league_category_id}
                 value={cat.league_category_id}
@@ -60,7 +61,7 @@ export default function TeamSubmissionPage() {
                 <TeamSubmissionTable
                   leagueCategoryId={cat.league_category_id}
                   leagueId={activeLeagueId}
-                  isLoading={leagueCategoriesLoading}
+                  isLoading={activeLeagueLoading}
                 />
               </TabsContent>
             ))}
