@@ -20,7 +20,7 @@ import {
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAllPlayersQueryOptions } from "@/queries/player";
-import type { PlayerModel } from "@/types/player";
+import type { Player } from "@/types/player";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Copy } from "lucide-react";
 import { calculateAge, formatIsoDate } from "@/helpers/helpers";
@@ -35,7 +35,7 @@ export default function AllPlayersPage() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const columns: ColumnDef<PlayerModel>[] = [
+  const columns: ColumnDef<Player>[] = [
     {
       accessorKey: "player_id",
       header: "PlayerId",

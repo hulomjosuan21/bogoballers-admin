@@ -21,7 +21,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { getAllTeamsQueryOptions } from "@/queries/teamQueryOptions";
-import type { TeamModel } from "@/types/team";
+import type { Team } from "@/types/team";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Copy } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,7 +34,7 @@ export default function AllTeamsPage() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const columns: ColumnDef<TeamModel>[] = [
+  const columns: ColumnDef<Team>[] = [
     {
       accessorKey: "team_id",
       header: "TeamId",
@@ -88,12 +88,12 @@ export default function AllTeamsPage() {
           <ArrowUpDown className="ml-1 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <span>{row.original.user.email}</span>,
+      cell: ({ row }) => <span>{row.original.creator.email}</span>,
     },
     {
       accessorKey: "contact_number",
       header: "Contact #",
-      cell: ({ row }) => <span>{row.original.user.contact_number}</span>,
+      cell: ({ row }) => <span>{row.original.creator.contact_number}</span>,
     },
     {
       accessorKey: "team_name",
