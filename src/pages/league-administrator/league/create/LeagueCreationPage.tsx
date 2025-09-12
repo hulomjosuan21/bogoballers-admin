@@ -1,34 +1,27 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import CreateLeagueForm from "@/forms/LeagueCreationForm";
-import { Info } from "lucide-react";
+import { RiSpamFill } from "@remixicon/react";
 import {
   Alert,
   AlertIcon,
   AlertTitle,
   AlertToolbar,
 } from "@/components/ui/alert";
-import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
-import { useMemo } from "react";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
-export default function LeagueCreationPage() {
-  const { activeLeagueData, activeLeagueLoading } = useActiveLeague();
 
-  const hasActiveLeague = useMemo(() => {
-    return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
-  }, [activeLeagueData]);
+export default function CreateLeaguePage() {
+  const { activeLeagueData, activeLeagueError } = useActiveLeague();
+
+  const hasActiveLeague = !activeLeagueError && activeLeagueData;
 
   return (
     <ContentShell>
-      <ContentHeader title="Start new League">
-        <Button variant={"ghost"} size={"sm"}>
-          <Info />
-        </Button>
-      </ContentHeader>
+      <ContentHeader title="Create League" />
 
       <ContentBody>
-        {hasActiveLeague && (
+        {hasActiveLeague ? (
           <Alert variant="info">
             <AlertIcon>
               <RiSpamFill />
@@ -52,9 +45,8 @@ export default function LeagueCreationPage() {
               </Button>
             </AlertToolbar>
           </Alert>
-        )}
-        {!activeLeagueLoading && (
-          <CreateLeagueForm hasActive={hasActiveLeague} />
+        ) : (
+          <CreateLeagueForm hasActive={!!activeLeagueData} />
         )}
       </ContentBody>
     </ContentShell>

@@ -20,6 +20,8 @@ export interface Team {
   total_points: number;
   is_recruiting: boolean;
   creator: User;
+  team_created_at: string;
+  team_updated_at: string;
   accepted_players: PlayerTeam[];
   pending_players: PlayerTeam[];
   rejected_players: PlayerTeam[];
@@ -41,5 +43,7 @@ export interface LeagueTeam extends Team {
   losses: number;
   draws: number;
   points: number;
+  league_team_created_at: string;
+  league_team_updated_at: string;
   league_players: LeaguePlayer[];
 }

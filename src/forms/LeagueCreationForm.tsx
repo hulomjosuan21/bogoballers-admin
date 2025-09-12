@@ -34,12 +34,12 @@ import {
 import { authLeagueAdminQueryOption } from "@/queries/leagueAdminQueryOption";
 import { Check, ChevronsUpDown } from "lucide-react";
 import MultipleSelector from "@/components/ui/multiselect";
-import type { CategoryModel } from "../types/leagueCategoryTypes";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
 import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 import { getErrorMessage } from "@/lib/error";
 import { useNavigate } from "react-router-dom";
 import { useCategories } from "@/hooks/useLeagueAdmin";
+import type { Category } from "@/types/category";
 
 function validateLeagueForm({
   leagueTitle,
@@ -167,7 +167,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
 
   const options = useMemo(
     () =>
-      (categoriesData || []).map((cat: CategoryModel) => ({
+      (categoriesData || []).map((cat: Category) => ({
         value: cat.category_id,
         label: cat.category_name,
       })),

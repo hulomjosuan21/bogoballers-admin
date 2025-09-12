@@ -1,9 +1,9 @@
 export const QUERY_KEYS = {
+  ACTIVE_LEAGUE: ["active-league"] as const,
   AUTH_LEAGUE_ADMIN: ["auth", "league-admin"] as const,
   AUTH_LEAGUE_ADMIN_CATEGORIES: ["league-admin-categories"] as const,
   ACTIVE_LEAGUE_ANALYTICS: (leagueId?: string) =>
     ["active-league-analytics", leagueId] as const,
-  ACTIVE_LEAGUE: ["active-league"] as const,
 
   PLAYER_LEADERBOARD: ["player-leaderboard"],
 

@@ -12,7 +12,7 @@ export const useActiveLeague = () => {
   return {
     activeLeagueId: query.data?.league_id,
     activeLeagueData: query.data,
-    activeLeagueCategories: query.data?.league_categories,
+    activeLeagueCategories: query.data?.league_categories ?? [],
     activeLeagueLoading: query.isLoading || query.isFetching || query.isPending,
     refetchActiveLeague: query.refetch,
     activeLeagueError: query.error,
