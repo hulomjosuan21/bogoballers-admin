@@ -1,8 +1,7 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import LeagueTeamsTable from "@/tables/LeagueTeamsTable";
 import { LeagueTeamReadyForMatchSection } from "@/components/league-team/LeagueTeamReadyForMatch";
 import { useToggleOfficialLeagueTeamSection } from "@/stores/leagueTeamStores";
@@ -14,62 +13,73 @@ export default function LeagueTeamsPage() {
   const {
     activeLeagueId,
     activeLeagueData,
-    activeLeagueLoading,
+    activeLeagueError,
     activeLeagueCategories,
   } = useActiveLeague();
 
   const { state, data } = useToggleOfficialLeagueTeamSection();
 
-  const hasActiveLeague = useMemo(
-    () => activeLeagueData != null && Object.keys(activeLeagueData).length > 0,
-    [activeLeagueData]
-  );
+  const hasActiveLeague =
+    !activeLeagueError &&
+    activeLeagueData &&
+    activeLeagueCategories &&
+    activeLeagueCategories.length > 0;
 
-  const shouldShowTabs =
-    hasActiveLeague && (activeLeagueCategories?.length ?? 0) > 0;
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (
+      hasActiveLeague &&
+      activeLeagueCategories &&
+      activeLeagueCategories.length > 0
+    ) {
+      setActiveCategoryId(activeLeagueCategories[0].league_category_id);
+    }
+  }, [hasActiveLeague, activeLeagueCategories]);
 
   return (
     <ContentShell>
       <ContentHeader title="Official Teams" />
       <ContentBody>
-        {!shouldShowTabs ? (
-          <NoActiveLeagueAlert />
-        ) : state === ToggleState.SHOW_LEAGUE_TEAM && data ? (
-          <LeagueTeamReadyForMatchSection data={data} />
-        ) : (
-          <Tabs
-            defaultValue={activeLeagueCategories?.[0]?.league_category_id}
-            className="text-sm text-muted-foreground"
-          >
-            <ScrollArea>
-              <TabsList className="grid grid-cols-2">
-                {activeLeagueCategories?.map((cat) => (
+        {!hasActiveLeague && <NoActiveLeagueAlert />}
+
+        {hasActiveLeague &&
+          activeLeagueCategories &&
+          activeLeagueCategories.length > 0 && (
+            <Tabs
+              value={activeCategoryId ?? ""}
+              onValueChange={setActiveCategoryId}
+              className="text-sm text-muted-foreground"
+            >
+              <TabsList className="flex flex-wrap gap-2 mb-2">
+                {activeLeagueCategories.map((category) => (
                   <TabsTrigger
-                    key={cat.league_category_id}
-                    value={cat.league_category_id}
+                    key={category.league_category_id}
+                    value={category.league_category_id}
+                    className="w-[200px]"
                   >
-                    {cat.category_name}
+                    {category.category_name}
                   </TabsTrigger>
                 ))}
               </TabsList>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
 
-            {activeLeagueCategories?.map((cat) => (
-              <TabsContent
-                key={cat.league_category_id}
-                value={cat.league_category_id}
-                className="pt-2"
-              >
-                <LeagueTeamsTable
-                  leagueCategoryId={cat.league_category_id}
-                  leagueId={activeLeagueId}
-                  isLoading={activeLeagueLoading}
-                />
-              </TabsContent>
-            ))}
-          </Tabs>
-        )}
+              {activeLeagueCategories.map((category) => (
+                <TabsContent
+                  key={category.league_category_id}
+                  value={category.league_category_id}
+                >
+                  {state === ToggleState.SHOW_LEAGUE_TEAM && data ? (
+                    <LeagueTeamReadyForMatchSection data={data} />
+                  ) : activeLeagueId ? (
+                    <LeagueTeamsTable
+                      leagueCategoryId={category.league_category_id}
+                      leagueId={activeLeagueId}
+                    />
+                  ) : null}
+                </TabsContent>
+              ))}
+            </Tabs>
+          )}
       </ContentBody>
     </ContentShell>
   );

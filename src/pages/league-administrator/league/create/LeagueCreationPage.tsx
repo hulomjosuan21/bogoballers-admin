@@ -21,7 +21,7 @@ export default function CreateLeaguePage() {
       <ContentHeader title="Create League" />
 
       <ContentBody>
-        {hasActiveLeague ? (
+        {hasActiveLeague && (
           <Alert variant="info">
             <AlertIcon>
               <RiSpamFill />
@@ -45,9 +45,8 @@ export default function CreateLeaguePage() {
               </Button>
             </AlertToolbar>
           </Alert>
-        ) : (
-          <CreateLeagueForm hasActive={!!activeLeagueData} />
         )}
+        <CreateLeagueForm hasActive={!!activeLeagueData} />
       </ContentBody>
     </ContentShell>
   );

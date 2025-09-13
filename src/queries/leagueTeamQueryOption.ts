@@ -11,9 +11,9 @@ export const getLeagueTeamQueryOptions = (
     queryKey: QUERY_KEYS.LEAGUE_TEAM(leagueCategoryId, data),
     queryFn: () => LeagueTeamService.getMany(leagueCategoryId!, data),
     enabled: !!leagueCategoryId,
-    staleTime: 0,
+    staleTime: Infinity,
     retry: false,
-    refetchOnMount: true,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
     refetchOnReconnect: false,
   });

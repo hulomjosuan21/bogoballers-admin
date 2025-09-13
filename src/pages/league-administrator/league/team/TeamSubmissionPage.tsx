@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,33 +15,36 @@ export default function TeamSubmissionPage() {
   const { activeLeagueId, activeLeagueData, activeLeagueCategories } =
     useActiveLeague();
 
-  const hasActiveLeague = useMemo(
-    () => activeLeagueData != null && Object.keys(activeLeagueData).length > 0,
-    [activeLeagueData]
-  );
+  const hasActiveLeague =
+    activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
 
-  const shouldShowTabs =
-    hasActiveLeague && (activeLeagueCategories?.length ?? 0) > 0;
+  const [activeCategoryId, setActiveCategoryId] = useState<string>("");
+
+  useEffect(() => {
+    if (hasActiveLeague && activeLeagueCategories?.length) {
+      setActiveCategoryId(activeLeagueCategories[0].league_category_id);
+    }
+  }, [hasActiveLeague, activeLeagueCategories]);
 
   return (
     <ContentShell>
       <ContentHeader title="Team Submission" />
       <ContentBody>
-        {shouldShowTabs && activeLeagueCategories ? (
+        {!hasActiveLeague || !activeLeagueCategories?.length ? (
+          <NoActiveLeagueAlert />
+        ) : (
           <Tabs
-            defaultValue={
-              activeLeagueCategories.length > 0
-                ? activeLeagueCategories[0].league_category_id
-                : "fallback"
-            }
+            value={activeCategoryId}
+            onValueChange={setActiveCategoryId}
             className="text-sm text-muted-foreground"
           >
             <ScrollArea>
-              <TabsList className="grid grid-cols-2">
+              <TabsList className="flex gap-2 mb-2">
                 {activeLeagueCategories.map((cat) => (
                   <TabsTrigger
                     key={cat.league_category_id}
                     value={cat.league_category_id}
+                    className="w-[200px]"
                   >
                     {cat.category_name ?? "Unnamed Category"}
                   </TabsTrigger>
@@ -52,9 +55,8 @@ export default function TeamSubmissionPage() {
 
             {activeLeagueCategories.map((cat) => (
               <TabsContent
-                key={cat.league_category_id ?? "fallback"}
-                value={cat.league_category_id ?? "fallback"}
-                className="pt-2"
+                key={cat.league_category_id}
+                value={cat.league_category_id}
               >
                 <LeagueTeamSheetSheetSubmissionSheet />
                 <RefundDialog />
@@ -65,8 +67,6 @@ export default function TeamSubmissionPage() {
               </TabsContent>
             ))}
           </Tabs>
-        ) : (
-          <NoActiveLeagueAlert />
         )}
       </ContentBody>
     </ContentShell>
