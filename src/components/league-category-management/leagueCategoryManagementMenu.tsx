@@ -399,7 +399,9 @@ export function FormatNodeMenu({
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Configure {label}</DialogTitle>
+                <DialogTitle>
+                  Configure {format_type.toLocaleLowerCase()} format
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-2">
                 <div className="space-y-1">
@@ -699,7 +701,9 @@ export function FormatNodeMenu({
                     </div>
                   </>
                 )}
-                <Button onClick={handleApply}>Apply Configuration</Button>
+                <Button onClick={handleApply} size={"sm"}>
+                  Apply Configuration
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
