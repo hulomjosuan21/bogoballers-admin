@@ -3,12 +3,12 @@ export interface RoundRobinConfigObj {
   team_count: number;
   advances_per_group: number;
   regeneration_count: number;
+  use_point_system: boolean;
 }
 
 export interface KnockoutConfigObj {
   group_count: number;
   team_count: number;
-  single_elim: boolean;
   seeding: string;
   regeneration_count: number;
 }

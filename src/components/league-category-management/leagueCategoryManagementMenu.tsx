@@ -117,6 +117,7 @@ export function FormatNodeMenu({
             advances_per_group: parseInt(rrConfig.advances_per_group) || 2,
             regeneration_count: parseInt(rrConfig.regeneration_count) || 1,
             label: rrConfig.label || "• 1 Group, All Play All",
+            use_point_system: true,
           },
         };
       case RoundFormatTypesEnum.Knockout:

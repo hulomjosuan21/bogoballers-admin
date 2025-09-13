@@ -3,6 +3,7 @@ export interface RoundRobinConfig {
 
   advances_per_group: number;
   regeneration_count: number;
+  use_point_system: boolean;
 }
 
 export interface KnockoutConfig {
