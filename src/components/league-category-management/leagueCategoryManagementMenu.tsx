@@ -126,7 +126,7 @@ export function FormatNodeMenu({
           variant: "knockout_singleelim",
           format_config: {
             group_count: parseInt(koConfig.group_count) || 1,
-            single_elim: koConfig.single_elim,
+            single_elim: true,
             seeding: koConfig.seeding,
             regeneration_count: parseInt(koConfig.regeneration_count) || 0,
             label: koConfig.label || "• Single Elim, Random Seeding",
@@ -356,7 +356,7 @@ export function FormatNodeMenu({
               setOpen(isOpen);
               if (isOpen) {
                 setSelectedFormat(format_type);
-                setTempConfig({}); // Start with empty tempConfig to track only changed fields
+                setTempConfig({});
               } else {
                 setSelectedFormat(null);
                 setTempConfig({});
@@ -376,7 +376,11 @@ export function FormatNodeMenu({
                       config.label
                     );
                     event.dataTransfer.setData("node-type", "format");
-                    onDragStart(event, config.label, config.format_config);
+                    onDragStart(
+                      event,
+                      config.format_type,
+                      config.format_config
+                    );
                   }
                 }}
               >
