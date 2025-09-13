@@ -43,7 +43,6 @@ interface FormatConfigState {
 export const useFormatConfigStore = create<FormatConfigState>()(
   persist(
     (set) => ({
-      // Minimal defaults; fallbacks handled in merging with getPredefinedFormatConfigs
       rrConfig: {
         label: "",
         group_count: "",

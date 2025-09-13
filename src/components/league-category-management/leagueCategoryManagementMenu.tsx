@@ -29,6 +29,7 @@ import type {
   RoundRobinConfig,
   TwiceToBeatConfig,
 } from "@/types/formatConfig";
+import { toast } from "sonner";
 // import { Checkbox } from "../ui/checkbox";
 
 export function RoundNodeMenu({
@@ -61,10 +62,8 @@ export function RoundNodeMenu({
 }
 
 export function FormatNodeMenu({
-  nTeam,
   onDragStart,
 }: {
-  nTeam: number;
   onDragStart: (
     event: React.DragEvent,
     label: string,
@@ -79,6 +78,19 @@ export function FormatNodeMenu({
   const [open, setOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] =
     useState<RoundFormatTypesEnum | null>(null);
+  const [tempConfig, setTempConfig] = useState<{
+    label?: string;
+    group_count?: string;
+    advances_per_group?: string;
+    regeneration_count?: string;
+    single_elim?: boolean;
+    seeding?: string;
+    max_loss?: string;
+    games?: string;
+    advantaged_team?: string;
+    challenger_team?: string;
+    max_games?: string;
+  }>({});
 
   const {
     rrConfig,
@@ -163,10 +175,172 @@ export function FormatNodeMenu({
   };
 
   const handleApply = () => {
+    if (!selectedFormat) return;
+
+    const validateNumber = (
+      value: string | undefined,
+      min: number,
+      max: number,
+      field: string
+    ) => {
+      if (value === undefined || value === "") return true; // Allow unchanged fields
+      const num = parseInt(value);
+      if (isNaN(num) || num < min || num > max) {
+        toast.error(`${field} must be between ${min} and ${max}`);
+        return false;
+      }
+      return true;
+    };
+
+    switch (selectedFormat) {
+      case RoundFormatTypesEnum.RoundRobin: {
+        if (
+          !validateNumber(tempConfig.group_count, 1, 6, "Number of Groups") ||
+          !validateNumber(
+            tempConfig.advances_per_group,
+            1,
+            10,
+            "Advances per Group"
+          ) ||
+          !validateNumber(
+            tempConfig.regeneration_count,
+            0,
+            5,
+            "Regeneration Count"
+          )
+        ) {
+          toast.error("Please provide valid values for all changed fields");
+          return;
+        }
+        setRRConfig({
+          ...rrConfig,
+          ...(tempConfig.label !== undefined && { label: tempConfig.label }),
+          ...(tempConfig.group_count !== undefined && {
+            group_count: tempConfig.group_count,
+          }),
+          ...(tempConfig.advances_per_group !== undefined && {
+            advances_per_group: tempConfig.advances_per_group,
+          }),
+          ...(tempConfig.regeneration_count !== undefined && {
+            regeneration_count: tempConfig.regeneration_count,
+          }),
+        });
+        break;
+      }
+      case RoundFormatTypesEnum.Knockout: {
+        if (
+          !validateNumber(tempConfig.group_count, 1, 6, "Number of Groups") ||
+          !validateNumber(
+            tempConfig.regeneration_count,
+            0,
+            5,
+            "Regeneration Count"
+          )
+        ) {
+          toast.error("Please provide valid values for all changed fields");
+          return;
+        }
+        if (tempConfig.seeding === "") {
+          toast.error("Seeding method is required if changed");
+          return;
+        }
+        setKOConfig({
+          ...koConfig,
+          ...(tempConfig.label !== undefined && { label: tempConfig.label }),
+          ...(tempConfig.group_count !== undefined && {
+            group_count: tempConfig.group_count,
+          }),
+          ...(tempConfig.seeding !== undefined && {
+            seeding: tempConfig.seeding,
+          }),
+          ...(tempConfig.regeneration_count !== undefined && {
+            regeneration_count: tempConfig.regeneration_count,
+          }),
+        });
+        break;
+      }
+      case RoundFormatTypesEnum.DoubleElimination: {
+        if (
+          !validateNumber(tempConfig.group_count, 1, 6, "Number of Groups") ||
+          !validateNumber(tempConfig.max_loss, 1, 5, "Max Losses") ||
+          !validateNumber(
+            tempConfig.regeneration_count,
+            0,
+            5,
+            "Regeneration Count"
+          )
+        ) {
+          toast.error("Please provide valid values for all changed fields");
+          return;
+        }
+        setDEConfig({
+          ...deConfig,
+          ...(tempConfig.label !== undefined && { label: tempConfig.label }),
+          ...(tempConfig.group_count !== undefined && {
+            group_count: tempConfig.group_count,
+          }),
+          ...(tempConfig.max_loss !== undefined && {
+            max_loss: tempConfig.max_loss,
+          }),
+          ...(tempConfig.regeneration_count !== undefined && {
+            regeneration_count: tempConfig.regeneration_count,
+          }),
+        });
+        break;
+      }
+      case RoundFormatTypesEnum.BestOf: {
+        if (
+          !validateNumber(tempConfig.group_count, 1, 6, "Number of Groups") ||
+          !validateNumber(tempConfig.games, 1, 7, "Number of Games") ||
+          !validateNumber(
+            tempConfig.regeneration_count,
+            0,
+            5,
+            "Regeneration Count"
+          )
+        ) {
+          toast.error("Please provide valid values for all changed fields");
+          return;
+        }
+        setBOConfig({
+          ...boConfig,
+          ...(tempConfig.label !== undefined && { label: tempConfig.label }),
+          ...(tempConfig.group_count !== undefined && {
+            group_count: tempConfig.group_count,
+          }),
+          ...(tempConfig.games !== undefined && { games: tempConfig.games }),
+          ...(tempConfig.regeneration_count !== undefined && {
+            regeneration_count: tempConfig.regeneration_count,
+          }),
+        });
+        break;
+      }
+      case RoundFormatTypesEnum.TwiceToBeat: {
+        if (!validateNumber(tempConfig.max_games, 1, 3, "Max Games")) {
+          toast.error("Please provide valid values for all changed fields");
+          return;
+        }
+        setTTBConfig({
+          ...ttbConfig,
+          ...(tempConfig.label !== undefined && { label: tempConfig.label }),
+          ...(tempConfig.advantaged_team !== undefined && {
+            advantaged_team: tempConfig.advantaged_team,
+          }),
+          ...(tempConfig.challenger_team !== undefined && {
+            challenger_team: tempConfig.challenger_team,
+          }),
+          ...(tempConfig.max_games !== undefined && {
+            max_games: tempConfig.max_games,
+          }),
+        });
+        break;
+      }
+    }
     setOpen(false);
+    setTempConfig({});
   };
 
-  const configs = getPredefinedFormatConfigs(nTeam, 1);
+  const configs = getPredefinedFormatConfigs();
 
   return (
     <div className="w-48 p-2 border rounded-md bg-card">
@@ -180,8 +354,13 @@ export function FormatNodeMenu({
             open={open && selectedFormat === format_type}
             onOpenChange={(isOpen) => {
               setOpen(isOpen);
-              if (isOpen) setSelectedFormat(format_type);
-              else setSelectedFormat(null);
+              if (isOpen) {
+                setSelectedFormat(format_type);
+                setTempConfig({}); // Start with empty tempConfig to track only changed fields
+              } else {
+                setSelectedFormat(null);
+                setTempConfig({});
+              }
             }}
           >
             <DialogTrigger asChild>
@@ -201,11 +380,14 @@ export function FormatNodeMenu({
                   }
                 }}
               >
-                <div className="flex items-center gap-2">
-                  <GripVertical className="w-4 h-4 text-muted-foreground" />
-                  <Pencil className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-xs font-semibold">{format_type}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <GripVertical className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-xs font-semibold">{format_type}</span>
+                  </div>
+                  <Pencil className="w-3 h-3 cursor-pointer text-muted-foreground" />
                 </div>
+
                 <span className="text-xs font-medium ml-6 text-muted-foreground">
                   {label}
                 </span>
@@ -222,36 +404,17 @@ export function FormatNodeMenu({
                     id={`${format_type}-label`}
                     type="text"
                     value={
-                      format_type === RoundFormatTypesEnum.RoundRobin
-                        ? rrConfig.label
-                        : format_type === RoundFormatTypesEnum.Knockout
-                        ? koConfig.label
-                        : format_type === RoundFormatTypesEnum.DoubleElimination
-                        ? deConfig.label
-                        : format_type === RoundFormatTypesEnum.BestOf
-                        ? boConfig.label
-                        : ttbConfig.label
+                      tempConfig.label ??
+                      rrConfig.label ??
+                      koConfig.label ??
+                      deConfig.label ??
+                      boConfig.label ??
+                      ttbConfig.label ??
+                      ""
                     }
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (format_type === RoundFormatTypesEnum.RoundRobin) {
-                        setRRConfig({ ...rrConfig, label: value });
-                      } else if (
-                        format_type === RoundFormatTypesEnum.Knockout
-                      ) {
-                        setKOConfig({ ...koConfig, label: value });
-                      } else if (
-                        format_type === RoundFormatTypesEnum.DoubleElimination
-                      ) {
-                        setDEConfig({ ...deConfig, label: value });
-                      } else if (format_type === RoundFormatTypesEnum.BestOf) {
-                        setBOConfig({ ...boConfig, label: value });
-                      } else if (
-                        format_type === RoundFormatTypesEnum.TwiceToBeat
-                      ) {
-                        setTTBConfig({ ...ttbConfig, label: value });
-                      }
-                    }}
+                    onChange={(e) =>
+                      setTempConfig({ ...tempConfig, label: e.target.value })
+                    }
                     placeholder="Enter format label"
                   />
                 </div>
@@ -264,14 +427,17 @@ export function FormatNodeMenu({
                       <Input
                         id={`${format_type}-groupCount`}
                         type="number"
-                        value={rrConfig.group_count}
+                        min={1}
+                        max={6}
+                        value={
+                          tempConfig.group_count ?? rrConfig.group_count ?? ""
+                        }
                         onChange={(e) =>
-                          setRRConfig({
-                            ...rrConfig,
+                          setTempConfig({
+                            ...tempConfig,
                             group_count: e.target.value,
                           })
                         }
-                        min="1"
                         placeholder="Enter number of groups"
                       />
                     </div>
@@ -282,14 +448,19 @@ export function FormatNodeMenu({
                       <Input
                         id={`${format_type}-advancesPerGroup`}
                         type="number"
-                        value={rrConfig.advances_per_group}
+                        min={1}
+                        max={10}
+                        value={
+                          tempConfig.advances_per_group ??
+                          rrConfig.advances_per_group ??
+                          ""
+                        }
                         onChange={(e) =>
-                          setRRConfig({
-                            ...rrConfig,
+                          setTempConfig({
+                            ...tempConfig,
                             advances_per_group: e.target.value,
                           })
                         }
-                        min="1"
                         placeholder="Enter advances per group"
                       />
                     </div>
@@ -300,14 +471,19 @@ export function FormatNodeMenu({
                       <Input
                         id={`${format_type}-regenerationCount`}
                         type="number"
-                        value={rrConfig.regeneration_count}
+                        min={0}
+                        max={5}
+                        value={
+                          tempConfig.regeneration_count ??
+                          rrConfig.regeneration_count ??
+                          ""
+                        }
                         onChange={(e) =>
-                          setRRConfig({
-                            ...rrConfig,
+                          setTempConfig({
+                            ...tempConfig,
                             regeneration_count: e.target.value,
                           })
                         }
-                        min="0"
                         placeholder="Enter regeneration count"
                       />
                     </div>
@@ -322,35 +498,20 @@ export function FormatNodeMenu({
                       <Input
                         id={`${format_type}-groupCount`}
                         type="number"
-                        value={koConfig.group_count}
+                        min={1}
+                        max={6}
+                        value={
+                          tempConfig.group_count ?? koConfig.group_count ?? ""
+                        }
                         onChange={(e) =>
-                          setKOConfig({
-                            ...koConfig,
+                          setTempConfig({
+                            ...tempConfig,
                             group_count: e.target.value,
                           })
                         }
-                        min="1"
                         placeholder="Enter number of groups"
                       />
                     </div>
-                    {/* <div className="space-y-1">
-                      <Label
-                        htmlFor={`${format_type}-singleElim`}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Checkbox
-                          id={`${format_type}-singleElim`}
-                          checked={koConfig.single_elim}
-                          onCheckedChange={(checked) =>
-                            setKOConfig({
-                              ...koConfig,
-                              single_elim: !!checked,
-                            })
-                          }
-                        />
-                        Single Elimination
-                      </Label>
-                    </div> */}
                     <div className="space-y-1">
                       <Label htmlFor={`${format_type}-seeding`}>
                         Seeding Method
@@ -359,9 +520,12 @@ export function FormatNodeMenu({
                         disabled
                         id={`${format_type}-seeding`}
                         type="text"
-                        value={koConfig.seeding}
+                        value={tempConfig.seeding ?? koConfig.seeding ?? ""}
                         onChange={(e) =>
-                          setKOConfig({ ...koConfig, seeding: e.target.value })
+                          setTempConfig({
+                            ...tempConfig,
+                            seeding: e.target.value,
+                          })
                         }
                         placeholder="Enter seeding method (e.g., random)"
                       />
@@ -377,14 +541,17 @@ export function FormatNodeMenu({
                       <Input
                         id={`${format_type}-groupCount`}
                         type="number"
-                        value={deConfig.group_count}
+                        min={1}
+                        max={6}
+                        value={
+                          tempConfig.group_count ?? deConfig.group_count ?? ""
+                        }
                         onChange={(e) =>
-                          setDEConfig({
-                            ...deConfig,
+                          setTempConfig({
+                            ...tempConfig,
                             group_count: e.target.value,
                           })
                         }
-                        min="1"
                         placeholder="Enter number of groups"
                       />
                     </div>
@@ -395,11 +562,15 @@ export function FormatNodeMenu({
                       <Input
                         id={`${format_type}-maxLoss`}
                         type="number"
-                        value={deConfig.max_loss}
+                        min={1}
+                        max={5}
+                        value={tempConfig.max_loss ?? deConfig.max_loss ?? ""}
                         onChange={(e) =>
-                          setDEConfig({ ...deConfig, max_loss: e.target.value })
+                          setTempConfig({
+                            ...tempConfig,
+                            max_loss: e.target.value,
+                          })
                         }
-                        min="1"
                         placeholder="Enter max losses"
                       />
                     </div>
@@ -414,14 +585,17 @@ export function FormatNodeMenu({
                       <Input
                         id={`${format_type}-groupCount`}
                         type="number"
-                        value={boConfig.group_count}
+                        min={1}
+                        max={6}
+                        value={
+                          tempConfig.group_count ?? boConfig.group_count ?? ""
+                        }
                         onChange={(e) =>
-                          setBOConfig({
-                            ...boConfig,
+                          setTempConfig({
+                            ...tempConfig,
                             group_count: e.target.value,
                           })
                         }
-                        min="1"
                         placeholder="Enter number of groups"
                       />
                     </div>
@@ -432,11 +606,15 @@ export function FormatNodeMenu({
                       <Input
                         id={`${format_type}-games`}
                         type="number"
-                        value={boConfig.games}
+                        min={1}
+                        max={7}
+                        value={tempConfig.games ?? boConfig.games ?? ""}
                         onChange={(e) =>
-                          setBOConfig({ ...boConfig, games: e.target.value })
+                          setTempConfig({
+                            ...tempConfig,
+                            games: e.target.value,
+                          })
                         }
-                        min="1"
                         placeholder="Enter number of games"
                       />
                     </div>
@@ -449,9 +627,16 @@ export function FormatNodeMenu({
                         Advantaged Team
                       </Label>
                       <Select
-                        value={ttbConfig.advantaged_team}
+                        value={
+                          tempConfig.advantaged_team ??
+                          ttbConfig.advantaged_team ??
+                          ""
+                        }
                         onValueChange={(value) =>
-                          setTTBConfig({ ...ttbConfig, advantaged_team: value })
+                          setTempConfig({
+                            ...tempConfig,
+                            advantaged_team: value,
+                          })
                         }
                       >
                         <SelectTrigger id={`${format_type}-advantagedTeam`}>
@@ -467,9 +652,16 @@ export function FormatNodeMenu({
                         Challenger Team
                       </Label>
                       <Select
-                        value={ttbConfig.challenger_team}
+                        value={
+                          tempConfig.challenger_team ??
+                          ttbConfig.challenger_team ??
+                          ""
+                        }
                         onValueChange={(value) =>
-                          setTTBConfig({ ...ttbConfig, challenger_team: value })
+                          setTempConfig({
+                            ...tempConfig,
+                            challenger_team: value,
+                          })
                         }
                       >
                         <SelectTrigger id={`${format_type}-challengerTeam`}>
@@ -487,14 +679,17 @@ export function FormatNodeMenu({
                       <Input
                         id={`${format_type}-maxGames`}
                         type="number"
-                        value={ttbConfig.max_games}
+                        min={1}
+                        max={3}
+                        value={
+                          tempConfig.max_games ?? ttbConfig.max_games ?? ""
+                        }
                         onChange={(e) =>
-                          setTTBConfig({
-                            ...ttbConfig,
+                          setTempConfig({
+                            ...tempConfig,
                             max_games: e.target.value,
                           })
                         }
-                        min="1"
                         placeholder="Enter max games"
                       />
                     </div>

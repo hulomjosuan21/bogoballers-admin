@@ -26,6 +26,7 @@ import {
 } from "@/types/leagueCategoryTypes";
 import { generateUUIDWithPrefix } from "@/lib/app_utils";
 import { useFormatConfigStore } from "@/stores/formatConfigStore";
+import { buildFormatConfig } from "./formatConfig";
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
 export const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
@@ -403,65 +404,18 @@ export function useNodeManagement({
         connection.targetHandle === "top"
       ) {
         const round = (sourceNode.data as RoundNodeData).round;
-        const formatLabel = (targetNode.data as FormatNodeData).label;
-        const formatVariant = (targetNode.data as FormatNodeData).variant;
+        const { variant, label } = targetNode.data as FormatNodeData;
         const roundOrder = round.round_order;
         const roundStatus = round.round_status;
 
-        const formatConfig = (() => {
-          switch (formatVariant) {
-            case "roundrobin_1group":
-              return {
-                group_count: parseInt(rrConfig.group_count) || 1,
-                team_count: nTeams,
-                advances_per_group: parseInt(rrConfig.advances_per_group) || 2,
-                regeneration_count: parseInt(rrConfig.regeneration_count) || 1,
-                label: rrConfig.label || "• 1 Group, All Play All",
-              };
-            case "knockout_singleelim":
-              return {
-                group_count: parseInt(koConfig.group_count) || 1,
-                team_count: nTeams,
-                single_elim: koConfig.single_elim,
-                seeding: koConfig.seeding,
-                regeneration_count: parseInt(koConfig.regeneration_count) || 0,
-                label: koConfig.label || "• Single Elim, Random Seeding",
-              };
-            case "doubleelim_standard":
-              return {
-                group_count: parseInt(deConfig.group_count) || 1,
-                team_count: nTeams,
-                max_loss: parseInt(deConfig.max_loss) || 2,
-                brackets: ["winners", "losers"],
-                regeneration_count: parseInt(deConfig.regeneration_count) || 0,
-                label: deConfig.label || "• Standard",
-              };
-            case "bestof_3":
-              return {
-                group_count: parseInt(boConfig.group_count) || 1,
-                team_count: nTeams,
-                games: parseInt(boConfig.games) || 3,
-                regeneration_count: parseInt(boConfig.regeneration_count) || 0,
-                label: boConfig.label || "• Best of 3",
-              };
-            case "twicetobeat_final":
-              return {
-                advantaged_team: ttbConfig.advantaged_team || "",
-                challenger_team: ttbConfig.challenger_team || "",
-                max_games: parseInt(ttbConfig.max_games) || 2,
-                label: ttbConfig.label || "• Finals Format",
-              };
-            default:
-              return {};
-          }
-        })();
+        const formatConfig = buildFormatConfig(variant);
 
         const roundFormat: LeagueRoundFormat = {
-          format_type: formatLabel as RoundFormatTypesEnum,
+          format_type: label as RoundFormatTypesEnum,
           pairing_method: "random",
           round_id: round.round_id,
           position: targetNode.position,
-          format_config: formatConfig,
+          format_config: { ...formatConfig, team_count: nTeams },
         };
 
         setNodes((nds) =>
@@ -473,7 +427,7 @@ export function useNodeManagement({
                   round_order: roundOrder,
                   round_status: roundStatus,
                   ...roundFormat,
-                  format_config: formatConfig,
+                  format_config: { ...formatConfig, team_count: nTeams },
                 },
               };
               return {
@@ -502,7 +456,7 @@ export function useNodeManagement({
         setEdges((eds) => addEdge(connection, eds));
 
         toast.success(
-          `Format '${formatLabel}' assigned to ${round.round_name} (unsaved)`
+          `Format '${label}' assigned to ${round.round_name} (unsaved)`
         );
         return;
       }
