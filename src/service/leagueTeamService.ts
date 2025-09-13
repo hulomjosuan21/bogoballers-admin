@@ -56,10 +56,16 @@ export class LeagueTeamService {
     return response.data;
   }
 
-  static async getMany(leagueCategoryId: string, data?: Object) {
+  static async getMany<T extends Partial<LeagueTeam> & { condition: string }>(
+    leagueCategoryId: string,
+    data?: T
+  ) {
     const url = `/league-team/all/${leagueCategoryId}`;
 
-    const response = await axiosClient.post<LeagueTeam[]>(url, data || {});
+    const response = await axiosClient.post<LeagueTeam[]>(
+      url,
+      data ?? undefined
+    );
 
     return response.data;
   }

@@ -1,4 +1,4 @@
-import { LeagueCategoryRoundService } from "@/service/leagueCategoryManagementService";
+import { LeagueCategoryRoundService } from "@/service/leagueCategory";
 import { createUpdateRoundStore } from "@/stores/updateRoundStore";
 
 export const useUpdateRoundProgressionStore = createUpdateRoundStore(

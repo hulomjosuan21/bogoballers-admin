@@ -1,5 +1,5 @@
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { LeagueCategoryService } from "@/service/leagueCategoryManagementService";
+import { LeagueCategoryService } from "@/service/leagueCategory";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { queryOptions } from "@tanstack/react-query";
 

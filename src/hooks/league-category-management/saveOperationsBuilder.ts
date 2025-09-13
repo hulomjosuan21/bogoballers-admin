@@ -7,7 +7,7 @@ import {
   type RoundNodeData,
   type FormatNodeData,
 } from "@/types/leagueCategoryTypes";
-import { LeagueCategoryRoundService } from "@/service/leagueCategoryManagementService";
+import { LeagueCategoryRoundService } from "@/service/leagueCategory";
 import { getErrorMessage } from "@/lib/error";
 
 export function buildSaveOperations(

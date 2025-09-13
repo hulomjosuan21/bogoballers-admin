@@ -34,7 +34,7 @@ import {
 import {
   LeagueCategoryRoundService,
   LeagueCategoryService,
-} from "@/service/leagueCategoryManagementService";
+} from "@/service/leagueCategory";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { getErrorMessage } from "@/lib/error";
 import { refetchActiveLeagueCategories } from "@/hooks/useLeagueCategories";
