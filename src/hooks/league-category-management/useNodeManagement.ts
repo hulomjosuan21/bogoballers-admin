@@ -25,7 +25,7 @@ import {
   type RoundNodeData,
 } from "@/types/leagueCategoryTypes";
 import { generateUUIDWithPrefix } from "@/lib/app_utils";
-import { getPredefinedFormatConfigs } from "@/constants/getPredefinedFormatConfigs";
+import { useFormatConfigStore } from "@/stores/formatConfigStore";
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
 export const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
@@ -386,6 +386,8 @@ export function useNodeManagement({
     },
     [nodes, viewOnly]
   );
+  const { rrConfig, koConfig, deConfig, boConfig, ttbConfig } =
+    useFormatConfigStore();
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -404,21 +406,63 @@ export function useNodeManagement({
         const formatLabel = (targetNode.data as FormatNodeData).label;
         const formatVariant = (targetNode.data as FormatNodeData).variant;
         const roundOrder = round.round_order;
-        const rountStatus = round.round_status;
+        const roundStatus = round.round_status;
+
+        const formatConfig = (() => {
+          switch (formatVariant) {
+            case "roundrobin_1group":
+              return {
+                group_count: parseInt(rrConfig.group_count) || 1,
+                team_count: nTeams,
+                advances_per_group: parseInt(rrConfig.advances_per_group) || 2,
+                regeneration_count: parseInt(rrConfig.regeneration_count) || 1,
+                label: rrConfig.label || "• 1 Group, All Play All",
+              };
+            case "knockout_singleelim":
+              return {
+                group_count: parseInt(koConfig.group_count) || 1,
+                team_count: nTeams,
+                single_elim: koConfig.single_elim,
+                seeding: koConfig.seeding,
+                regeneration_count: parseInt(koConfig.regeneration_count) || 0,
+                label: koConfig.label || "• Single Elim, Random Seeding",
+              };
+            case "doubleelim_standard":
+              return {
+                group_count: parseInt(deConfig.group_count) || 1,
+                team_count: nTeams,
+                max_loss: parseInt(deConfig.max_loss) || 2,
+                brackets: ["winners", "losers"],
+                regeneration_count: parseInt(deConfig.regeneration_count) || 0,
+                label: deConfig.label || "• Standard",
+              };
+            case "bestof_3":
+              return {
+                group_count: parseInt(boConfig.group_count) || 1,
+                team_count: nTeams,
+                games: parseInt(boConfig.games) || 3,
+                regeneration_count: parseInt(boConfig.regeneration_count) || 0,
+                label: boConfig.label || "• Best of 3",
+              };
+            case "twicetobeat_final":
+              return {
+                advantaged_team: ttbConfig.advantaged_team || "",
+                challenger_team: ttbConfig.challenger_team || "",
+                max_games: parseInt(ttbConfig.max_games) || 2,
+                label: ttbConfig.label || "• Finals Format",
+              };
+            default:
+              return {};
+          }
+        })();
 
         const roundFormat: LeagueRoundFormat = {
           format_type: formatLabel as RoundFormatTypesEnum,
           pairing_method: "random",
           round_id: round.round_id,
           position: targetNode.position,
-          format_config: null,
+          format_config: formatConfig,
         };
-
-        const presets = getPredefinedFormatConfigs(nTeams);
-        const defaultPreset = presets.find(
-          (preset) => preset.variant === formatVariant
-        );
-        const defaultConfig = defaultPreset?.format_config ?? null;
 
         setNodes((nds) =>
           nds.map((n) => {
@@ -427,12 +471,9 @@ export function useNodeManagement({
                 ...round,
                 round_format: {
                   round_order: roundOrder,
-                  round_status: rountStatus,
+                  round_status: roundStatus,
                   ...roundFormat,
-                  format_config: {
-                    label: defaultPreset?.label,
-                    ...defaultConfig,
-                  },
+                  format_config: formatConfig,
                 },
               };
               return {
@@ -447,10 +488,10 @@ export function useNodeManagement({
                   ...n.data,
                   round_format: {
                     ...roundFormat,
-                    format_config: defaultConfig,
+                    format_config: formatConfig,
                   },
                   round_id: round.round_id,
-                  format_config: defaultConfig,
+                  format_config: formatConfig,
                 } as FormatNodeData,
               };
             }
@@ -522,7 +563,19 @@ export function useNodeManagement({
 
       toast.error("Invalid connection.");
     },
-    [nodes, findCategoryRounds, viewOnly]
+    [
+      nodes,
+      setNodes,
+      setEdges,
+      findCategoryRounds,
+      viewOnly,
+      nTeams,
+      rrConfig,
+      koConfig,
+      deConfig,
+      boConfig,
+      ttbConfig,
+    ]
   );
 
   const onNodeDragStop = useCallback(
@@ -695,7 +748,6 @@ export function useNodeManagement({
             label: label,
             variant: variant,
             _isNew: true,
-            format_config: null,
           } satisfies FormatNodeData,
         };
         setNodes((prev) => prev.concat(newNode!));

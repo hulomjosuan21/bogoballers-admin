@@ -37,7 +37,7 @@ type LeagueCategoryCanvasProps = {
 
   viewOnly?: boolean;
 };
-const nTeams = 8;
+const nTeams = 12;
 
 export default function LeagueCategoryCanvas({
   categories,

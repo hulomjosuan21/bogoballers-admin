@@ -200,7 +200,6 @@ export interface CategoryNodeData {
 export interface FormatNodeData {
   label: string;
   round_format?: LeagueRoundFormat;
-  format_config: Record<string, any> | null;
   round_id?: string;
   variant?: string;
   _isNew?: boolean;
