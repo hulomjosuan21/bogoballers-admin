@@ -1,7 +1,16 @@
 import type { LeaguePlayer, PlayerTeam } from "./player";
 import type { User } from "./user";
 
-export interface Team {
+type PlayersType = {
+  accepted_players: PlayerTeam[];
+  pending_players: PlayerTeam[];
+  rejected_players: PlayerTeam[];
+  invited_players: PlayerTeam[];
+  stanby_players: PlayerTeam[];
+  guest_players: PlayerTeam[];
+};
+
+export interface Team extends PlayersType {
   team_id: string;
   public_team_id: string;
   user_id: string;
@@ -22,13 +31,6 @@ export interface Team {
   creator: User;
   team_created_at: string;
   team_updated_at: string;
-  accepted_players: PlayerTeam[];
-  pending_players: PlayerTeam[];
-  rejected_players: PlayerTeam[];
-  invited_players: PlayerTeam[];
-
-  stanby_players: PlayerTeam[];
-  guest_players: PlayerTeam[];
 }
 
 export interface LeagueTeam extends Team {
