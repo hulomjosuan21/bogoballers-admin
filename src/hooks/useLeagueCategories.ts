@@ -1,12 +1,15 @@
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { queryClient } from "@/lib/queryClient";
-import { getActiveLeagueCategoriesQueryOptions } from "@/queries/leagueCategoryQueryOption";
+import {
+  getActiveLeagueCategoriesMetaDataQueryOptions,
+  getActiveLeagueCategoriesQueryOptions,
+} from "@/queries/leagueCategoryQueryOption";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { useQuery } from "@tanstack/react-query";
 
 export const useActiveLeagueCategories = (
   leagueId?: string,
-  data?: Partial<LeagueCategory>
+  data?: Partial<LeagueCategory> & { condition: string }
 ) => {
   const query = useQuery(getActiveLeagueCategoriesQueryOptions(leagueId, data));
 
@@ -27,3 +30,16 @@ export async function refetchActiveLeagueCategories(
     exact: true,
   });
 }
+
+export const useActiveLeagueCategoriesMetadata = (leagueId?: string) => {
+  const query = useQuery(
+    getActiveLeagueCategoriesMetaDataQueryOptions(leagueId)
+  );
+
+  return {
+    activeLeagueCategoriesMetaData: query.data,
+    activeLeagueCategoriesLoadingMetaData: query.isLoading,
+    activeLeagueCategoriesErrorMetaData: query.error,
+    refetchActiveLeagueCategoriesMetaData: query.refetch,
+  };
+};

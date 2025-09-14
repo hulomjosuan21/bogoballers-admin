@@ -20,7 +20,7 @@ import {
 } from "@/components/league-category-management/LeagueCategoryManagementComponents";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
-  const { category, viewOnly } = data;
+  const { category, viewOnly, metadata } = data;
 
   return (
     <div className="border-2 rounded-md flex flex-col overflow-hidden w-[1280px] h-[720px]">
@@ -43,7 +43,12 @@ export function CategoryNode({ data }: { data: CategoryNodeData }) {
           <p className="px-2 border-r">
             Allow guest player: {category.allow_guest_player ? "Yes" : "No"}
           </p>
-          <p className="px-2">Allowed Address: {category.allowed_address}</p>
+          <p className="px-2 border-r">
+            Allowed Address: {category.allowed_address}
+          </p>
+          <p className="px-2">
+            Remaining teams count: {metadata.eligible_teams_count}
+          </p>
         </div>
       </div>
     </div>
@@ -188,10 +193,6 @@ export function FormatNode({ data }: { data: FormatNodeData }) {
       {data._isNew ? (
         <span className="text-xs text-primary font-medium">
           (New - unsaved)
-        </span>
-      ) : data.format_config ? (
-        <span className="text-xs text-primary font-medium">
-          {data.format_config["label"]}
         </span>
       ) : null}
 

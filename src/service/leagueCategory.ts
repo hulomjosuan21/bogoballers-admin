@@ -7,7 +7,20 @@ import {
 } from "@/types/leagueCategoryTypes";
 import type { LeagueCategoryRoundUpdatableFields } from "@/components/league-category-management/LeagueCategoryManagementComponents";
 
+export type LeagueCategoryMetaData = {
+  league_category_id: string;
+  eligible_teams_count: number;
+};
+
 export class LeagueCategoryService {
+  static async getMetaData(leagueId: string) {
+    const response = await axiosClient.get<LeagueCategoryMetaData[]>(
+      `/league-category/metadata/${leagueId}`
+    );
+
+    return response.data;
+  }
+
   static async getMany<
     T extends Partial<LeagueCategory> & { condition: string }
   >(leagueId: string, data?: T) {

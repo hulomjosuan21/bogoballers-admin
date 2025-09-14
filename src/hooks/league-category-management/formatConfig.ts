@@ -23,15 +23,14 @@ export const buildFormatConfig = (
       return {
         group_count: parseInt(rrConfig.group_count) || 1,
         advances_per_group: parseInt(rrConfig.advances_per_group) || 2,
-        regeneration_count: parseInt(rrConfig.regeneration_count) || 1,
         label: rrConfig.label || "• 1 Group, All Play All",
+        use_point_system: rrConfig.use_point_system || false,
       };
     case "knockout_singleelim":
       return {
         group_count: parseInt(koConfig.group_count) || 1,
         single_elim: koConfig.single_elim,
         seeding: koConfig.seeding,
-        regeneration_count: parseInt(koConfig.regeneration_count) || 0,
         label: koConfig.label || "• Single Elim, Random Seeding",
       };
     case "doubleelim_standard":
@@ -39,14 +38,12 @@ export const buildFormatConfig = (
         group_count: parseInt(deConfig.group_count) || 1,
         max_loss: parseInt(deConfig.max_loss) || 2,
         brackets: ["winners", "losers"],
-        regeneration_count: parseInt(deConfig.regeneration_count) || 0,
         label: deConfig.label || "• Standard",
       };
     case "bestof_3":
       return {
         group_count: parseInt(boConfig.group_count) || 1,
         games: parseInt(boConfig.games) || 3,
-        regeneration_count: parseInt(boConfig.regeneration_count) || 0,
         label: boConfig.label || "• Best of 3",
       };
     case "twicetobeat_final":

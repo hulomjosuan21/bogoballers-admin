@@ -46,6 +46,10 @@ import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeam } from "@/types/team";
 import { useLeagueTeam } from "@/hooks/useLeagueTeam";
+import type {
+  QueryObserverResult,
+  RefetchOptions,
+} from "@tanstack/react-query";
 
 interface TeamSubmissionTableProps {
   leagueId?: string;
@@ -56,13 +60,10 @@ export function TeamSubmissionTable({
   leagueId,
   leagueCategoryId,
 }: TeamSubmissionTableProps) {
-  // FIX 1: Get the actual data from the hook
-  const { leagueTeamLoading, leagueTeamData } = useLeagueTeam(
-    leagueCategoryId,
-    {
+  const { leagueTeamLoading, leagueTeamData, refetchLeagueTeam } =
+    useLeagueTeam(leagueCategoryId, {
       type: "Submission",
-    }
-  );
+    });
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -185,6 +186,7 @@ export function TeamSubmissionTable({
               row={row}
               leagueId={leagueId}
               leagueCategoryId={leagueCategoryId}
+              validate={refetchLeagueTeam}
             />
           );
         },
@@ -193,13 +195,12 @@ export function TeamSubmissionTable({
     [leagueId, leagueCategoryId]
   );
 
-  // FIX 3: Ensure we have valid data
   const tableData = useMemo(() => {
     return leagueTeamData || [];
   }, [leagueTeamData]);
 
   const table = useReactTable({
-    data: tableData, // Use actual data instead of empty array
+    data: tableData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -274,10 +275,14 @@ function ActionCell({
   row,
   leagueId,
   leagueCategoryId,
+  validate,
 }: {
   row: any;
   leagueId?: string;
   leagueCategoryId?: string;
+  validate: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<LeagueTeam[] | null, Error>>;
 }) {
   const team = row.original;
 
@@ -297,6 +302,7 @@ function ActionCell({
 
       const updateTeam = async () => {
         const result = await updateApi(team.league_team_id, data);
+        await validate();
         return result;
       };
 
@@ -337,6 +343,7 @@ function ActionCell({
         leagueCategoryId,
         team.league_team_id
       );
+      await validate();
       return result;
     };
 

@@ -1,3 +1,4 @@
+import type { LeagueCategoryMetaData } from "@/service/leagueCategory";
 import type { Category } from "./category";
 
 export interface CreateLeagueCategory {
@@ -193,6 +194,7 @@ export type StatusMap = Record<RoundTypeEnum, RoundStateEnum>;
 
 export interface CategoryNodeData {
   category: LeagueCategory;
+  metadata: LeagueCategoryMetaData;
   viewOnly: boolean;
   [key: string]: unknown;
 }

@@ -3,7 +3,6 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { default as ContentHeader } from "@/components/content-header";
 import { CloudAlert } from "lucide-react";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
-import { useMemo } from "react";
 import {
   Alert,
   AlertIcon,
@@ -22,16 +21,9 @@ export default function LeagueCategoryManagementPage() {
     activeLeagueCategoriesError,
   } = useActiveLeagueCategories(activeLeagueId);
 
-  const hasActiveLeague = useMemo(() => {
-    return (
-      activeLeagueCategories != null &&
-      Object.keys(activeLeagueCategories).length > 0
-    );
-  }, [activeLeagueCategories]);
-
   return (
     <>
-      {!hasActiveLeague ? (
+      {!activeLeagueCategories ? (
         <ContentShell>
           <ContentHeader title="Category Management"></ContentHeader>
           <ContentBody>
@@ -60,6 +52,7 @@ export default function LeagueCategoryManagementPage() {
         </ContentShell>
       ) : (
         <LeagueCategoryCanvas
+          leagueId={activeLeagueId}
           categories={activeLeagueCategories}
           isLoading={activeLeagueCategoriesLoading}
           error={activeLeagueCategoriesError}

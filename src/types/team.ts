@@ -45,6 +45,9 @@ export interface LeagueTeam extends Team {
   losses: number;
   draws: number;
   points: number;
+  final_rank: number | null;
+  is_champion: boolean;
+  finalized_at: string | null;
   league_team_created_at: string;
   league_team_updated_at: string;
   league_players: LeaguePlayer[];

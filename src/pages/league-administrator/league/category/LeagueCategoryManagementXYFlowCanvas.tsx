@@ -31,15 +31,14 @@ import { useSaveOperations } from "@/hooks/league-category-management/useSaveOpe
 import { NoteBox } from "@/components/nodebox";
 
 type LeagueCategoryCanvasProps = {
+  leagueId?: string;
   categories?: LeagueCategory[] | null;
   isLoading: boolean;
   error: unknown;
-
   viewOnly?: boolean;
 };
-const nTeams = 12;
-
 export default function LeagueCategoryCanvas({
+  leagueId,
   categories,
   isLoading,
   error,
@@ -66,7 +65,11 @@ export default function LeagueCategoryCanvas({
     onDrop,
     hasUnsavedChanges,
     getTotalChangesCount,
-  } = useNodeManagement({ categories, viewOnly, nTeams: nTeams });
+  } = useNodeManagement({
+    categories,
+    viewOnly,
+    leagueId: leagueId,
+  });
 
   useEdgeStyling({ nodes, setEdges });
 
@@ -163,12 +166,11 @@ export default function LeagueCategoryCanvas({
       </div>
 
       {!viewOnly && (
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-rows-2 gap-4">
           <RoundNodeMenu
             onDragStart={(e, label) => onDragStart(e, "round", label)}
           />
           <FormatNodeMenu
-            nTeam={nTeams}
             onDragStart={(e, label) => onDragStart(e, "format", label)}
           />
         </div>

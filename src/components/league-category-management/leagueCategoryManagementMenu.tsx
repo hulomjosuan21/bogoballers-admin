@@ -30,6 +30,7 @@ import type {
   TwiceToBeatConfig,
 } from "@/types/formatConfig";
 import { toast } from "sonner";
+import { Checkbox } from "../ui/checkbox";
 // import { Checkbox } from "../ui/checkbox";
 
 export function RoundNodeMenu({
@@ -82,7 +83,7 @@ export function FormatNodeMenu({
     label?: string;
     group_count?: string;
     advances_per_group?: string;
-    regeneration_count?: string;
+    use_point_system?: boolean;
     single_elim?: boolean;
     seeding?: string;
     max_loss?: string;
@@ -115,9 +116,8 @@ export function FormatNodeMenu({
           format_config: {
             group_count: parseInt(rrConfig.group_count) || 1,
             advances_per_group: parseInt(rrConfig.advances_per_group) || 2,
-            regeneration_count: parseInt(rrConfig.regeneration_count) || 1,
             label: rrConfig.label || "• 1 Group, All Play All",
-            use_point_system: true,
+            use_point_system: rrConfig.use_point_system || false,
           },
         };
       case RoundFormatTypesEnum.Knockout:
@@ -129,7 +129,6 @@ export function FormatNodeMenu({
             group_count: parseInt(koConfig.group_count) || 1,
             single_elim: true,
             seeding: koConfig.seeding,
-            regeneration_count: parseInt(koConfig.regeneration_count) || 0,
             label: koConfig.label || "• Single Elim, Random Seeding",
           },
         };
@@ -142,7 +141,6 @@ export function FormatNodeMenu({
             group_count: parseInt(deConfig.group_count) || 1,
             max_loss: parseInt(deConfig.max_loss) || 2,
             brackets: ["winners", "losers"],
-            regeneration_count: parseInt(deConfig.regeneration_count) || 0,
             label: deConfig.label || "• Standard",
           },
         };
@@ -154,7 +152,6 @@ export function FormatNodeMenu({
           format_config: {
             group_count: parseInt(boConfig.group_count) || 1,
             games: parseInt(boConfig.games) || 3,
-            regeneration_count: parseInt(boConfig.regeneration_count) || 0,
             label: boConfig.label || "• Best of 3",
           },
         };
@@ -184,7 +181,7 @@ export function FormatNodeMenu({
       max: number,
       field: string
     ) => {
-      if (value === undefined || value === "") return true; // Allow unchanged fields
+      if (value === undefined || value === "") return true;
       const num = parseInt(value);
       if (isNaN(num) || num < min || num > max) {
         toast.error(`${field} must be between ${min} and ${max}`);
@@ -202,12 +199,6 @@ export function FormatNodeMenu({
             1,
             10,
             "Advances per Group"
-          ) ||
-          !validateNumber(
-            tempConfig.regeneration_count,
-            0,
-            5,
-            "Regeneration Count"
           )
         ) {
           toast.error("Please provide valid values for all changed fields");
@@ -222,22 +213,15 @@ export function FormatNodeMenu({
           ...(tempConfig.advances_per_group !== undefined && {
             advances_per_group: tempConfig.advances_per_group,
           }),
-          ...(tempConfig.regeneration_count !== undefined && {
-            regeneration_count: tempConfig.regeneration_count,
+          ...(tempConfig.use_point_system !== undefined && {
+            use_point_system: tempConfig.use_point_system,
           }),
         });
+
         break;
       }
       case RoundFormatTypesEnum.Knockout: {
-        if (
-          !validateNumber(tempConfig.group_count, 1, 6, "Number of Groups") ||
-          !validateNumber(
-            tempConfig.regeneration_count,
-            0,
-            5,
-            "Regeneration Count"
-          )
-        ) {
+        if (!validateNumber(tempConfig.group_count, 1, 6, "Number of Groups")) {
           toast.error("Please provide valid values for all changed fields");
           return;
         }
@@ -254,22 +238,13 @@ export function FormatNodeMenu({
           ...(tempConfig.seeding !== undefined && {
             seeding: tempConfig.seeding,
           }),
-          ...(tempConfig.regeneration_count !== undefined && {
-            regeneration_count: tempConfig.regeneration_count,
-          }),
         });
         break;
       }
       case RoundFormatTypesEnum.DoubleElimination: {
         if (
           !validateNumber(tempConfig.group_count, 1, 6, "Number of Groups") ||
-          !validateNumber(tempConfig.max_loss, 1, 5, "Max Losses") ||
-          !validateNumber(
-            tempConfig.regeneration_count,
-            0,
-            5,
-            "Regeneration Count"
-          )
+          !validateNumber(tempConfig.max_loss, 1, 5, "Max Losses")
         ) {
           toast.error("Please provide valid values for all changed fields");
           return;
@@ -283,22 +258,13 @@ export function FormatNodeMenu({
           ...(tempConfig.max_loss !== undefined && {
             max_loss: tempConfig.max_loss,
           }),
-          ...(tempConfig.regeneration_count !== undefined && {
-            regeneration_count: tempConfig.regeneration_count,
-          }),
         });
         break;
       }
       case RoundFormatTypesEnum.BestOf: {
         if (
           !validateNumber(tempConfig.group_count, 1, 6, "Number of Groups") ||
-          !validateNumber(tempConfig.games, 1, 7, "Number of Games") ||
-          !validateNumber(
-            tempConfig.regeneration_count,
-            0,
-            5,
-            "Regeneration Count"
-          )
+          !validateNumber(tempConfig.games, 1, 7, "Number of Games")
         ) {
           toast.error("Please provide valid values for all changed fields");
           return;
@@ -310,9 +276,6 @@ export function FormatNodeMenu({
             group_count: tempConfig.group_count,
           }),
           ...(tempConfig.games !== undefined && { games: tempConfig.games }),
-          ...(tempConfig.regeneration_count !== undefined && {
-            regeneration_count: tempConfig.regeneration_count,
-          }),
         });
         break;
       }
@@ -398,7 +361,7 @@ export function FormatNodeMenu({
                 </span>
               </div>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent aria-describedby={undefined}>
               <DialogHeader>
                 <DialogTitle>
                   Configure {format_type.toLocaleLowerCase()} format
@@ -471,28 +434,27 @@ export function FormatNodeMenu({
                         placeholder="Enter advances per group"
                       />
                     </div>
-                    <div className="space-y-1">
-                      <Label htmlFor={`${format_type}-regenerationCount`}>
-                        Regeneration Count
-                      </Label>
-                      <Input
-                        id={`${format_type}-regenerationCount`}
-                        type="number"
-                        min={0}
-                        max={5}
-                        value={
-                          tempConfig.regeneration_count ??
-                          rrConfig.regeneration_count ??
-                          ""
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Checkbox
+                        id={`${format_type}-usePointSystem`}
+                        checked={
+                          tempConfig.use_point_system ??
+                          rrConfig.use_point_system ??
+                          true
                         }
-                        onChange={(e) =>
+                        onCheckedChange={(checked) =>
                           setTempConfig({
                             ...tempConfig,
-                            regeneration_count: e.target.value,
+                            use_point_system: checked as boolean,
                           })
                         }
-                        placeholder="Enter regeneration count"
                       />
+                      <Label
+                        htmlFor={`${format_type}-usePointSystem`}
+                        className="text-sm"
+                      >
+                        Use Point System
+                      </Label>
                     </div>
                   </>
                 )}

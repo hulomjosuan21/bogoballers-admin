@@ -38,6 +38,7 @@ import {
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { getErrorMessage } from "@/lib/error";
 import { refetchActiveLeagueCategories } from "@/hooks/useLeagueCategories";
+import { LeagueRoundService } from "@/service/leagueRoundService";
 export function LeagueCategoryNodeSheet({
   data,
   disable,
@@ -270,13 +271,35 @@ export function RoundNodeSheet({
 
         return "No updates required";
       } finally {
-        setPending(false);
       }
     };
 
     toast.promise(updateRound(), {
       loading: "Updating round...",
       success: (message) => message,
+      error: (err) => getErrorMessage(err),
+    });
+  };
+
+  const handleGenerateEliminatioMatches = () => {
+    if (!data.round || !activeLeagueId) return;
+
+    setPending(true);
+
+    const generate = async () => {
+      try {
+        return await LeagueRoundService.genereteEliminationMatches(
+          activeLeagueId,
+          data.round.round_id
+        );
+      } finally {
+        setPending(false);
+      }
+    };
+
+    toast.promise(generate(), {
+      loading: "Updating round...",
+      success: (res) => res.message,
       error: (err) => getErrorMessage(err),
     });
   };
@@ -333,6 +356,21 @@ export function RoundNodeSheet({
               <p className="text-helper">
                 Set the current status of this round.
               </p>
+              <Button
+                className="mt-8"
+                variant={"dashed"}
+                onClick={handleGenerateEliminatioMatches}
+                disabled={data.round.round_status == RoundStateEnum.Finished}
+              >
+                {!data.round.matches_generated
+                  ? "Generate Match"
+                  : "Regenerate Match"}
+              </Button>
+              <Button
+                disabled={data.round.round_status != RoundStateEnum.Finished}
+              >
+                Proceed to next round
+              </Button>
             </div>
           </div>
         </SheetBody>

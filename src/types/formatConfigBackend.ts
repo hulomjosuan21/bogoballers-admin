@@ -2,7 +2,6 @@ export interface RoundRobinConfigObj {
   group_count: number;
   team_count: number;
   advances_per_group: number;
-  regeneration_count: number;
   use_point_system: boolean;
 }
 
@@ -10,7 +9,6 @@ export interface KnockoutConfigObj {
   group_count: number;
   team_count: number;
   seeding: string;
-  regeneration_count: number;
 }
 
 export interface DoubleEliminationConfigObj {
@@ -18,14 +16,12 @@ export interface DoubleEliminationConfigObj {
   team_count: number;
   max_loss: number;
   brackets: string[];
-  regeneration_count: number;
 }
 
 export interface BestOfConfigObj {
   group_count: number;
   team_count: number;
   games: number;
-  regeneration_count: number;
 }
 
 export interface TwiceToBeatConfigObj {

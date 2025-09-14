@@ -5,7 +5,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 export const getLeagueTeamQueryOptions = (
   leagueCategoryId?: string,
-  data?: Object
+  data?: Partial<LeagueTeam> & { condition: string }
 ) =>
   queryOptions<LeagueTeam[] | null, Error>({
     queryKey: QUERY_KEYS.LEAGUE_TEAM(leagueCategoryId, data),

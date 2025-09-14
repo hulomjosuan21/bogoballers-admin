@@ -27,6 +27,7 @@ import {
 import { generateUUIDWithPrefix } from "@/lib/app_utils";
 import { useFormatConfigStore } from "@/stores/formatConfigStore";
 import { buildFormatConfig } from "./formatConfig";
+import { useActiveLeagueCategoriesMetadata } from "../useLeagueCategories";
 export const CATEGORY_WIDTH = 1280;
 export const CATEGORY_HEIGHT = 720;
 export const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
@@ -37,13 +38,13 @@ export const STATUSES: Record<RoundTypeEnum, RoundStateEnum> = {
 };
 
 interface UseNodeManagementProps {
+  leagueId?: string;
   categories?: LeagueCategory[] | null;
   viewOnly?: boolean;
-  nTeams: number;
 }
 
 export function useNodeManagement({
-  nTeams,
+  leagueId,
   categories,
   viewOnly = false,
 }: UseNodeManagementProps) {
@@ -55,8 +56,12 @@ export function useNodeManagement({
   const originalNodesRef = useRef<Node<NodeData>[]>([]);
   const initialNodesRef = useRef<Node<NodeData>[]>([]);
   const categoriesRef = useRef<LeagueCategory[]>([]);
+  const { activeLeagueCategoriesMetaData } =
+    useActiveLeagueCategoriesMetadata(leagueId);
+
   const initializeFromCategories = useCallback(() => {
     if (!categories) return;
+    if (!activeLeagueCategoriesMetaData) return;
 
     categoriesRef.current = categories;
 
@@ -64,11 +69,17 @@ export function useNodeManagement({
     const newEdges: Edge[] = [];
 
     categories.forEach((cat, catIndex) => {
+      const categoryMeta = activeLeagueCategoriesMetaData.find(
+        (meta) => meta.league_category_id === cat.league_category_id
+      );
+
+      if (!categoryMeta) return;
+
       newNodes.push({
         id: cat.league_category_id,
         type: "categoryNode",
         position: { x: 50, y: catIndex * 800 },
-        data: { category: cat, viewOnly: viewOnly },
+        data: { category: cat, viewOnly: viewOnly, metadata: categoryMeta },
         draggable: false,
         selectable: true,
       });
@@ -143,6 +154,7 @@ export function useNodeManagement({
     setEdges(newEdges);
     setDeletedNodeIds(new Set());
   }, [categories, viewOnly]);
+
   const getChangedNodes = useCallback(() => {
     const changed: Node<NodeData>[] = [];
 
@@ -305,6 +317,7 @@ export function useNodeManagement({
     },
     [nodes, viewOnly]
   );
+
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
       if (viewOnly) return;
@@ -409,13 +422,23 @@ export function useNodeManagement({
         const roundStatus = round.round_status;
 
         const formatConfig = buildFormatConfig(variant);
+        if (!activeLeagueCategoriesMetaData) return;
+
+        const categoryMeta = activeLeagueCategoriesMetaData.find(
+          (meta) => meta.league_category_id === round.league_category_id
+        );
+
+        if (!categoryMeta) return;
 
         const roundFormat: LeagueRoundFormat = {
           format_type: label as RoundFormatTypesEnum,
           pairing_method: "random",
           round_id: round.round_id,
           position: targetNode.position,
-          format_config: { ...formatConfig, team_count: nTeams },
+          format_config: {
+            ...formatConfig,
+            team_count: categoryMeta.eligible_teams_count,
+          },
         };
 
         setNodes((nds) =>
@@ -427,7 +450,10 @@ export function useNodeManagement({
                   round_order: roundOrder,
                   round_status: roundStatus,
                   ...roundFormat,
-                  format_config: { ...formatConfig, team_count: nTeams },
+                  format_config: {
+                    ...formatConfig,
+                    team_count: categoryMeta.eligible_teams_count,
+                  },
                 },
               };
               return {
@@ -523,7 +549,6 @@ export function useNodeManagement({
       setEdges,
       findCategoryRounds,
       viewOnly,
-      nTeams,
       rrConfig,
       koConfig,
       deConfig,

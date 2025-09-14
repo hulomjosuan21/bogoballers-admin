@@ -6,26 +6,23 @@ interface FormatConfigState {
     label: string;
     group_count: string;
     advances_per_group: string;
-    regeneration_count: string;
+    use_point_system: boolean;
   };
   koConfig: {
     label: string;
     group_count: string;
     single_elim: boolean;
     seeding: string;
-    regeneration_count: string;
   };
   deConfig: {
     label: string;
     group_count: string;
     max_loss: string;
-    regeneration_count: string;
   };
   boConfig: {
     label: string;
     group_count: string;
     games: string;
-    regeneration_count: string;
   };
   ttbConfig: {
     label: string;
@@ -47,26 +44,23 @@ export const useFormatConfigStore = create<FormatConfigState>()(
         label: "",
         group_count: "",
         advances_per_group: "",
-        regeneration_count: "",
+        use_point_system: false,
       },
       koConfig: {
         label: "",
         group_count: "",
         single_elim: true,
         seeding: "random",
-        regeneration_count: "",
       },
       deConfig: {
         label: "",
         group_count: "",
         max_loss: "",
-        regeneration_count: "",
       },
       boConfig: {
         label: "",
         group_count: "",
         games: "",
-        regeneration_count: "",
       },
       ttbConfig: {
         label: "",

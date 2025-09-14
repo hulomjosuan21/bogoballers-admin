@@ -4,7 +4,10 @@ import { getLeagueTeamQueryOptions } from "@/queries/leagueTeamQueryOption";
 import type { LeagueTeam } from "@/types/team";
 import { useQuery } from "@tanstack/react-query";
 
-export const useLeagueTeam = (leagueCategoryId?: string, data?: Object) => {
+export const useLeagueTeam = (
+  leagueCategoryId?: string,
+  data?: Partial<LeagueTeam> & { condition: string }
+) => {
   const query = useQuery(getLeagueTeamQueryOptions(leagueCategoryId, data));
 
   return {

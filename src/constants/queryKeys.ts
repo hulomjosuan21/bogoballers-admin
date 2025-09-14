@@ -22,4 +22,7 @@ export const QUERY_KEYS = {
     leagueId?: string,
     data?: Partial<LeagueCategory>
   ) => ["league-categories", leagueId, JSON.stringify(data)] as const,
+
+  ACTIVE_LEAGUE_CATEGORIES_METADATA: (leagueId?: string) =>
+    ["league-categories", leagueId] as const,
 };
