@@ -59,8 +59,27 @@
   @apply pointer-events-none opacity-[1];
 }
 
+.score-input {
+  @apply hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 rounded-xs border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent;
+}
+
+.remove-spinner {
+  @apply [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield];
+}
+
 .text-helper {
   @apply text-xs text-muted-foreground mt-1 ml-1;
+}
+
+.group-sm {
+  @apply grid grid-cols-2 gap-1;
+}
+
+.menu-sm-d {
+  @apply text-xs py-1 border border-dashed;
+}
+.menu-sm {
+  @apply text-xs py-1 border;
 }
 
 @keyframes dash-finish {

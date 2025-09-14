@@ -1,4 +1,4 @@
-interface PlayerBook {
+export interface PlayerBook {
   player_id: string;
   player_team_id: string;
   league_player_id: string | null;
