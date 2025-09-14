@@ -19,6 +19,7 @@ export interface PlayerBook {
     F: number;
     TP: number;
   };
+  onBench: boolean;
 }
 
 interface TeamBook {

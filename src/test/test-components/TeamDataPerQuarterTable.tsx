@@ -12,19 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { MatchBook, PlayerBook } from "@/types/scorebook";
-import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
+import type { MatchBook } from "@/types/scorebook";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const mockMatch: Partial<MatchBook> = {
   qtr: [
@@ -42,7 +31,32 @@ type Props = {
 export function TeamDataPerQuarterTable({ viewMode = false }: Props) {
   const { qtr } = mockMatch;
 
-  const columns: ColumnDef<{ [key: string]: boolean }>[] = [];
+  const columns: ColumnDef<{ [key: string]: boolean }>[] = [
+    {
+      accessorFn: (row) => Object.keys(row)[0],
+      header: "Quarter",
+      cell: (info) => info.getValue(),
+    },
+    {
+      accessorKey: "team-foul",
+      header: "Team fouls",
+      cell: () => (
+        <div className="flex-[0_0_auto] w-fit">
+          <Input
+            type="number"
+            className="rounded-sm w-12 remove-spinner"
+            variant={"sm"}
+            readOnly={viewMode}
+          />
+        </div>
+      ),
+    },
+    {
+      accessorKey: "score",
+      header: "Score",
+      cell: () => <span>0</span>,
+    },
+  ];
 
   const table = useReactTable({
     data: qtr!,
