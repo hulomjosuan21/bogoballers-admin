@@ -38,7 +38,7 @@ interface TeamBook {
   players: PlayerBook[];
 }
 
-interface MatchBook {
+export interface MatchBook {
   is_league: boolean;
   match_id: string;
   home_total_score: number;
