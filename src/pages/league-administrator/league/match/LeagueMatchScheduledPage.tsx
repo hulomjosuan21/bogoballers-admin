@@ -37,7 +37,9 @@ export default function LeagueMatchScheduledPage() {
     ) {
       const firstCategory = activeLeagueCategories[0];
       setSelectedCategory(firstCategory);
-      setActiveRoundId(firstCategory.rounds[0]?.round_id || null);
+      setActiveRoundId(
+        firstCategory.rounds[firstCategory.rounds.length - 1]?.round_id || null
+      );
     }
   }, [hasActiveLeague, activeLeagueCategories]);
 
@@ -86,15 +88,17 @@ export default function LeagueMatchScheduledPage() {
                   </Select>
 
                   <TabsList className="flex flex-wrap gap-2">
-                    {selectedCategory?.rounds.map((round) => (
-                      <TabsTrigger
-                        key={round.round_id}
-                        value={round.round_id}
-                        className="w-[175px]"
-                      >
-                        {round.round_name}
-                      </TabsTrigger>
-                    ))}
+                    {selectedCategory?.rounds
+                      .map((round) => (
+                        <TabsTrigger
+                          key={round.round_id}
+                          value={round.round_id}
+                          className="w-[175px]"
+                        >
+                          {round.round_name}
+                        </TabsTrigger>
+                      ))
+                      .reverse()}
                   </TabsList>
                 </div>
 

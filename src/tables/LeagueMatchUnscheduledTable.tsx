@@ -1,0 +1,447 @@
+import {
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { MoreVertical, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { DataTablePagination } from "@/components/data-table-pagination";
+import MultipleSelector from "@/components/ui/multiselect";
+import { DateTimePicker } from "@/components/datetime-picker";
+
+import type { LeagueMatch } from "@/types/leagueMatch";
+import { useLeagueMatch } from "@/hooks/leagueMatch";
+import { Label } from "@/components/ui/label";
+import { useActiveLeague } from "@/hooks/useActiveLeague";
+import type { LeagueCourt, LeagueReferee } from "@/types/league";
+
+const updateMatchAPI = async (
+  matchId: string,
+  payload: Partial<LeagueMatch>
+): Promise<{ success: boolean; message: string }> => {
+  console.log(JSON.stringify(payload, null, 2));
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  if (Math.random() > 0.9) {
+    return { success: false, message: "Failed to connect to the server." };
+  }
+  return { success: true, message: "Match updated successfully!" };
+};
+
+type SheetFormData = {
+  scheduled_date?: Date;
+  court?: string;
+  referees?: { label: string; value: string }[];
+  quarters?: number;
+  minutes_per_quarter?: number;
+};
+
+type Props = {
+  leagueCategoryId?: string;
+  roundId?: string;
+};
+
+export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
+  const { activeLeagueData } = useActiveLeague();
+
+  const { leagueMatchData, leagueMatchLoading, leagueMatchError } =
+    useLeagueMatch(leagueCategoryId, roundId, {
+      condition: "Unscheduled",
+    });
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState({});
+
+  const [refereesOption, setRefereesOption] = useState<LeagueReferee[]>([]);
+  const [courtOption, setCourtOption] = useState<LeagueCourt[]>([]);
+
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<LeagueMatch | null>(null);
+  const [sheetFormData, setSheetFormData] = useState<SheetFormData>({});
+
+  useEffect(() => {
+    const referees = (activeLeagueData?.league_referees ?? []).filter(
+      (ref) => ref.is_available
+    );
+
+    const courts = (activeLeagueData?.league_courts ?? []).filter(
+      (court) => court.is_available
+    );
+
+    setRefereesOption(referees);
+    setCourtOption(courts);
+  }, [activeLeagueData]);
+
+  useEffect(() => {
+    if (selectedMatch) {
+      setSheetFormData({
+        court: selectedMatch.court || "",
+        quarters: selectedMatch.quarters || undefined,
+        minutes_per_quarter: selectedMatch.minutes_per_quarter || undefined,
+        scheduled_date: selectedMatch.scheduled_date
+          ? new Date(selectedMatch.scheduled_date)
+          : undefined,
+        referees:
+          selectedMatch.referees?.map((ref) => ({
+            label: ref,
+            value: ref,
+          })) || [],
+      });
+    }
+  }, [selectedMatch]);
+
+  const handleOpenSheet = (match: LeagueMatch) => {
+    setSelectedMatch(match);
+    setIsSheetOpen(true);
+  };
+
+  const handleFormChange = (field: keyof SheetFormData, value: any) => {
+    setSheetFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveChanges = () => {
+    if (!selectedMatch) return;
+    const payload: Partial<LeagueMatch> = {
+      court: sheetFormData.court,
+      quarters: sheetFormData.quarters,
+      minutes_per_quarter: sheetFormData.minutes_per_quarter,
+      referees: sheetFormData.referees?.map((opt) => opt.value),
+      scheduled_date: sheetFormData.scheduled_date
+        ? sheetFormData.scheduled_date.toISOString()
+        : undefined,
+    };
+    toast.promise(updateMatchAPI(selectedMatch.league_match_id, payload), {
+      loading: "Saving changes...",
+      success: (res) => {
+        setIsSheetOpen(false);
+        return res.message;
+      },
+      error: (err) => err.message || "An error occurred.",
+    });
+  };
+
+  const handleSaveSchedule = () => {
+    if (!selectedMatch) return;
+    if (!sheetFormData.scheduled_date) {
+      toast.error("Please select a date and time to schedule the match.");
+      return;
+    }
+    const payload: Partial<LeagueMatch> = {
+      court: sheetFormData.court,
+      quarters: sheetFormData.quarters,
+      minutes_per_quarter: sheetFormData.minutes_per_quarter,
+      referees: sheetFormData.referees?.map((opt) => opt.value),
+      scheduled_date: sheetFormData.scheduled_date.toISOString(),
+      status: "Scheduled",
+    };
+    toast.promise(updateMatchAPI(selectedMatch.league_match_id, payload), {
+      loading: "Scheduling match...",
+      success: (res) => {
+        setIsSheetOpen(false);
+        return `Match Scheduled! ${res.message}`;
+      },
+      error: (err) => err.message || "An error occurred.",
+    });
+  };
+
+  const columns: ColumnDef<LeagueMatch>[] = [
+    {
+      accessorKey: "home-team",
+      header: "Home team",
+      cell: ({ row }) => {
+        const { home_team } = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <img
+              src={home_team.team_logo_url}
+              alt={home_team.team_name}
+              className="h-8 w-8 rounded-sm object-cover"
+            />
+            <span>{home_team.team_name}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "away-team",
+      header: "Away team",
+      cell: ({ row }) => {
+        const { away_team } = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <img
+              src={away_team.team_logo_url}
+              alt={away_team.team_name}
+              className="h-8 w-8 rounded-sm object-cover"
+            />
+            <span>{away_team.team_name}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "court",
+      header: "Court",
+      cell: ({ row }) =>
+        row.original.court || (
+          <Badge variant="outline" className="gap-1">
+            <X className="text-red-500" size={12} aria-hidden="true" />
+            Not Set
+          </Badge>
+        ),
+    },
+    {
+      accessorKey: "details",
+      header: "Format",
+      cell: ({ row }) => {
+        const { quarters, minutes_per_quarter } = row.original;
+        return quarters && minutes_per_quarter ? (
+          <span>
+            {quarters}Q @ {minutes_per_quarter}m
+          </span>
+        ) : (
+          <Badge variant="outline" className="gap-1">
+            <X className="text-red-500" size={12} aria-hidden="true" />
+            Not Set
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "referees",
+      header: "Referees",
+      cell: ({ row }) => {
+        const referees = row.original.referees;
+        return (
+          <div className="flex flex-wrap gap-1">
+            {referees && referees.length > 0 ? (
+              referees.map((ref) => (
+                <Badge key={ref} variant="secondary">
+                  {ref
+                    .split("_")
+                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(" ")}
+                </Badge>
+              ))
+            ) : (
+              <Badge variant="outline" className="gap-1">
+                <X className="text-red-500" size={12} aria-hidden="true" />
+                Not Set
+              </Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <div className="text-right">
+          <Button
+            variant="ghost"
+            className="h-8 w-8 p-0"
+            onClick={() => handleOpenSheet(row.original)}
+          >
+            <span className="sr-only">Open menu</span>
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: leagueMatchData ?? [],
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      rowSelection,
+    },
+  });
+
+  return (
+    <div className="space-y-2">
+      <div className="overflow-hidden rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="bg-muted">
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {leagueMatchLoading
+                    ? "Loading data..."
+                    : leagueMatchError
+                    ? leagueMatchError.message
+                    : "No data"}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <DataTablePagination showPageSize={true} table={table} />
+
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent aria-describedby={undefined}>
+          <SheetHeader>
+            <SheetTitle>Manage Match</SheetTitle>
+            <SheetDescription>
+              Update match details or set the final schedule. Click the
+              appropriate save button below.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="scheduled_date">Schedule Date & Time</Label>
+              <DateTimePicker
+                dateTime={sheetFormData.scheduled_date}
+                setDateTime={(date) => handleFormChange("scheduled_date", date)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="court">Court</Label>
+              <Select
+                value={sheetFormData.court}
+                onValueChange={(value) => handleFormChange("court", value)}
+              >
+                <SelectTrigger id="court">
+                  <SelectValue placeholder="Select Court" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courtOption.map((court, index) => (
+                    <SelectItem key={index} value={court.name}>
+                      {court.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="quarters">Quarters</Label>
+                <Input
+                  type="number"
+                  id="quarters"
+                  placeholder="e.g., 4"
+                  value={sheetFormData.quarters || ""}
+                  onChange={(e) =>
+                    handleFormChange("quarters", e.target.valueAsNumber)
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="minutes_per_quarter">Minutes per Quarter</Label>
+                <Input
+                  type="number"
+                  placeholder="e.g., 10"
+                  id="minutes_per_quarter"
+                  value={sheetFormData.minutes_per_quarter || ""}
+                  onChange={(e) =>
+                    handleFormChange(
+                      "minutes_per_quarter",
+                      e.target.valueAsNumber
+                    )
+                  }
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <MultipleSelector
+                maxSelected={3}
+                hidePlaceholderWhenSelected
+                value={sheetFormData.referees || []}
+                onChange={(value) => handleFormChange("referees", value)}
+                options={refereesOption.map((ref) => ({
+                  label: ref.full_name,
+                  value: ref.full_name,
+                }))}
+                placeholder="Select referees..."
+              />
+            </div>
+          </div>
+          <SheetFooter className="mt-auto">
+            <Button variant="outline" onClick={handleSaveChanges}>
+              Save Changes
+            </Button>
+            <Button onClick={handleSaveSchedule}>Save Schedule</Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}

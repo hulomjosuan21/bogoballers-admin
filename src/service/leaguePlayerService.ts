@@ -1,4 +1,3 @@
-import axiosClient from "@/lib/axiosClient";
 import type { LeaguePlayer } from "@/types/player";
 
 export class LeaguePlayerService {

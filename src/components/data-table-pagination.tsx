@@ -11,7 +11,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DataTablePaginationProps<TData> {
   table: TanstackTable<TData>;
-  showPageSize?: boolean; // optional boolean to toggle page size selector
+  showPageSize?: boolean;
 }
 
 export function DataTablePagination<TData>({

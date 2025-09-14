@@ -62,7 +62,7 @@ export function TeamSubmissionTable({
 }: TeamSubmissionTableProps) {
   const { leagueTeamLoading, leagueTeamData, refetchLeagueTeam } =
     useLeagueTeam(leagueCategoryId, {
-      type: "Submission",
+      condition: "Submission",
     });
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -270,7 +270,6 @@ export function TeamSubmissionTable({
   );
 }
 
-// FIX 4: Extract ActionCell to prevent hooks being called conditionally
 function ActionCell({
   row,
   leagueId,

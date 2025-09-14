@@ -1,4 +1,7 @@
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
+import type { LeagueMatch } from "@/types/leagueMatch";
+import type { LeaguePlayer } from "@/types/player";
+import type { LeagueTeam } from "@/types/team";
 
 export const QUERY_KEYS = {
   ACTIVE_LEAGUE: ["active-league"] as const,
@@ -12,8 +15,15 @@ export const QUERY_KEYS = {
   PLAYERS_ALL: ["players-all"] as const,
   TEAMS_ALL: ["teams-all"] as const,
 
-  LEAGUE_TEAM: (leagueCategoryId?: string, data?: Object) =>
-    ["league-team", leagueCategoryId, JSON.stringify(data)] as const,
+  LEAGUE_PLAYER: (
+    leagueId?: string,
+    data?: Partial<LeaguePlayer> & { condition: string }
+  ) => ["league-player", leagueId, JSON.stringify(data)] as const,
+
+  LEAGUE_TEAM: (
+    leagueCategoryId?: string,
+    data?: Partial<LeagueTeam> & { condition: string }
+  ) => ["league-team", leagueCategoryId, JSON.stringify(data)] as const,
 
   LEAGUE_TEAM_FOR_MATCH: (leagueId?: string, leagueCategoryId?: string) =>
     ["league-team-for-match", leagueId, leagueCategoryId] as const,
@@ -25,4 +35,11 @@ export const QUERY_KEYS = {
 
   ACTIVE_LEAGUE_CATEGORIES_METADATA: (leagueId?: string) =>
     ["league-categories", leagueId] as const,
+
+  LEAGUE_MATCH: (
+    leagueCategoryId?: string,
+    roundId?: string,
+    data?: Partial<LeagueMatch> & { condition: string }
+  ) =>
+    ["league-match", leagueCategoryId, roundId, JSON.stringify(data)] as const,
 };

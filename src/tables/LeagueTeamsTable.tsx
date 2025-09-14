@@ -51,7 +51,7 @@ export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
   const { leagueTeamLoading, leagueTeamData } = useLeagueTeam(
     leagueCategoryId,
     {
-      type: "Official",
+      condition: "Official",
     }
   );
 
@@ -246,7 +246,6 @@ export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
   );
 }
 
-// FIX 4: Extract ActionCell to prevent hooks being called conditionally
 function ActionCell({ row }: { row: any }) {
   const team = row.original;
 

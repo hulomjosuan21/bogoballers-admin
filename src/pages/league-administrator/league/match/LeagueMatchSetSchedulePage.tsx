@@ -14,6 +14,7 @@ import {
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
+import { UnscheduleMatchTable } from "@/tables/LeagueMatchUnscheduledTable";
 
 export default function LeagueMatchSetUnSchedulePage() {
   const { activeLeagueData, activeLeagueError, activeLeagueCategories } =
@@ -37,7 +38,9 @@ export default function LeagueMatchSetUnSchedulePage() {
     ) {
       const firstCategory = activeLeagueCategories[0];
       setSelectedCategory(firstCategory);
-      setActiveRoundId(firstCategory.rounds[0]?.round_id || null);
+      setActiveRoundId(
+        firstCategory.rounds[firstCategory.rounds.length - 1]?.round_id || null
+      );
     }
   }, [hasActiveLeague, activeLeagueCategories]);
 
@@ -86,25 +89,26 @@ export default function LeagueMatchSetUnSchedulePage() {
                   </Select>
 
                   <TabsList className="flex flex-wrap gap-2">
-                    {selectedCategory?.rounds.map((round) => (
-                      <TabsTrigger
-                        key={round.round_id}
-                        value={round.round_id}
-                        className="w-[175px]"
-                      >
-                        {round.round_name}
-                      </TabsTrigger>
-                    ))}
+                    {selectedCategory?.rounds
+                      .map((round) => (
+                        <TabsTrigger
+                          key={round.round_id}
+                          value={round.round_id}
+                          className="w-[175px]"
+                        >
+                          {round.round_name}
+                        </TabsTrigger>
+                      ))
+                      .reverse()}
                   </TabsList>
                 </div>
 
                 {selectedCategory?.rounds.map((round) => (
                   <TabsContent key={round.round_id} value={round.round_id}>
-                    <div>
-                      <p>Round Name: {round.round_name}</p>
-                      <p>Status: {round.round_status}</p>
-                      <p>Format: {round.format_type || "N/A"}</p>
-                    </div>
+                    <UnscheduleMatchTable
+                      leagueCategoryId={selectedCategory.league_category_id}
+                      roundId={round.round_id}
+                    />
                   </TabsContent>
                 ))}
               </Tabs>
