@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import LeagueAdministratorService from "@/service/leagueAdminService";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import type { LeagueAdministator } from "@/types/leagueAdmin";
+import type { JwtPayload, LeagueAdministator } from "@/types/leagueAdmin";
 import type { Category } from "@/types/category";
 
 export const authLeagueAdminQueryOption = queryOptions<
@@ -28,3 +28,13 @@ export const leagueAdminCategoriesQueryOption = queryOptions<Category[], Error>(
     refetchOnReconnect: false,
   }
 );
+
+export const LeagueAdminAuthJwtQueryOption = queryOptions<JwtPayload, Error>({
+  queryKey: QUERY_KEYS.AUTH_JWT,
+  queryFn: LeagueAdministratorService.authJwt,
+  staleTime: Infinity,
+  retry: false,
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+  refetchOnReconnect: false,
+});

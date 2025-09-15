@@ -1,9 +1,20 @@
 import { ApiResponse } from "@/lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
 import type { Category } from "@/types/category";
-import type { LeagueAdministator } from "@/types/leagueAdmin";
+import type { JwtPayload, LeagueAdministator } from "@/types/leagueAdmin";
 
 class LeagueAdministratorService {
+  static async authJwt() {
+    const response = await axiosClient.get<JwtPayload>(
+      "/league-administrator/auth/jwt",
+      {
+        withCredentials: true,
+      }
+    );
+    console.log(JSON.stringify(response.data, null, 2));
+    return response.data;
+  }
+
   static async auth(): Promise<LeagueAdministator> {
     const response = await axiosClient.get<LeagueAdministator>(
       "/league-administrator/auth",
