@@ -1,58 +1,55 @@
+// src/types/index.ts
+
+export interface PlayerStatsSummary {
+  fg2m: number; // Field Goal 2-points Made
+  fg2a: number; // Field Goal 2-points Attempted
+  fg3m: number;
+  fg3a: number;
+  ftm: number; // Free Throw Made
+  fta: number; // Free Throw Attempted
+  reb: number; // Rebounds
+  ast: number; // Assists
+  stl: number; // Steals
+  blk: number; // Blocks
+  tov: number; // Turnovers
+}
+
 export interface PlayerBook {
   player_id: string;
   player_team_id: string;
-  league_player_id: string | null;
   full_name: string;
   jersey_name: string;
   jersey_number: number;
-  total_score: number; // background holder
-  per_qtr_score: { [key: string]: number }[]; // example: [{1qtr: 8}]
-  P: number;
-  T: number;
-  summary: {
-    fg2: number;
-    fga2: number;
-    fg3: number;
-    fga3: number;
-    reb: number;
-    ast: number;
-    F: number;
-    TP: number;
-  };
+  total_score: number;
+  score_per_qtr: { qtr: number; score: number }[];
+  P: number; // Personal Fouls
+  T: number; // Technical Fouls
+  summary: PlayerStatsSummary;
   onBench: boolean;
 }
 
-interface TeamBook {
+export interface TeamBook {
   side: "home" | "away";
   team_id: string;
-  league_team_id: string | null;
   team_name: string;
-  teamF: { [key: string]: number }; // example: [{1qtr: 4}]
-  coachT: number;
   coach: string;
-  capt_ball: string;
-  turn_overs: number;
-  fg_percent: number;
-  ft_percent: number;
+  coachT: number;
   none_memberT: number;
-  timeout: { [key: number]: string }[]; // example:[{1: "1:30"}]
+  score_per_qtr: { qtr: number; score: number }[];
+  teamF_per_qtr: { qtr: number; foul: number }[];
+  timeouts: { qtr: number; game_time: string }[];
   players: PlayerBook[];
 }
 
 export interface MatchBook {
-  is_league: boolean;
   match_id: string;
   home_total_score: number;
   away_total_score: number;
-  quarters: number; // default: 4
-  minutes_per_quarter: number; // default: 10
-  time: Timer;
+  quarters: number;
+  minutes_per_quarter: number;
+  time_seconds: number; // Time is managed in seconds
+  timer_running: boolean;
+  current_quarter: number; // e.g., 1, 2, 3, 4
   home_team: TeamBook;
   away_team: TeamBook;
-  qtr: { [key: string]: boolean }[]; // example: [{1qtr: true} .. to ot1: true....]
-}
-
-interface Timer {
-  time: string;
-  pause: boolean;
 }

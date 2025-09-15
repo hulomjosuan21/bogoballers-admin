@@ -20,7 +20,7 @@ import LeagueTeamsPage from "@/pages/league-administrator/league/team/LeagueTeam
 import AllPlayersPage from "@/pages/AllPlayersPage";
 import AllTeamsPage from "@/pages/AllTeamsPage";
 import TestGrid from "@/test/TestGrid";
-import AutoFitGrid from "@/test/Layout";
+import ScorebookPage from "@/pages/scorebook/Scorebook";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -48,8 +48,8 @@ export const publicRoutes: RouteObject[] = [
     element: <TestGrid />,
   },
   {
-    path: "/test/layout",
-    element: <AutoFitGrid />,
+    path: "/test/scorebook",
+    element: <ScorebookPage />,
   },
 ];
 

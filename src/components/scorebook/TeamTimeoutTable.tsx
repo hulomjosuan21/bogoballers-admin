@@ -1,0 +1,93 @@
+// src/components/TeamTimeoutTable.tsx
+import type { TeamBook } from "@/types/scorebook";
+import { useGame } from "@/context/GameContext";
+import { Button } from "../ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+  TableHead,
+} from "../ui/table";
+import { Trash2 } from "lucide-react";
+
+type Props = {
+  team: TeamBook;
+  viewMode?: boolean;
+};
+
+export function TeamTimeoutTable({ team, viewMode = false }: Props) {
+  const { dispatch } = useGame();
+
+  const handleAddTimeout = () => {
+    dispatch({ type: "ADD_TIMEOUT", payload: { teamId: team.team_id } });
+  };
+
+  const handleRemoveTimeout = (index: number) => {
+    dispatch({
+      type: "REMOVE_TIMEOUT",
+      payload: { teamId: team.team_id, index },
+    });
+  };
+
+  const timeouts = team.timeouts || [];
+
+  return (
+    <div className="rounded-md border">
+      <div className="p-2 flex justify-between items-center">
+        <h3 className="text-sm font-semibold">Timeouts Log</h3>
+        <Button
+          size="sm"
+          className="text-xs"
+          onClick={handleAddTimeout}
+          disabled={viewMode}
+        >
+          Add Timeout
+        </Button>
+      </div>
+
+      <div className="flex-grow overflow-y-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="h-8">Qtr</TableHead>
+              <TableHead className="h-8">Time Taken</TableHead>
+              <TableHead className="h-8 text-right"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {timeouts.length > 0 ? (
+              timeouts.map((timeout, index) => (
+                <TableRow key={index}>
+                  <TableCell>Q{timeout.qtr}</TableCell>
+                  <TableCell>{timeout.game_time}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handleRemoveTimeout(index)}
+                      disabled={viewMode}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={3}
+                  className="h-12 text-center text-muted-foreground"
+                >
+                  No timeouts used.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
