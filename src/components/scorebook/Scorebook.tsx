@@ -2,15 +2,18 @@ import { TeamSection } from "./TeamSection";
 import { useGame } from "@/context/GameContext";
 import { Button } from "../ui/button";
 import { TopSection } from "./TopSection";
+import { Redo, Undo } from "lucide-react";
 
 type Props = { viewMode?: boolean };
 
 export default function Scorebook({ viewMode = false }: Props) {
   const { state, dispatch, canUndo, canRedo } = useGame();
   return (
-    <div className="container mx-auto p-1 space-y-2">
+    <div className="mx-auto p-1 space-y-2">
       <div className="flex justify-between items-center">
-        <h1 className="text-md font-bold">Digital Basketball Scorebook</h1>
+        <h1 className="text-sm font-semibold">
+          BogoBallers Digital Basketball Scorebook
+        </h1>
         <div className="flex gap-2">
           <Button
             variant={"outline"}
@@ -18,7 +21,7 @@ export default function Scorebook({ viewMode = false }: Props) {
             onClick={() => dispatch({ type: "UNDO" })}
             disabled={!canUndo || viewMode}
           >
-            Undo
+            <Undo className="h-3 w-3" />
           </Button>
           <Button
             variant={"outline"}
@@ -26,7 +29,7 @@ export default function Scorebook({ viewMode = false }: Props) {
             onClick={() => dispatch({ type: "REDO" })}
             disabled={!canRedo || viewMode}
           >
-            Redo
+            <Redo className="h-3 w-3" />
           </Button>
         </div>
       </div>

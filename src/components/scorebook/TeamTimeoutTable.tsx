@@ -47,7 +47,7 @@ export function TeamTimeoutTable({ team, viewMode = false }: Props) {
         </Button>
       </div>
 
-      <div className="flex-grow overflow-y-auto">
+      <div className="max-h-[170px] flex-grow overflow-y-auto">
         <Table>
           <TableHeader>
             <TableRow>

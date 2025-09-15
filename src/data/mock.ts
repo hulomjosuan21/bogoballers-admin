@@ -1,5 +1,3 @@
-// src/data/mock.ts
-
 import type { MatchBook, PlayerBook } from "@/types/scorebook";
 
 const generatePlayers = (teamId: string, count: number): PlayerBook[] =>
@@ -26,7 +24,7 @@ const generatePlayers = (teamId: string, count: number): PlayerBook[] =>
       blk: 0,
       tov: 0,
     },
-    onBench: i >= 5, // First 5 players are on the floor
+    onBench: i >= 5,
   }));
 
 const homePlayers = generatePlayers("home-team", 12);
@@ -38,7 +36,7 @@ export const initialMatchData: MatchBook = {
   away_total_score: 0,
   quarters: 4,
   minutes_per_quarter: 10,
-  time_seconds: 10 * 60, // 10 minutes
+  time_seconds: 10 * 60,
   timer_running: false,
   current_quarter: 1,
   home_team: {

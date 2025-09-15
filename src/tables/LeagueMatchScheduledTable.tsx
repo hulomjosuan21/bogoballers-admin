@@ -9,19 +9,12 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { MoreVertical, X } from "lucide-react";
+import { CheckIcon, MoreVertical, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -41,13 +34,26 @@ import {
 import { DataTablePagination } from "@/components/data-table-pagination";
 import MultipleSelector from "@/components/ui/multiselect";
 import { DateTimePicker } from "@/components/datetime-picker";
-
-import type { LeagueMatch } from "@/types/leagueMatch";
-import { useLeagueMatch } from "@/hooks/leagueMatch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import { LeagueMatchService } from "@/service/leagueMatchService";
+import { formatDate12h } from "@/lib/app_utils";
+import type { LeagueMatch } from "@/types/leagueMatch";
+import { useLeagueMatch } from "@/hooks/leagueMatch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type SheetFormData = {
   scheduled_date?: Date;
@@ -55,6 +61,10 @@ type SheetFormData = {
   referees?: { label: string; value: string }[];
   quarters?: number;
   minutes_per_quarter?: number;
+  home_team_score?: number;
+  away_team_score?: number;
+  winner_team_id?: string;
+  status?: string;
 };
 
 type Props = {
@@ -62,7 +72,7 @@ type Props = {
   roundId?: string;
 };
 
-export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
+export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
   const { activeLeagueData } = useActiveLeague();
 
   const {
@@ -71,7 +81,7 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
     leagueMatchError,
     refetchLeagueMatch,
   } = useLeagueMatch(leagueCategoryId, roundId, {
-    condition: "Unscheduled",
+    condition: "Scheduled",
   });
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -89,11 +99,9 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
     const referees = (activeLeagueData?.league_referees ?? []).filter(
       (ref) => ref.is_available
     );
-
     const courts = (activeLeagueData?.league_courts ?? []).filter(
       (court) => court.is_available
     );
-
     setRefereesOption(referees);
     setCourtOption(courts);
   }, [activeLeagueData]);
@@ -112,9 +120,52 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
             label: ref,
             value: ref,
           })) || [],
+        home_team_score: selectedMatch.home_team_score ?? undefined,
+        away_team_score: selectedMatch.away_team_score ?? undefined,
+        winner_team_id: selectedMatch.winner_team_id ?? undefined,
+        status: selectedMatch.status,
       });
     }
   }, [selectedMatch]);
+
+  useEffect(() => {
+    const homeScore = sheetFormData.home_team_score;
+    const awayScore = sheetFormData.away_team_score;
+
+    if (
+      selectedMatch &&
+      typeof homeScore === "number" &&
+      !isNaN(homeScore) &&
+      typeof awayScore === "number" &&
+      !isNaN(awayScore)
+    ) {
+      setSheetFormData((prev) => {
+        let newWinnerId: string | undefined = undefined;
+        let newStatus = prev.status;
+
+        if (homeScore > awayScore) {
+          newWinnerId = selectedMatch.home_team_id;
+        } else if (awayScore > homeScore) {
+          newWinnerId = selectedMatch.away_team_id;
+        } else {
+          newWinnerId = undefined;
+          if (newStatus === "Completed") newStatus = "Scheduled";
+        }
+
+        return { ...prev, winner_team_id: newWinnerId, status: newStatus };
+      });
+    } else {
+      setSheetFormData((prev) => ({
+        ...prev,
+        winner_team_id: undefined,
+        status: prev.status === "Completed" ? "Scheduled" : prev.status,
+      }));
+    }
+  }, [
+    sheetFormData.home_team_score,
+    sheetFormData.away_team_score,
+    selectedMatch,
+  ]);
 
   const handleOpenSheet = (match: LeagueMatch) => {
     setSelectedMatch(match);
@@ -127,6 +178,13 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
 
   const handleSaveChanges = () => {
     if (!selectedMatch) return;
+
+    const loser_team_id = sheetFormData.winner_team_id
+      ? sheetFormData.winner_team_id === selectedMatch.home_team_id
+        ? selectedMatch.away_team_id
+        : selectedMatch.home_team_id
+      : undefined;
+
     const payload: Partial<LeagueMatch> = {
       court: sheetFormData.court,
       quarters: sheetFormData.quarters,
@@ -135,47 +193,25 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       scheduled_date: sheetFormData.scheduled_date
         ? sheetFormData.scheduled_date.toISOString()
         : undefined,
+      home_team_score: sheetFormData.home_team_score,
+      away_team_score: sheetFormData.away_team_score,
+      winner_team_id: sheetFormData.winner_team_id,
+      loser_team_id,
+      status: sheetFormData.status,
     };
+
     const updateApi = async () => {
       await LeagueMatchService.updateOne(
         selectedMatch.league_match_id,
         payload
       );
       await refetchLeagueMatch();
+      setIsSheetOpen(false);
     };
 
     toast.promise(updateApi(), {
       loading: "Saving changes...",
       success: "Update successful",
-      error: (err) => err.message || "An error occurred.",
-    });
-  };
-
-  const handleSaveSchedule = () => {
-    if (!selectedMatch) return;
-    if (!sheetFormData.scheduled_date) {
-      toast.error("Please select a date and time to schedule the match.");
-      return;
-    }
-    const payload: Partial<LeagueMatch> = {
-      court: sheetFormData.court,
-      quarters: sheetFormData.quarters,
-      minutes_per_quarter: sheetFormData.minutes_per_quarter,
-      referees: sheetFormData.referees?.map((opt) => opt.value),
-      scheduled_date: sheetFormData.scheduled_date.toISOString(),
-      status: "Scheduled",
-    };
-    const updateApi = async () => {
-      await LeagueMatchService.updateOne(
-        selectedMatch.league_match_id,
-        payload
-      );
-      await refetchLeagueMatch();
-    };
-
-    toast.promise(updateApi(), {
-      loading: "Scheduling match...",
-      success: "Match Scheduled",
       error: (err) => err.message || "An error occurred.",
     });
   };
@@ -216,6 +252,53 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       },
     },
     {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.status;
+        return <Badge variant="outline">{status}</Badge>;
+      },
+    },
+    {
+      accessorKey: "score",
+      header: "Score",
+      cell: ({ row }) => {
+        const { home_team_score, away_team_score, status } = row.original;
+        if (
+          status !== "Completed" ||
+          home_team_score === null ||
+          away_team_score === null
+        ) {
+          return <span className="text-muted-foreground">--</span>;
+        }
+        return (
+          <span className="font-mono font-medium">{`${home_team_score} - ${away_team_score}`}</span>
+        );
+      },
+    },
+    {
+      accessorKey: "winner_team_id",
+      header: "Winner",
+      cell: ({ row }) => {
+        const { winner_team_id, home_team, away_team } = row.original;
+        if (!winner_team_id) {
+          return <span className="text-muted-foreground">--</span>;
+        }
+        const winner =
+          winner_team_id === home_team.team_id ? home_team : away_team;
+        return (
+          <div className="flex items-center gap-2 font-medium">
+            <img
+              src={winner.team_logo_url}
+              alt={winner.team_name}
+              className="h-6 w-6 rounded-sm object-cover"
+            />
+            <span>{winner.team_name}</span>
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "court",
       header: "Court",
       cell: ({ row }) =>
@@ -247,27 +330,47 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       accessorKey: "referees",
       header: "Referees",
       cell: ({ row }) => {
-        const referees = row.original.referees;
+        const { referees } = row.original;
+        if (!referees || referees.length === 0) {
+          return (
+            <Badge variant="outline" className="gap-1">
+              <X className="text-red-500" size={12} aria-hidden="true" />
+              Not Set
+            </Badge>
+          );
+        }
         return (
-          <div className="flex flex-wrap gap-1">
-            {referees && referees.length > 0 ? (
-              referees.map((ref) => (
-                <Badge key={ref} variant="secondary">
-                  {ref
-                    .split("_")
-                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                    .join(" ")}
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="cursor-help gap-1">
+                  <CheckIcon
+                    className="text-emerald-500"
+                    size={12}
+                    aria-hidden="true"
+                  />
+                  {referees.length} Set
                 </Badge>
-              ))
-            ) : (
-              <Badge variant="outline" className="gap-1">
-                <X className="text-red-500" size={12} aria-hidden="true" />
-                Not Set
-              </Badge>
-            )}
-          </div>
+              </TooltipTrigger>
+              <TooltipContent className="py-3 max-w-xs">
+                <p className="text-[13px] font-medium mb-1">Match Referees:</p>
+                <ul className="list-disc list-inside space-y-0.5 text-xs text-muted-foreground">
+                  {referees.map((ref, idx) => (
+                    <li key={idx}>{ref}</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         );
       },
+    },
+    {
+      accessorKey: "scheduled_date",
+      header: "Scheduled date",
+      cell: ({ row }) => (
+        <span>{formatDate12h(row.original.scheduled_date!)}</span>
+      ),
     },
     {
       id: "actions",
@@ -360,15 +463,18 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       <DataTablePagination showPageSize={true} table={table} />
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent aria-describedby={undefined}>
+        <SheetContent
+          aria-describedby={undefined}
+          className="flex flex-col gap-4"
+        >
           <SheetHeader>
             <SheetTitle>Manage Match</SheetTitle>
             <SheetDescription>
-              Update match details or set the final schedule. Click the
-              appropriate save button below.
+              Update match details. Winner and status are set automatically
+              based on score.
             </SheetDescription>
           </SheetHeader>
-          <div className="grid space-y-4">
+          <div className="space-y-4 overflow-y-auto pr-4">
             <div className="grid gap-2">
               <Label htmlFor="scheduled_date">Schedule Date & Time</Label>
               <DateTimePicker
@@ -424,6 +530,7 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
               </div>
             </div>
             <div className="grid gap-2">
+              <Label>Referees</Label>
               <MultipleSelector
                 maxSelected={3}
                 hidePlaceholderWhenSelected
@@ -436,12 +543,53 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
                 placeholder="Select referees..."
               />
             </div>
+
+            <div className="space-y-2 rounded-md border p-4">
+              <h4 className="font-medium">Match Result</h4>
+              <p className="text-sm text-muted-foreground">
+                Enter the final score to automatically assign a winner and
+                complete the match.
+              </p>
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="home_score">
+                    {selectedMatch?.home_team.team_name} Score
+                  </Label>
+                  <Input
+                    type="number"
+                    id="home_score"
+                    placeholder="e.g., 98"
+                    value={sheetFormData.home_team_score ?? ""}
+                    onChange={(e) =>
+                      handleFormChange(
+                        "home_team_score",
+                        e.target.valueAsNumber
+                      )
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="away_score">
+                    {selectedMatch?.away_team.team_name} Score
+                  </Label>
+                  <Input
+                    type="number"
+                    id="away_score"
+                    placeholder="e.g., 95"
+                    value={sheetFormData.away_team_score ?? ""}
+                    onChange={(e) =>
+                      handleFormChange(
+                        "away_team_score",
+                        e.target.valueAsNumber
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           <SheetFooter className="mt-auto">
-            <Button variant="outline" onClick={handleSaveChanges}>
-              Save Changes
-            </Button>
-            <Button onClick={handleSaveSchedule}>Save Schedule</Button>
+            <Button onClick={handleSaveChanges}>Save Changes</Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

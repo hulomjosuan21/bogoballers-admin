@@ -15,4 +15,15 @@ export class LeagueMatchService {
 
     return response.data;
   }
+
+  static async updateOne<T extends Partial<LeagueMatch>>(
+    leagueMatchId: string,
+    data: T
+  ) {
+    const url = `/league-match/${leagueMatchId}`;
+
+    const response = await axiosClient.put<{ message: string }>(url, data);
+
+    return response.data;
+  }
 }

@@ -26,3 +26,21 @@ export function formatNumber(n: number) {
   if (n >= 1_000) return n.toLocaleString();
   return n.toString();
 }
+
+export function formatDate12h(dateStr: string): string {
+  const date = new Date(dateStr); // 👈 parse string into Date
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  let hours = date.getHours();
+  const minutes = pad(date.getMinutes());
+  const ampm = hours >= 12 ? "PM" : "AM";
+
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )} ` + `${pad(hours)}:${minutes} ${ampm}`
+  );
+}

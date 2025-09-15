@@ -61,7 +61,7 @@ export function TeamStatsByQuarterTable({ team, viewMode = false }: Props) {
                   <Input
                     type="number"
                     variant={"sm"}
-                    className="rounded-sm w-12 remove-spinner"
+                    className="rounded-sm"
                     value={qtrFoulData?.foul ?? 0}
                     onChange={(e) => handleFoulChange(qtrNum, e.target.value)}
                     readOnly={viewMode}

@@ -18,7 +18,6 @@ type Props = {
   team: TeamBook;
 };
 
-// Helper to calculate and format percentages safely
 const formatPercentage = (made: number, attempted: number): string => {
   if (attempted === 0) return "0.0%";
   return ((made / attempted) * 100).toFixed(1) + "%";
@@ -59,13 +58,22 @@ export function FullRosterSummaryTable({ team }: Props) {
       header: "BLK",
       accessorKey: "summary.blk",
     },
+
     {
-      header: "FG%",
+      header: "2PT%",
       cell: ({ row }) => {
-        const { fg2m, fg3m, fg2a, fg3a } = row.original.summary;
-        return formatPercentage(fg2m + fg3m, fg2a + fg3a);
+        const { fg2m, fg2a } = row.original.summary;
+        return formatPercentage(fg2m, fg2a);
       },
     },
+    {
+      header: "3PT%",
+      cell: ({ row }) => {
+        const { fg3m, fg3a } = row.original.summary;
+        return formatPercentage(fg3m, fg3a);
+      },
+    },
+
     {
       header: "FT%",
       cell: ({ row }) => {
@@ -80,7 +88,7 @@ export function FullRosterSummaryTable({ team }: Props) {
   ];
 
   const table = useReactTable({
-    data: team.players, // Use all players from the team
+    data: team.players,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });

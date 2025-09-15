@@ -99,7 +99,7 @@ const data = {
       items: [
         {
           title: "Structure",
-          url: "/league-administrator/pages/league/bracket/structure",
+          url: "/league-administrator/pages/league/bracket",
         },
         {
           title: "Match Team",

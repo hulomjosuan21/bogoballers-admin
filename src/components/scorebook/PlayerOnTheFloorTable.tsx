@@ -25,9 +25,10 @@ import {
 } from "../ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import type { PlayerBook, PlayerStatsSummary } from "@/types/scorebook";
+import { type Action } from "@/context/GameContext";
 import { DroppableTableRow } from "./DroppableTableRow";
 import { memo } from "react";
-import type { Action } from "@/context/GameContext";
+import { useGame } from "@/context/GameContext";
 
 type Props = {
   viewMode?: boolean;
@@ -40,6 +41,9 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
   players,
   dispatch,
 }: Props) {
+  const { state } = useGame();
+  const currentQuarter = state.current_quarter;
+
   const columns: ColumnDef<PlayerBook>[] = [
     {
       accessorKey: "player",
@@ -60,13 +64,30 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
     },
     {
       accessorKey: "score",
-      header: "Score",
+      header: "QTR Score",
       cell: ({ row }) => {
         const player = row.original;
-        const updateStat = (
-          stat: keyof PlayerStatsSummary | "P" | "T",
-          value: number
-        ) => {
+        const qtrScoreData = player.score_per_qtr.find(
+          (s) => s.qtr === currentQuarter
+        );
+        const currentQtrScore = qtrScoreData?.score ?? 0;
+
+        const handleScoreChange = (value: string) => {
+          const numericValue = parseInt(value, 10);
+          if (!isNaN(numericValue)) {
+            dispatch({
+              type: "SET_PLAYER_SCORE_FOR_QUARTER",
+              payload: {
+                teamId: player.player_team_id,
+                playerId: player.player_id,
+                quarter: currentQuarter,
+                value: numericValue,
+              },
+            });
+          }
+        };
+
+        const updateStat = (stat: keyof PlayerStatsSummary, value: number) => {
           dispatch({
             type: "UPDATE_PLAYER_STAT",
             payload: {
@@ -77,6 +98,7 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
             },
           });
         };
+
         return (
           <div className="flex items-center gap-1">
             <DropdownMenu>
@@ -164,30 +186,16 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
                     +TOV
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Fouls</DropdownMenuLabel>
-                <DropdownMenuGroup className="group-sm">
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("P", 1)}
-                  >
-                    +PF
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("T", 1)}
-                  >
-                    +TF
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
             <Input
               id={`score-input-${player.player_team_id}-${player.player_id}`}
               type="number"
-              value={player.total_score}
-              readOnly
-              className="w-12 h-7 text-center font-bold"
+              value={currentQtrScore}
+              onChange={(e) => handleScoreChange(e.target.value)}
+              disabled={viewMode}
+              className="w-12 remove-spinner"
+              variant={"sm"}
             />
             <Button
               size="sm"
@@ -220,28 +228,66 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
     {
       accessorKey: "P",
       header: "PF",
-      cell: ({ row }) => (
-        <Input
-          id={`pf-input-${row.original.player_team_id}-${row.original.player_id}`}
-          type="number"
-          value={row.original.P}
-          readOnly
-          className="w-12 h-7 text-center"
-        />
-      ),
+      cell: ({ row }) => {
+        const player = row.original;
+        const handleFoulChange = (value: string) => {
+          const numericValue = parseInt(value, 10);
+          if (!isNaN(numericValue)) {
+            dispatch({
+              type: "SET_PLAYER_STAT",
+              payload: {
+                teamId: player.player_team_id,
+                playerId: player.player_id,
+                stat: "P",
+                value: numericValue,
+              },
+            });
+          }
+        };
+        return (
+          <Input
+            id={`pf-input-${player.player_team_id}-${player.player_id}`}
+            type="number"
+            value={player.P}
+            onChange={(e) => handleFoulChange(e.target.value)}
+            disabled={viewMode}
+            variant={"sm"}
+            className="w-12 remove-spinner"
+          />
+        );
+      },
     },
     {
       accessorKey: "T",
       header: "TF",
-      cell: ({ row }) => (
-        <Input
-          id={`tf-input-${row.original.player_team_id}-${row.original.player_id}`}
-          type="number"
-          value={row.original.T}
-          readOnly
-          className="w-12 h-7 text-center"
-        />
-      ),
+      cell: ({ row }) => {
+        const player = row.original;
+        const handleFoulChange = (value: string) => {
+          const numericValue = parseInt(value, 10);
+          if (!isNaN(numericValue)) {
+            dispatch({
+              type: "SET_PLAYER_STAT",
+              payload: {
+                teamId: player.player_team_id,
+                playerId: player.player_id,
+                stat: "T",
+                value: numericValue,
+              },
+            });
+          }
+        };
+        return (
+          <Input
+            id={`tf-input-${player.player_team_id}-${player.player_id}`}
+            type="number"
+            value={player.T}
+            onChange={(e) => handleFoulChange(e.target.value)}
+            disabled={viewMode}
+            variant={"sm"}
+            className="w-12 remove-spinner"
+          />
+        );
+      },
     },
   ];
 

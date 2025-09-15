@@ -12,6 +12,7 @@ import {
   LeagueMatchSetUnSchedulePage,
   LeagueMatchScheduledPage,
   LeagueUpdatePage,
+  BracketStructurePage,
 } from "@/pages";
 import AboutLeaguePage from "@/pages/public/learnings/AboutLeague";
 import LeaderboardPage from "@/pages/leaderboard/LeaderboardPage";
@@ -82,6 +83,10 @@ export const leagueAdminRoutes: RouteObject[] = [
   {
     path: "pages/league/team/submission",
     element: <TeamSubmissionPage />,
+  },
+  {
+    path: "pages/league/bracket",
+    element: <BracketStructurePage />,
   },
   {
     path: "pages/settings",

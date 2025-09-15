@@ -2,7 +2,7 @@
 import type { TeamBook } from "@/types/scorebook";
 import { PlayerRoster } from "./PlayerRoster";
 import { FullRosterSummaryTable } from "./FullRosterSummaryTable"; // Import the new component
-import { Input } from "../ui/input";
+import { Input, InputAddon, InputGroup } from "../ui/input";
 import { TeamStatsByQuarterTable } from "./TeamStatsByQuarterTable";
 import { memo } from "react";
 import { Badge } from "../ui/badge";
@@ -18,9 +18,8 @@ export const TeamSection = memo(function TeamSection({
   viewMode = false,
   team,
 }: Props) {
+  const { dispatch } = useGame();
   const handleStatChange = (stat: "coachT" | "none_memberT", value: string) => {
-    const { dispatch } = useGame();
-
     const numericValue = parseInt(value, 10);
     if (!isNaN(numericValue)) {
       dispatch({
@@ -48,26 +47,28 @@ export const TeamSection = memo(function TeamSection({
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-sm">
-        <div className="flex items-center gap-2">
-          <label className="font-medium">Coach Tn:</label>
+        <InputGroup>
+          <InputAddon variant={"sm"}>CoachT</InputAddon>
           <Input
             type="number"
             defaultValue={team.coachT}
             onChange={(e) => handleStatChange("coachT", e.target.value)}
             disabled={viewMode}
-            className="w-16 h-8"
+            variant={"sm"}
+            className="remove-spinner"
           />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="font-medium">Bench Tn:</label>
+        </InputGroup>
+        <InputGroup>
+          <InputAddon variant={"sm"}>NoneMemberT</InputAddon>
           <Input
             type="number"
             defaultValue={team.none_memberT}
             onChange={(e) => handleStatChange("none_memberT", e.target.value)}
             disabled={viewMode}
-            className="w-16 h-8"
+            className="remove-spinner"
+            variant={"sm"}
           />
-        </div>
+        </InputGroup>
       </div>
       <FullRosterSummaryTable team={team} />
     </section>
