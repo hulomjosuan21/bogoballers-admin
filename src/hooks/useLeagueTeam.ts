@@ -20,7 +20,7 @@ export const useLeagueTeam = (
 
 export async function refetchLeagueTeam(
   leagueCategoryId?: string,
-  data?: Object
+  data?: Partial<LeagueTeam> & { condition: string }
 ) {
   await queryClient.refetchQueries({
     queryKey: QUERY_KEYS.LEAGUE_TEAM(leagueCategoryId, data),
