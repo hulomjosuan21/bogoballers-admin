@@ -2,7 +2,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -35,7 +35,6 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const handleError = useErrorToast();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const navigate = useNavigate();
 
   const form = useForm<LoginFormInputs>({
     resolver: zodResolver(loginSchema),
@@ -53,7 +52,7 @@ export function LoginForm({
     try {
       const res = await LeagueAdministratorService.login(formData);
       toast.success(res.message);
-      navigate("/league-administrator");
+      window.location.href = "/league-administrator";
       form.reset();
     } catch (e) {
       handleError(e);
@@ -120,7 +119,6 @@ export function LoginForm({
                   )}
                 />
 
-                {/* Submit button */}
                 <Button type="submit" className="w-full" disabled={isLoggingIn}>
                   {isLoggingIn && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -128,7 +126,6 @@ export function LoginForm({
                   Login
                 </Button>
 
-                {/* Register link */}
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}
                   <Link

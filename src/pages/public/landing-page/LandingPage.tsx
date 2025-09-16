@@ -123,13 +123,13 @@ export default function HeroSection() {
                 >
                   <div key={1}>
                     <Button asChild size="sm">
-                      <Link to="#link">
+                      <Link to="#">
                         <span className="text-nowrap">Get Started</span>
                       </Link>
                     </Button>
                   </div>
                   <Button key={2} asChild size="sm" variant="ghost">
-                    <Link to="/league-administrator">
+                    <Link to="#">
                       <span className="text-nowrap">Request a demo</span>
                     </Link>
                   </Button>
