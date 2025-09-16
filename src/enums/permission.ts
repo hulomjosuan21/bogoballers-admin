@@ -36,7 +36,22 @@ export function getUserPermissions(accountType: string): Permission[] {
         Permission.ScoreBook,
       ];
     case "League_Administrator_LGU":
-      return [Permission.ViewLeagueAdmins];
+      return [
+        Permission.ViewDashboard,
+        Permission.CreateLeague,
+        Permission.UpdateLeague,
+        Permission.ManageCategories,
+        Permission.ManagePlayers,
+        Permission.ManageTeams,
+        Permission.ViewTeamSubmissions,
+        Permission.ManageOfficialsAndCourts,
+        Permission.ManageAffiliates,
+        Permission.ManageBrackets,
+        Permission.ScheduleMatches,
+        Permission.ViewScheduledMatches,
+        Permission.ManageSettings,
+        Permission.ViewLeagueAdmins,
+      ];
     default:
       return [];
   }

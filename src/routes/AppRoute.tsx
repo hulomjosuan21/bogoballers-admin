@@ -25,7 +25,7 @@ export function AppRoutes() {
   if (leagueAdminLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen px-4 space-y-4">
-        <p className="text-sm text-muted-foreground">Loading your account...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
         <Progress value={progress} className="w-64" />
       </div>
     );
