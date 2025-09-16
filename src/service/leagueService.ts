@@ -101,8 +101,8 @@ export class LeagueService {
     return response.data;
   }
 
-  static async getOne<T extends Partial<League> & { condition: string }>(
-    leagueId: string,
-    data?: T
-  ) {}
+  // static async getOne<T extends Partial<League> & { condition: string }>(
+  //   leagueId: string,
+  //   data?: T
+  // ) {}
 }

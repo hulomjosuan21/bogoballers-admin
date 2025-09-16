@@ -2,12 +2,10 @@ import React, { createContext, useReducer, useContext, useEffect } from "react";
 import { initialMatchData } from "@/data/mock";
 import type {
   MatchBook,
-  PlayerBook,
   PlayerStatsSummary,
   TeamBook,
 } from "@/types/scorebook";
 
-// --- ACTION TYPES ---
 export type Action =
   | { type: "TOGGLE_TIMER" }
   | { type: "SET_TIME"; payload: number }
@@ -58,7 +56,6 @@ export type Action =
   | { type: "UNDO" }
   | { type: "REDO" };
 
-// --- STATE SHAPE ---
 interface GameStateWithHistory {
   past: MatchBook[];
   present: MatchBook;
@@ -71,7 +68,6 @@ const initialState: GameStateWithHistory = {
   future: [],
 };
 
-// --- HELPER FUNCTIONS ---
 const recalculateAllScores = (
   team: TeamBook,
   currentQuarter: number
@@ -102,7 +98,6 @@ const recalculateAllScores = (
   return newTeam;
 };
 
-// --- MAIN REDUCER ---
 const gameReducer = (
   state: GameStateWithHistory,
   action: Action
@@ -288,7 +283,6 @@ const gameReducer = (
         );
         if (playerIndex === -1) return newState;
 
-        // Create deep copies to avoid mutation
         const updatedPlayers = [...teamToUpdate.players];
         const updatedPlayer = {
           ...updatedPlayers[playerIndex],

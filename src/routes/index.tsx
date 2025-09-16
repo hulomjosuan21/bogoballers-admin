@@ -61,10 +61,6 @@ export const publicRoutes: RouteObject[] = [
     path: "/test/grid",
     element: <TestGrid />,
   },
-  {
-    path: "/test/scorebook",
-    element: <ScorebookPage />,
-  },
 ];
 
 export type AppRouteObject = RouteObject & {
