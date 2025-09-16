@@ -31,7 +31,6 @@ import {
 import { RiSpamFill } from "@remixicon/react";
 import { useNavigate } from "react-router-dom";
 import type { League } from "@/types/league";
-import { useAuthJwt } from "@/hooks/useAuth";
 
 interface DashboardCardProps {
   title: string;
@@ -176,7 +175,6 @@ const RecentUpdates = () => {
 
 export default function DashboardPage() {
   const { activeLeagueId, activeLeagueData } = useActiveLeague();
-  const { jwtPayload } = useAuthJwt();
 
   const { activeLeagueAnalyticsData } =
     useActiveLeagueAnalytics(activeLeagueId);
@@ -245,7 +243,6 @@ export default function DashboardPage() {
               </div>
 
               <ProfitAreaChart data={activeLeagueAnalyticsData.total_profit} />
-              <pre>{JSON.stringify(jwtPayload, null, 2)}</pre>
             </div>
 
             {showUpdates && <RecentUpdates />}

@@ -1,17 +1,35 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import {
+  Outlet,
+  useNavigate,
+  useLocation,
+  matchRoutes,
+} from "react-router-dom";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { getErrorMessage } from "@/lib/error";
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useState } from "react";
+import { allProtectedRoutes, type AppRouteObject } from "@/routes";
+import { getUserPermissions, type Permission } from "@/enums/permission";
 
 function hasAuthCookies(): boolean {
   const cookies = document.cookie;
   return cookies.includes("access_token") || cookies.includes("QUART_AUTH");
 }
 
+function hasRequiredPermissions(
+  userPermissions: Permission[],
+  requiredPermissions: Permission[]
+): boolean {
+  if (requiredPermissions.length === 0) {
+    return true;
+  }
+  return requiredPermissions.some((p) => userPermissions.includes(p));
+}
+
 export function ProtectedRoute() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { leagueAdmin, leagueAdminLoading, leagueAdminError } =
     useAuthLeagueAdmin();
 
@@ -87,6 +105,29 @@ export function ProtectedRoute() {
           size="sm"
         >
           Go to Login
+        </Button>
+      </div>
+    );
+  }
+
+  const userPermissions = getUserPermissions(leagueAdmin.account.account_type);
+
+  const matchedRoute = matchRoutes(allProtectedRoutes, location)?.find(
+    (match) => match.pathname === location.pathname
+  )?.route as AppRouteObject | undefined;
+
+  if (
+    matchedRoute &&
+    !hasRequiredPermissions(userPermissions, matchedRoute.permissions)
+  ) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-center px-4 space-y-4">
+        <h1 className="text-2xl font-bold">Access Denied</h1>
+        <p className="text-sm text-muted-foreground">
+          You do not have permission to view this page.
+        </p>
+        <Button onClick={() => navigate(-1)} variant="outline" size="sm">
+          Go Back
         </Button>
       </div>
     );

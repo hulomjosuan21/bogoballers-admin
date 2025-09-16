@@ -194,7 +194,7 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
               value={currentQtrScore}
               onChange={(e) => handleScoreChange(e.target.value)}
               disabled={viewMode}
-              className="w-12 remove-spinner"
+              className="w-18"
               variant={"sm"}
             />
             <Button
@@ -252,7 +252,7 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
             onChange={(e) => handleFoulChange(e.target.value)}
             disabled={viewMode}
             variant={"sm"}
-            className="w-12 remove-spinner"
+            className="w-18"
           />
         );
       },
@@ -284,7 +284,7 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
             onChange={(e) => handleFoulChange(e.target.value)}
             disabled={viewMode}
             variant={"sm"}
-            className="w-12 remove-spinner"
+            className="w-18"
           />
         );
       },

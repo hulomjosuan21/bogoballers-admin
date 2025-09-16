@@ -55,7 +55,6 @@ export const TeamSection = memo(function TeamSection({
             onChange={(e) => handleStatChange("coachT", e.target.value)}
             disabled={viewMode}
             variant={"sm"}
-            className="remove-spinner"
           />
         </InputGroup>
         <InputGroup>
@@ -65,7 +64,6 @@ export const TeamSection = memo(function TeamSection({
             defaultValue={team.none_memberT}
             onChange={(e) => handleStatChange("none_memberT", e.target.value)}
             disabled={viewMode}
-            className="remove-spinner"
             variant={"sm"}
           />
         </InputGroup>

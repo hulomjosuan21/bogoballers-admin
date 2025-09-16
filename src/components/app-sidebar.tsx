@@ -1,20 +1,4 @@
-import * as React from "react";
-import {
-  LayoutDashboard,
-  UsersRound,
-  UserRound,
-  GitFork,
-  LifeBuoy,
-  Send,
-  Settings,
-  CalendarCheck,
-  CalendarArrowUp,
-  FolderKanban,
-  GitBranchPlus,
-  Trophy,
-  SquarePen,
-  FileQuestionMark,
-} from "lucide-react";
+import { LifeBuoy, Send } from "lucide-react";
 
 import {
   Sidebar,
@@ -29,136 +13,84 @@ import { NavMenu } from "./nav-menu";
 import { AppSidebarHeader } from "./nav-header";
 import { NavProfile } from "./nav-profile";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
+import { getUserPermissions } from "@/enums/permission";
+import { leagueAdminRoutes, type AppRouteObject } from "@/routes";
 
-const data = {
-  platform: [
-    {
-      title: "Dashboard",
-      url: "/league-administrator",
-      icon: LayoutDashboard,
-    },
-  ],
-  league: [
-    {
-      title: "Start new",
-      url: "/league-administrator/pages/league/new",
-      icon: Trophy,
-    },
-    {
-      title: "Current",
-      url: "/league-administrator/pages/league/active",
-      icon: SquarePen,
-    },
-    {
-      title: "Manage Categories",
-      url: "/league-administrator/pages/league/categories",
-      icon: GitBranchPlus,
-    },
-    {
-      title: "Players",
-      url: "/league-administrator/pages/league/player",
-      icon: UserRound,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: UsersRound,
-      isActive: true,
-      items: [
-        {
-          title: "Official teams",
-          url: "/league-administrator/pages/league/teams",
-        },
-        {
-          title: "Submissions",
-          url: "/league-administrator/pages/league/team/submission",
-        },
-      ],
-    },
-    {
-      title: "Manage",
-      url: "#",
-      icon: FolderKanban,
-      isActive: true,
-      items: [
-        {
-          title: "Officials & Courts",
-          url: "/league-administrator/pages/league/officials&courts",
-        },
-        {
-          title: "Sponsors & Partners",
-          url: "/league-administrator/pages/league/affiliates",
-        },
-      ],
-    },
-    {
-      title: "Bracket",
-      url: "#",
-      icon: GitFork,
-      isActive: true,
-      items: [
-        {
-          title: "Structure",
-          url: "/league-administrator/pages/league/bracket",
-        },
-        {
-          title: "Match Team",
-          url: "/league-administrator/pages/league/bracket/structure",
-        },
-      ],
-    },
-    {
-      title: "Match",
-      url: "#",
-      icon: FileQuestionMark,
-      isActive: true,
-      items: [
-        {
-          title: "Set Schedule",
-          url: "/league-administrator/pages/league/match/unscheduled",
-        },
-        {
-          title: "Scheduled Match",
-          url: "/league-administrator/pages/league/match/scheduled",
-        },
-      ],
-    },
-  ],
-  match: [
-    {
-      title: "Set Schedule",
-      url: "/league-administrator/pages/set/unscheduled",
-      icon: CalendarArrowUp,
-    },
-    {
-      title: "Scheduled Match",
-      url: "/league-administrator/pages/match/scheduled",
-      icon: CalendarCheck,
-    },
-  ],
-  bottom: [
-    {
-      title: "Settings",
-      url: "/league-administrator/pages/settings",
-      icon: Settings,
-    },
-    {
-      title: "Support",
-      url: "https://github.com/hulomjosuan21",
-      icon: LifeBuoy,
-      target: "_blank",
-    },
-    {
-      title: "Feedback",
-      url: "https://mail.google.com/mail/?view=cm&fs=1&to=hulomjosuan@gmail.com&su=Your%20Subject&body=Your%20message",
-      icon: Send,
-      target: "_blank",
-    },
-  ],
-};
+function buildNavFromRoutes(routes: AppRouteObject[]) {
+  const navItems: any[] = [];
+  const parentGroups: Record<string, any> = {};
+
+  routes.forEach((route) => {
+    if (route.sidebarParent) {
+      if (!parentGroups[route.sidebarParent]) {
+        const parentRoute = routes.find(
+          (r) => r.sidebarParent === route.sidebarParent && r.icon
+        );
+        parentGroups[route.sidebarParent] = {
+          title: route.sidebarParent,
+          icon: parentRoute ? parentRoute.icon : undefined,
+          url: "#",
+          isActive: true,
+          items: [],
+        };
+      }
+      parentGroups[route.sidebarParent].items.push({
+        title: route.sidebarTitle,
+        url: route.path,
+      });
+    } else {
+      navItems.push({
+        title: route.sidebarTitle,
+        url: route.index ? "/league-administrator" : route.path,
+        icon: route.icon,
+      });
+    }
+  });
+
+  return [...navItems, ...Object.values(parentGroups)];
+}
+
+const bottomLinks = [
+  {
+    title: "Support",
+    url: "https://github.com/hulomjosuan21",
+    icon: LifeBuoy,
+    target: "_blank",
+  },
+  {
+    title: "Feedback",
+    url: "https://mail.google.com/mail/?view=cm&fs=1&to=hulomjosuan@gmail.com&su=Your%20Subject&body=Your%20message",
+    icon: Send,
+    target: "_blank",
+  },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { leagueAdmin, leagueAdminLoading } = useAuthLeagueAdmin();
+  const { leagueAdmin, leagueAdminLoading, leagueAdminError } =
+    useAuthLeagueAdmin();
+
+  const userPermissions =
+    leagueAdmin && !leagueAdminLoading
+      ? getUserPermissions(leagueAdmin.account.account_type)
+      : [];
+
+  const visibleRoutes = leagueAdminRoutes.filter((route) => {
+    if (!route.showInSidebar) return false;
+    if (route.permissions.length === 0) return true;
+    return route.permissions.some((p) => userPermissions.includes(p));
+  });
+
+  const platformRoutes = visibleRoutes.filter(
+    (r) => r.sidebarGroup === "platform"
+  );
+  const leagueRoutes = visibleRoutes.filter((r) => r.sidebarGroup === "league");
+  const systemRoutes = visibleRoutes.filter((r) => r.sidebarGroup === "system");
+  const otherRoutes = visibleRoutes.filter((r) => !r.sidebarGroup);
+
+  const platformNav = buildNavFromRoutes(platformRoutes);
+  const leagueNav = buildNavFromRoutes(leagueRoutes);
+  const systemNav = buildNavFromRoutes(systemRoutes);
+  const otherNav = buildNavFromRoutes(otherRoutes);
 
   return (
     <Sidebar collapsible="icon" {...props} variant="floating">
@@ -170,20 +102,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarContent className="pb-4">
           {leagueAdminLoading ? (
             <div className="space-y-6">
-              <SidebarNavSkeleton label="Platform" count={4} />
-              <SidebarNavSkeleton label="League" count={3} />
-              <SidebarNavSkeleton label="Game" count={1} />
+              <SidebarNavSkeleton label="Platform" count={2} />
+              <SidebarNavSkeleton label="League" count={6} />
             </div>
-          ) : leagueAdminLoading ? (
+          ) : leagueAdminError ? (
             <div className="flex items-center justify-center h-full py-10 text-sm text-muted-foreground">
-              <p>⚠️ Failed to load sidebar: {"error"}</p>
+              <p>⚠️ Failed to load sidebar</p>
             </div>
           ) : (
             <>
-              <NavMenu label="Platform" items={data.platform} />
-              <NavMenu label="League" items={data.league} />
-              <NavMenu label="None League Match" items={data.match} />
-              <NavMenu label="" items={data.bottom} />
+              {platformNav.length > 0 && (
+                <NavMenu label="Platform" items={platformNav} />
+              )}
+              {leagueNav.length > 0 && (
+                <NavMenu label="League" items={leagueNav} />
+              )}
+              {systemNav.length > 0 && (
+                <NavMenu label="System" items={systemNav} />
+              )}
+              {otherNav.length > 0 && <NavMenu label="" items={otherNav} />}
+              <NavMenu label="" items={bottomLinks} />
             </>
           )}
         </SidebarContent>
