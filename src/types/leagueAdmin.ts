@@ -12,3 +12,13 @@ export type LeagueAdministator = {
   league_admin_updated_at: string;
   account: User;
 };
+
+export type JwtPayload = {
+  sub: string;
+  email: string;
+  account_type: string;
+  league_administrator_id: string;
+  is_verified: boolean;
+  exp: number;
+  iat: number;
+};

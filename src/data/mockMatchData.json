@@ -1,0 +1,422 @@
+[
+  {
+    "player_id": "p01",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-001",
+    "full_name": "Luka Maverick",
+    "jersey_name": "MAVERICK",
+    "jersey_number": 77,
+    "total_score": 24,
+    "per_qtr_score": [
+      { "1qtr": 8 },
+      { "2qtr": 6 },
+      { "3qtr": 10 },
+      { "4qtr": 0 }
+    ],
+    "P": 2,
+    "T": 0,
+    "summary": {
+      "fg2": 6,
+      "fga2": 10,
+      "fg3": 3,
+      "fga3": 7,
+      "reb": 8,
+      "ast": 11,
+      "F": 2,
+      "TP": 24
+    },
+    "onBench": false
+  },
+  {
+    "player_id": "p02",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-002",
+    "full_name": "Stephen Curry",
+    "jersey_name": "CURRY",
+    "jersey_number": 30,
+    "total_score": 18,
+    "per_qtr_score": [
+      { "1qtr": 5 },
+      { "2qtr": 5 },
+      { "3qtr": 5 },
+      { "4qtr": 3 }
+    ],
+    "P": 1,
+    "T": 0,
+    "summary": {
+      "fg2": 3,
+      "fga2": 5,
+      "fg3": 4,
+      "fga3": 9,
+      "reb": 4,
+      "ast": 6,
+      "F": 1,
+      "TP": 18
+    },
+    "onBench": false
+  },
+  {
+    "player_id": "p03",
+    "player_team_id": "team-alpha",
+    "league_player_id": null,
+    "full_name": "Kevin Durant",
+    "jersey_name": "DURANT",
+    "jersey_number": 35,
+    "total_score": 21,
+    "per_qtr_score": [
+      { "1qtr": 7 },
+      { "2qtr": 4 },
+      { "3qtr": 8 },
+      { "4qtr": 2 }
+    ],
+    "P": 3,
+    "T": 1,
+    "summary": {
+      "fg2": 7,
+      "fga2": 12,
+      "fg3": 2,
+      "fga3": 5,
+      "reb": 7,
+      "ast": 4,
+      "F": 3,
+      "TP": 21
+    },
+    "onBench": false
+  },
+  {
+    "player_id": "p04",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-004",
+    "full_name": "Giannis Antetokounmpo",
+    "jersey_name": "ANTETOKOUNMPO",
+    "jersey_number": 34,
+    "total_score": 15,
+    "per_qtr_score": [
+      { "1qtr": 4 },
+      { "2qtr": 6 },
+      { "3qtr": 3 },
+      { "4qtr": 2 }
+    ],
+    "P": 4,
+    "T": 0,
+    "summary": {
+      "fg2": 6,
+      "fga2": 9,
+      "fg3": 0,
+      "fga3": 2,
+      "reb": 12,
+      "ast": 5,
+      "F": 4,
+      "TP": 15
+    },
+    "onBench": false
+  },
+  {
+    "player_id": "p05",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-005",
+    "full_name": "Nikola Jokic",
+    "jersey_name": "JOKIC",
+    "jersey_number": 15,
+    "total_score": 12,
+    "per_qtr_score": [
+      { "1qtr": 2 },
+      { "2qtr": 4 },
+      { "3qtr": 4 },
+      { "4qtr": 2 }
+    ],
+    "P": 2,
+    "T": 0,
+    "summary": {
+      "fg2": 5,
+      "fga2": 8,
+      "fg3": 0,
+      "fga3": 1,
+      "reb": 15,
+      "ast": 9,
+      "F": 2,
+      "TP": 12
+    },
+    "onBench": false
+  },
+  {
+    "player_id": "p06",
+    "player_team_id": "team-alpha",
+    "league_player_id": null,
+    "full_name": "LeBron James",
+    "jersey_name": "JAMES",
+    "jersey_number": 23,
+    "total_score": 8,
+    "per_qtr_score": [
+      { "1qtr": 8 },
+      { "2qtr": 0 },
+      { "3qtr": 0 },
+      { "4qtr": 0 }
+    ],
+    "P": 1,
+    "T": 0,
+    "summary": {
+      "fg2": 4,
+      "fga2": 6,
+      "fg3": 0,
+      "fga3": 2,
+      "reb": 3,
+      "ast": 3,
+      "F": 1,
+      "TP": 8
+    },
+    "onBench": true
+  },
+  {
+    "player_id": "p07",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-007",
+    "full_name": "Jayson Tatum",
+    "jersey_name": "TATUM",
+    "jersey_number": 0,
+    "total_score": 5,
+    "per_qtr_score": [
+      { "1qtr": 0 },
+      { "2qtr": 5 },
+      { "3qtr": 0 },
+      { "4qtr": 0 }
+    ],
+    "P": 0,
+    "T": 0,
+    "summary": {
+      "fg2": 1,
+      "fga2": 2,
+      "fg3": 1,
+      "fga3": 3,
+      "reb": 2,
+      "ast": 1,
+      "F": 0,
+      "TP": 5
+    },
+    "onBench": true
+  },
+  {
+    "player_id": "p08",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-008",
+    "full_name": "Devin Booker",
+    "jersey_name": "BOOKER",
+    "jersey_number": 1,
+    "total_score": 10,
+    "per_qtr_score": [
+      { "1qtr": 2 },
+      { "2qtr": 8 },
+      { "3qtr": 0 },
+      { "4qtr": 0 }
+    ],
+    "P": 2,
+    "T": 0,
+    "summary": {
+      "fg2": 5,
+      "fga2": 9,
+      "fg3": 0,
+      "fga3": 1,
+      "reb": 1,
+      "ast": 2,
+      "F": 2,
+      "TP": 10
+    },
+    "onBench": true
+  },
+  {
+    "player_id": "p09",
+    "player_team_id": "team-alpha",
+    "league_player_id": null,
+    "full_name": "Kawhi Leonard",
+    "jersey_name": "LEONARD",
+    "jersey_number": 2,
+    "total_score": 7,
+    "per_qtr_score": [
+      { "1qtr": 7 },
+      { "2qtr": 0 },
+      { "3qtr": 0 },
+      { "4qtr": 0 }
+    ],
+    "P": 1,
+    "T": 0,
+    "summary": {
+      "fg2": 2,
+      "fga2": 4,
+      "fg3": 1,
+      "fga3": 1,
+      "reb": 4,
+      "ast": 1,
+      "F": 1,
+      "TP": 7
+    },
+    "onBench": true
+  },
+  {
+    "player_id": "p10",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-010",
+    "full_name": "Damian Lillard",
+    "jersey_name": "LILLARD",
+    "jersey_number": 0,
+    "total_score": 9,
+    "per_qtr_score": [
+      { "1qtr": 0 },
+      { "2qtr": 0 },
+      { "3qtr": 9 },
+      { "4qtr": 0 }
+    ],
+    "P": 0,
+    "T": 0,
+    "summary": {
+      "fg2": 0,
+      "fga2": 0,
+      "fg3": 3,
+      "fga3": 5,
+      "reb": 0,
+      "ast": 3,
+      "F": 0,
+      "TP": 9
+    },
+    "onBench": true
+  },
+  {
+    "player_id": "p11",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-011",
+    "full_name": "Zion Williamson",
+    "jersey_name": "WILLIAMSON",
+    "jersey_number": 1,
+    "total_score": 6,
+    "per_qtr_score": [
+      { "1qtr": 6 },
+      { "2qtr": 0 },
+      { "3qtr": 0 },
+      { "4qtr": 0 }
+    ],
+    "P": 3,
+    "T": 0,
+    "summary": {
+      "fg2": 3,
+      "fga2": 5,
+      "fg3": 0,
+      "fga3": 0,
+      "reb": 5,
+      "ast": 0,
+      "F": 3,
+      "TP": 6
+    },
+    "onBench": true
+  },
+  {
+    "player_id": "p12",
+    "player_team_id": "team-alpha",
+    "league_player_id": null,
+    "full_name": "Ja Morant",
+    "jersey_name": "MORANT",
+    "jersey_number": 12,
+    "total_score": 4,
+    "per_qtr_score": [
+      { "1qtr": 0 },
+      { "2qtr": 4 },
+      { "3qtr": 0 },
+      { "4qtr": 0 }
+    ],
+    "P": 1,
+    "T": 0,
+    "summary": {
+      "fg2": 2,
+      "fga2": 3,
+      "fg3": 0,
+      "fga3": 2,
+      "reb": 1,
+      "ast": 4,
+      "F": 1,
+      "TP": 4
+    },
+    "onBench": true
+  },
+  {
+    "player_id": "p13",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-013",
+    "full_name": "Anthony Davis",
+    "jersey_name": "DAVIS",
+    "jersey_number": 3,
+    "total_score": 2,
+    "per_qtr_score": [
+      { "1qtr": 2 },
+      { "2qtr": 0 },
+      { "3qtr": 0 },
+      { "4qtr": 0 }
+    ],
+    "P": 0,
+    "T": 0,
+    "summary": {
+      "fg2": 1,
+      "fga2": 1,
+      "fg3": 0,
+      "fga3": 0,
+      "reb": 3,
+      "ast": 0,
+      "F": 0,
+      "TP": 2
+    },
+    "onBench": true
+  },
+  {
+    "player_id": "p14",
+    "player_team_id": "team-alpha",
+    "league_player_id": "lp-014",
+    "full_name": "Klay Thompson",
+    "jersey_name": "THOMPSON",
+    "jersey_number": 11,
+    "total_score": 3,
+    "per_qtr_score": [
+      { "1qtr": 3 },
+      { "2qtr": 0 },
+      { "3qtr": 0 },
+      { "4qtr": 0 }
+    ],
+    "P": 0,
+    "T": 0,
+    "summary": {
+      "fg2": 0,
+      "fga2": 1,
+      "fg3": 1,
+      "fga3": 2,
+      "reb": 1,
+      "ast": 0,
+      "F": 0,
+      "TP": 3
+    },
+    "onBench": true
+  },
+  {
+    "player_id": "p15",
+    "player_team_id": "team-alpha",
+    "league_player_id": null,
+    "full_name": "Draymond Green",
+    "jersey_name": "GREEN",
+    "jersey_number": 23,
+    "total_score": 0,
+    "per_qtr_score": [
+      { "1qtr": 0 },
+      { "2qtr": 0 },
+      { "3qtr": 0 },
+      { "4qtr": 0 }
+    ],
+    "P": 5,
+    "T": 1,
+    "summary": {
+      "fg2": 0,
+      "fga2": 2,
+      "fg3": 0,
+      "fga3": 1,
+      "reb": 6,
+      "ast": 7,
+      "F": 5,
+      "TP": 0
+    },
+    "onBench": true
+  }
+]

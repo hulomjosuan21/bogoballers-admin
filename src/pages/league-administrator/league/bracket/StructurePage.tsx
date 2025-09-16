@@ -14,9 +14,8 @@ import {
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
-import { ScheduleMatchTable } from "@/tables/LeagueMatchScheduledTable";
 
-export default function LeagueMatchScheduledPage() {
+export default function BracketStructurePage() {
   const { activeLeagueData, activeLeagueError, activeLeagueCategories } =
     useActiveLeague();
 
@@ -104,12 +103,10 @@ export default function LeagueMatchScheduledPage() {
                 </div>
 
                 {selectedCategory?.rounds.map((round) => (
-                  <TabsContent key={round.round_id} value={round.round_id}>
-                    <ScheduleMatchTable
-                      leagueCategoryId={selectedCategory.league_category_id}
-                      roundId={round.round_id}
-                    />
-                  </TabsContent>
+                  <TabsContent
+                    key={round.round_id}
+                    value={round.round_id}
+                  ></TabsContent>
                 ))}
               </Tabs>
             )}

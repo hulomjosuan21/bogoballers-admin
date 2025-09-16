@@ -4,6 +4,7 @@ import type { LeaguePlayer } from "@/types/player";
 import type { LeagueTeam } from "@/types/team";
 
 export const QUERY_KEYS = {
+  AUTH_JWT: ["auth-jwt"] as const,
   ACTIVE_LEAGUE: ["active-league"] as const,
   AUTH_LEAGUE_ADMIN: ["auth", "league-admin"] as const,
   AUTH_LEAGUE_ADMIN_CATEGORIES: ["league-admin-categories"] as const,
