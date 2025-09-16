@@ -1,5 +1,4 @@
 import type { TeamBook } from "@/types/scorebook";
-import { useGame } from "@/context/GameContext";
 import {
   Table,
   TableBody,
@@ -9,6 +8,7 @@ import {
   TableRow,
 } from "../ui/table";
 import { Input } from "../ui/input";
+import { useGame } from "@/context/GameContext";
 
 type Props = {
   team: TeamBook;

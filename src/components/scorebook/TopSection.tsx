@@ -1,14 +1,15 @@
 import { useEffect } from "react";
 import { useGame } from "@/context/GameContext";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Input, InputAddon, InputGroup } from "../ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { CirclePause, Play } from "lucide-react";
 
 type Props = { viewMode?: boolean };
 
@@ -39,6 +40,7 @@ export function TopSection({ viewMode = false }: Props) {
     const [minutes, seconds] = e.target.value.split(":").map(Number);
     const totalSeconds = (minutes || 0) * 60 + (seconds || 0);
     if (!isNaN(totalSeconds)) {
+      dispatch({ type: "SET_TIME", payload: totalSeconds });
     }
   };
 
@@ -47,20 +49,46 @@ export function TopSection({ viewMode = false }: Props) {
       <div className="flex items-center gap-4">
         <Select
           value={String(state.current_quarter)}
-          onValueChange={(val) =>
-            dispatch({ type: "CHANGE_QUARTER", payload: Number(val) })
-          }
+          onValueChange={(val) => {
+            const numericValue = Number(val);
+            if (!isNaN(numericValue)) {
+              dispatch({ type: "CHANGE_QUARTER", payload: numericValue });
+            }
+          }}
           disabled={viewMode}
         >
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Quarter" />
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Period" />
           </SelectTrigger>
           <SelectContent>
-            {Array.from({ length: state.quarters }, (_, i) => (
-              <SelectItem key={i + 1} value={String(i + 1)}>
-                Quarter {i + 1}
-              </SelectItem>
-            ))}
+            {Array.from({ length: state.quarters }, (_, i) => {
+              const quarterNum = i + 1;
+              const isRegulation = quarterNum <= 4;
+              const otNumber = quarterNum - 4;
+
+              return (
+                <SelectItem key={quarterNum} value={String(quarterNum)}>
+                  {isRegulation ? `Quarter ${quarterNum}` : `OT ${otNumber}`}
+                </SelectItem>
+              );
+            })}
+
+            {state.current_quarter >= 4 && (
+              <>
+                <SelectSeparator />
+                <SelectItem
+                  value="add-ot"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    dispatch({ type: "ADD_OVERTIME" });
+                  }}
+                  disabled={viewMode}
+                  className="text-blue-500"
+                >
+                  Add Overtime...
+                </SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -82,19 +110,25 @@ export function TopSection({ viewMode = false }: Props) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Input
-          type="text"
-          value={formatTime(state.time_seconds)}
-          onChange={handleTimeChange}
-          className="w-24 text-center font-mono text-2xl"
-          readOnly={viewMode}
-        />
-        <Button
-          onClick={() => dispatch({ type: "TOGGLE_TIMER" })}
-          disabled={viewMode}
-        >
-          {state.timer_running ? "Pause" : "Start"}
-        </Button>
+        <InputGroup>
+          <Input
+            type="text"
+            value={formatTime(state.time_seconds)}
+            onChange={handleTimeChange}
+            disabled={viewMode}
+            className="w-24 text-center font-mono text-2xl"
+          />
+          <InputAddon
+            onClick={() => dispatch({ type: "TOGGLE_TIMER" })}
+            mode={"icon"}
+          >
+            {state.timer_running ? (
+              <CirclePause className="h-4 w-4" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+          </InputAddon>
+        </InputGroup>
       </div>
     </div>
   );

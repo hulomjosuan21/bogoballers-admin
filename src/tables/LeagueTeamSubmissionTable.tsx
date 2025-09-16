@@ -70,7 +70,6 @@ export function TeamSubmissionTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  // FIX 2: Memoize the columns to prevent unnecessary re-renders
   const columns: ColumnDef<LeagueTeam>[] = useMemo(
     () => [
       {

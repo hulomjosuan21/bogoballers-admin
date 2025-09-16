@@ -36,7 +36,9 @@ export const initialMatchData: MatchBook = {
   away_total_score: 0,
   quarters: 4,
   minutes_per_quarter: 10,
+  minutes_per_overtime: 5,
   time_seconds: 10 * 60,
+  is_overtime: false,
   timer_running: false,
   current_quarter: 1,
   home_team: {

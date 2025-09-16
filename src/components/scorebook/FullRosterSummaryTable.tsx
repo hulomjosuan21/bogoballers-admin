@@ -85,6 +85,10 @@ export function FullRosterSummaryTable({ team }: Props) {
       header: "PF",
       accessorKey: "P",
     },
+    {
+      header: "TF",
+      accessorKey: "T",
+    },
   ];
 
   const table = useReactTable({

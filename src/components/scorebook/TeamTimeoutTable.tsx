@@ -11,6 +11,7 @@ import {
   TableHead,
 } from "../ui/table";
 import { Trash2 } from "lucide-react";
+import { useAlertDialog } from "@/hooks/userAlertDialog";
 
 type Props = {
   team: TeamBook;
@@ -19,8 +20,14 @@ type Props = {
 
 export function TeamTimeoutTable({ team, viewMode = false }: Props) {
   const { dispatch } = useGame();
+  const { openDialog } = useAlertDialog();
 
-  const handleAddTimeout = () => {
+  const handleAddTimeout = async () => {
+    const confirm = await openDialog({
+      confirmText: "Confirm",
+      cancelText: "Cancel",
+    });
+    if (!confirm) return;
     dispatch({ type: "ADD_TIMEOUT", payload: { teamId: team.team_id } });
   };
 
@@ -37,14 +44,16 @@ export function TeamTimeoutTable({ team, viewMode = false }: Props) {
     <div className="rounded-md border">
       <div className="p-2 flex justify-between items-center">
         <h3 className="text-sm font-semibold">Timeouts Log</h3>
-        <Button
-          size="sm"
-          className="text-xs"
-          onClick={handleAddTimeout}
-          disabled={viewMode}
-        >
-          Add Timeout
-        </Button>
+        {!viewMode && (
+          <Button
+            size="sm"
+            className="text-xs"
+            onClick={handleAddTimeout}
+            disabled={viewMode}
+          >
+            Add Timeout
+          </Button>
+        )}
       </div>
 
       <div className="max-h-[170px] flex-grow overflow-y-auto">
@@ -53,7 +62,7 @@ export function TeamTimeoutTable({ team, viewMode = false }: Props) {
             <TableRow>
               <TableHead className="h-8">Qtr</TableHead>
               <TableHead className="h-8">Time Taken</TableHead>
-              <TableHead className="h-8 text-right"></TableHead>
+              {!viewMode && <TableHead className="h-8 text-right"></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,17 +71,19 @@ export function TeamTimeoutTable({ team, viewMode = false }: Props) {
                 <TableRow key={index}>
                   <TableCell>Q{timeout.qtr}</TableCell>
                   <TableCell>{timeout.game_time}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => handleRemoveTimeout(index)}
-                      disabled={viewMode}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+                  {!viewMode && (
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleRemoveTimeout(index)}
+                        disabled={viewMode}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (

@@ -1,16 +1,26 @@
-import React, { createContext, useReducer, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useReducer,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
 import { initialMatchData } from "@/data/mock";
 import type {
   MatchBook,
   PlayerStatsSummary,
   TeamBook,
 } from "@/types/scorebook";
+import { loadDecryptedState, saveEncryptedState } from "@/service/secureStore";
 
 export type Action =
+  | { type: "HYDRATE_STATE"; payload: GameStateWithHistory }
   | { type: "TOGGLE_TIMER" }
   | { type: "SET_TIME"; payload: number }
   | { type: "TIMER_TICK" }
   | { type: "CHANGE_QUARTER"; payload: number }
+  | { type: "ADD_OVERTIME" }
   | {
       type: "UPDATE_TEAM_STAT";
       payload: {
@@ -102,6 +112,10 @@ const gameReducer = (
   state: GameStateWithHistory,
   action: Action
 ): GameStateWithHistory => {
+  if (action.type === "HYDRATE_STATE") {
+    return action.payload;
+  }
+
   const { past, present, future } = state;
 
   const presentReducer = (
@@ -120,13 +134,42 @@ const gameReducer = (
         }
         return { ...newState, timer_running: false };
 
+      case "ADD_OVERTIME": {
+        const newTotalQuarters = newState.quarters + 1;
+
+        newState.quarters = newTotalQuarters;
+        newState.current_quarter = newTotalQuarters;
+        newState.is_overtime = true;
+        newState.timer_running = false;
+        newState.time_seconds = newState.minutes_per_overtime * 60;
+
+        const prepareTeamStats = (team: TeamBook): TeamBook => {
+          if (!team.score_per_qtr.some((s) => s.qtr === newTotalQuarters)) {
+            team.score_per_qtr.push({ qtr: newTotalQuarters, score: 0 });
+          }
+          if (!team.teamF_per_qtr.some((f) => f.qtr === newTotalQuarters)) {
+            team.teamF_per_qtr.push({ qtr: newTotalQuarters, foul: 0 });
+          }
+          return team;
+        };
+        newState.home_team = prepareTeamStats(newState.home_team);
+        newState.away_team = prepareTeamStats(newState.away_team);
+
+        return newState;
+      }
+
       case "CHANGE_QUARTER": {
         const newQuarter = currentAction.payload;
         if (newQuarter === newState.current_quarter) return newState;
 
         newState.current_quarter = newQuarter;
         newState.timer_running = false;
-        newState.time_seconds = newState.minutes_per_quarter * 60;
+
+        if (newState.is_overtime) {
+          newState.time_seconds = newState.minutes_per_overtime * 60;
+        } else {
+          newState.time_seconds = newState.minutes_per_quarter * 60;
+        }
 
         const prepareTeamStats = (team: TeamBook): TeamBook => {
           if (!team.score_per_qtr.some((s) => s.qtr === newQuarter)) {
@@ -139,6 +182,7 @@ const gameReducer = (
         };
         newState.home_team = prepareTeamStats(newState.home_team);
         newState.away_team = prepareTeamStats(newState.away_team);
+
         return newState;
       }
 
@@ -272,6 +316,7 @@ const gameReducer = (
       }
 
       case "UPDATE_PLAYER_STAT": {
+        let newState = { ...currentState };
         const { teamId, playerId, stat, value } = currentAction.payload;
         const isHomeTeam = teamId === newState.home_team.team_id;
         let teamToUpdate = isHomeTeam
@@ -281,9 +326,9 @@ const gameReducer = (
         const playerIndex = teamToUpdate.players.findIndex(
           (p) => p.player_id === playerId
         );
-        if (playerIndex === -1) return newState;
+        if (playerIndex === -1) return currentState;
 
-        const updatedPlayers = [...teamToUpdate.players];
+        const updatedPlayers = teamToUpdate.players.map((p) => ({ ...p }));
         const updatedPlayer = {
           ...updatedPlayers[playerIndex],
           summary: { ...updatedPlayers[playerIndex].summary },
@@ -298,6 +343,7 @@ const gameReducer = (
             0,
             updatedPlayer.summary[stat as keyof PlayerStatsSummary] + value
           );
+
           const pointsChanged =
             stat === "fg2m"
               ? 2 * value
@@ -306,20 +352,25 @@ const gameReducer = (
               : stat === "ftm"
               ? 1 * value
               : 0;
+
           if (pointsChanged !== 0) {
             const qtrIndex = updatedPlayer.score_per_qtr.findIndex(
               (s) => s.qtr === newState.current_quarter
             );
-            if (qtrIndex > -1)
-              updatedPlayer.score_per_qtr[qtrIndex].score = Math.max(
-                0,
-                updatedPlayer.score_per_qtr[qtrIndex].score + pointsChanged
-              );
-            else
+            if (qtrIndex > -1) {
+              updatedPlayer.score_per_qtr[qtrIndex] = {
+                ...updatedPlayer.score_per_qtr[qtrIndex],
+                score: Math.max(
+                  0,
+                  updatedPlayer.score_per_qtr[qtrIndex].score + pointsChanged
+                ),
+              };
+            } else {
               updatedPlayer.score_per_qtr.push({
                 qtr: newState.current_quarter,
                 score: Math.max(0, pointsChanged),
               });
+            }
           }
         }
 
@@ -330,6 +381,7 @@ const gameReducer = (
           teamToUpdate,
           newState.current_quarter
         );
+
         if (isHomeTeam) {
           newState.home_team = teamToUpdate;
           newState.home_total_score = teamToUpdate.players.reduce(
@@ -343,6 +395,7 @@ const gameReducer = (
             0
           );
         }
+
         return newState;
       }
 
@@ -372,6 +425,7 @@ const gameReducer = (
         teamToUpdate.players = newPlayers;
         if (isHomeTeam) newState.home_team = teamToUpdate;
         else newState.away_team = teamToUpdate;
+        newState.timer_running = false;
         return newState;
       }
 
@@ -396,42 +450,76 @@ const gameReducer = (
   const newPresent = presentReducer(present, action);
   if (newPresent === present) return state;
 
-  console.log("ACTION:", action.type, {
-    payload: (action as any).payload,
-    from: present,
-    to: newPresent,
-  });
+  if (!(action.type == "TIMER_TICK")) {
+    console.log("ACTION:", action.type, {
+      payload: (action as any).payload,
+      from: present,
+      to: newPresent,
+    });
+  }
+
   return { past: [...past, present], present: newPresent, future: [] };
 };
 
-const GameContext = createContext<{
+interface GameContextType {
   state: MatchBook;
   dispatch: React.Dispatch<Action>;
   canUndo: boolean;
   canRedo: boolean;
-}>({
-  state: initialMatchData,
-  dispatch: () => null,
-  canUndo: false,
-  canRedo: false,
-});
+}
+
+const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [state, dispatch] = useReducer(gameReducer, initialState, (initial) => {
-    try {
-      const storedState = localStorage.getItem("basketballScorebookState");
-      return storedState ? JSON.parse(storedState) : initial;
-    } catch (error) {
-      console.error("Error reading from localStorage", error);
-      return initial;
-    }
-  });
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [isLoading, setIsLoading] = useState(true);
+  const saveTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    localStorage.setItem("basketballScorebookState", JSON.stringify(state));
-  }, [state]);
+    const loadState = async () => {
+      try {
+        const decryptedState = await loadDecryptedState();
+        if (decryptedState) {
+          dispatch({
+            type: "HYDRATE_STATE",
+            payload: decryptedState as GameStateWithHistory,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load state on mount", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadState();
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = window.setTimeout(() => {
+      console.log("Saving state to DB after 10 seconds of inactivity...");
+      saveEncryptedState(state);
+    }, 1000);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [state, isLoading]);
+
+  if (isLoading) {
+    return <div>Loading Scorebook...</div>;
+  }
 
   const contextValue = {
     state: state.present,
@@ -445,4 +533,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const useGame = () => useContext(GameContext);
+export const useGame = () => {
+  const context = useContext(GameContext);
+  if (context === undefined) {
+    throw new Error("useGame must be used within a GameProvider");
+  }
+  return context;
+};

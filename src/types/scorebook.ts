@@ -45,11 +45,13 @@ export interface MatchBook {
   match_id: string;
   home_total_score: number;
   away_total_score: number;
+  is_overtime: boolean;
   quarters: number;
   minutes_per_quarter: number;
-  time_seconds: number; // Time is managed in seconds
+  minutes_per_overtime: number;
+  time_seconds: number; 
   timer_running: boolean;
-  current_quarter: number; // e.g., 1, 2, 3, 4
+  current_quarter: number; 
   home_team: TeamBook;
   away_team: TeamBook;
 }

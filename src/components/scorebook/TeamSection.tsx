@@ -1,7 +1,5 @@
-// src/components/TeamSection.tsx
 import type { TeamBook } from "@/types/scorebook";
 import { PlayerRoster } from "./PlayerRoster";
-import { FullRosterSummaryTable } from "./FullRosterSummaryTable"; // Import the new component
 import { Input, InputAddon, InputGroup } from "../ui/input";
 import { TeamStatsByQuarterTable } from "./TeamStatsByQuarterTable";
 import { memo } from "react";
@@ -68,7 +66,6 @@ export const TeamSection = memo(function TeamSection({
           />
         </InputGroup>
       </div>
-      <FullRosterSummaryTable team={team} />
     </section>
   );
 });

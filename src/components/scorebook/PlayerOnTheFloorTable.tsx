@@ -101,93 +101,95 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
 
         return (
           <div className="flex items-center gap-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-1"
-                  disabled={viewMode}
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Scoring</DropdownMenuLabel>
-                <DropdownMenuGroup className="group-sm">
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("fg2m", 1)}
+            {!viewMode && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-1"
+                    disabled={viewMode}
                   >
-                    +2 Made
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm-d"
-                    onSelect={() => updateStat("fg2a", 1)}
-                  >
-                    +2 Miss
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("fg3m", 1)}
-                  >
-                    +3 Made
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm-d"
-                    onSelect={() => updateStat("fg3a", 1)}
-                  >
-                    +3 Miss
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("ftm", 1)}
-                  >
-                    +1 Made
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm-d"
-                    onSelect={() => updateStat("fta", 1)}
-                  >
-                    +1 Miss
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Stats</DropdownMenuLabel>
-                <DropdownMenuGroup className="group-sm">
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("reb", 1)}
-                  >
-                    +REB
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("ast", 1)}
-                  >
-                    +AST
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("stl", 1)}
-                  >
-                    +STL
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("blk", 1)}
-                  >
-                    +BLK
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="menu-sm"
-                    onSelect={() => updateStat("tov", 1)}
-                  >
-                    +TOV
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Scoring</DropdownMenuLabel>
+                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("fg2m", 1)}
+                    >
+                      +2 Made
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm-d"
+                      onSelect={() => updateStat("fg2a", 1)}
+                    >
+                      +2 Miss
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("fg3m", 1)}
+                    >
+                      +3 Made
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm-d"
+                      onSelect={() => updateStat("fg3a", 1)}
+                    >
+                      +3 Miss
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("ftm", 1)}
+                    >
+                      +1 Made
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm-d"
+                      onSelect={() => updateStat("fta", 1)}
+                    >
+                      +1 Miss
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Stats</DropdownMenuLabel>
+                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("reb", 1)}
+                    >
+                      +REB
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("ast", 1)}
+                    >
+                      +AST
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("stl", 1)}
+                    >
+                      +STL
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("blk", 1)}
+                    >
+                      +BLK
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("tov", 1)}
+                    >
+                      +TOV
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Input
               id={`score-input-${player.player_team_id}-${player.player_id}`}
               type="number"
@@ -197,30 +199,34 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
               className="w-18"
               variant={"sm"}
             />
-            <Button
-              size="sm"
-              className="h-7 px-2"
-              onClick={() => updateStat("ftm", 1)}
-              disabled={viewMode}
-            >
-              +1
-            </Button>
-            <Button
-              size="sm"
-              className="h-7 px-2"
-              onClick={() => updateStat("fg2m", 1)}
-              disabled={viewMode}
-            >
-              +2
-            </Button>
-            <Button
-              size="sm"
-              className="h-7 px-2"
-              onClick={() => updateStat("fg3m", 1)}
-              disabled={viewMode}
-            >
-              +3
-            </Button>
+            {!viewMode && (
+              <>
+                <Button
+                  size="sm"
+                  className="h-7 px-2"
+                  onClick={() => updateStat("ftm", 1)}
+                  disabled={viewMode}
+                >
+                  +1
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-7 px-2"
+                  onClick={() => updateStat("fg2m", 1)}
+                  disabled={viewMode}
+                >
+                  +2
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-7 px-2"
+                  onClick={() => updateStat("fg3m", 1)}
+                  disabled={viewMode}
+                >
+                  +3
+                </Button>
+              </>
+            )}
           </div>
         );
       },
