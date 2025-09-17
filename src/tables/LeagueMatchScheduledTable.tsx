@@ -185,6 +185,12 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
         : selectedMatch.home_team_id
       : undefined;
 
+    // Determine status
+    const status =
+      sheetFormData.winner_team_id || loser_team_id
+        ? "Completed"
+        : sheetFormData.status;
+
     const payload: Partial<LeagueMatch> = {
       court: sheetFormData.court,
       quarters: sheetFormData.quarters,
@@ -197,7 +203,7 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       away_team_score: sheetFormData.away_team_score,
       winner_team_id: sheetFormData.winner_team_id,
       loser_team_id,
-      status: sheetFormData.status,
+      status,
     };
 
     const updateApi = async () => {

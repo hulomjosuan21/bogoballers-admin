@@ -1,10 +1,11 @@
 import Dexie, { type Table } from "dexie";
 import CryptoJS from "crypto-js";
+import type { MatchBook } from "@/types/scorebook";
 
 export interface GameState {
-  present: object;
-  past: object[];
-  future: object[];
+  present: MatchBook;
+  past: MatchBook[];
+  future: MatchBook[];
 }
 
 export interface StoredState {

@@ -49,9 +49,9 @@ export interface MatchBook {
   quarters: number;
   minutes_per_quarter: number;
   minutes_per_overtime: number;
-  time_seconds: number; 
+  time_seconds: number;
   timer_running: boolean;
-  current_quarter: number; 
+  current_quarter: number;
   home_team: TeamBook;
   away_team: TeamBook;
 }

@@ -1,19 +1,10 @@
-import React, {
-  createContext,
-  useReducer,
-  useContext,
-  useEffect,
-  useState,
-  useRef,
-} from "react";
+import React, { createContext, useContext } from "react";
 import { initialMatchData } from "@/data/mock";
 import type {
   MatchBook,
   PlayerStatsSummary,
   TeamBook,
 } from "@/types/scorebook";
-import { loadDecryptedState, saveEncryptedState } from "@/service/secureStore";
-
 export type Action =
   | { type: "HYDRATE_STATE"; payload: GameStateWithHistory }
   | { type: "TOGGLE_TIMER" }
@@ -66,13 +57,13 @@ export type Action =
   | { type: "UNDO" }
   | { type: "REDO" };
 
-interface GameStateWithHistory {
+export interface GameStateWithHistory {
   past: MatchBook[];
   present: MatchBook;
   future: MatchBook[];
 }
 
-const initialState: GameStateWithHistory = {
+export const initialState: GameStateWithHistory = {
   past: [],
   present: initialMatchData,
   future: [],
@@ -108,7 +99,7 @@ const recalculateAllScores = (
   return newTeam;
 };
 
-const gameReducer = (
+export const gameReducer = (
   state: GameStateWithHistory,
   action: Action
 ): GameStateWithHistory => {
@@ -470,73 +461,12 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
-  const [isLoading, setIsLoading] = useState(true);
-  const saveTimeoutRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const loadState = async () => {
-      try {
-        const decryptedState = await loadDecryptedState();
-        if (decryptedState) {
-          dispatch({
-            type: "HYDRATE_STATE",
-            payload: decryptedState as GameStateWithHistory,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to load state on mount", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadState();
-  }, []);
-
-  useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    saveTimeoutRef.current = window.setTimeout(() => {
-      try {
-        console.log("Saving state to DB after 10 seconds of inactivity...");
-        saveEncryptedState(state);
-      } catch (e) {
-        console.error(e);
-      }
-    }, 1000);
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [state, isLoading]);
-
-  if (isLoading) {
-    return <div>Loading Scorebook...</div>;
-  }
-
-  const contextValue = {
-    state: state.present,
-    dispatch,
-    canUndo: state.past.length > 0,
-    canRedo: state.future.length > 0,
-  };
-
-  return (
-    <GameContext.Provider value={contextValue}>{children}</GameContext.Provider>
-  );
+export const GameProvider: React.FC<{
+  children: React.ReactNode;
+  value: GameContextType;
+}> = ({ children, value }) => {
+  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 };
-
 export const useGame = () => {
   const context = useContext(GameContext);
   if (context === undefined) {
