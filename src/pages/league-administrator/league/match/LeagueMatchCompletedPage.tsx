@@ -14,9 +14,9 @@ import {
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
-import { ScheduleMatchTable } from "@/tables/LeagueMatchScheduledTable";
+import { FinishedMatchTable } from "@/tables/LeagueMatchFinishedTable";
 
-export default function LeagueMatchScheduledPage() {
+export default function LeagueMatchCompletedPage() {
   const { activeLeagueData, activeLeagueError, activeLeagueCategories } =
     useActiveLeague();
 
@@ -55,7 +55,7 @@ export default function LeagueMatchScheduledPage() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Scheduled Matches" />
+      <ContentHeader title="Set Schedule" />
       <ContentBody>
         {hasActiveLeague ? (
           <>
@@ -105,7 +105,7 @@ export default function LeagueMatchScheduledPage() {
 
                 {selectedCategory?.rounds.map((round) => (
                   <TabsContent key={round.round_id} value={round.round_id}>
-                    <ScheduleMatchTable
+                    <FinishedMatchTable
                       leagueCategoryId={selectedCategory.league_category_id}
                       roundId={round.round_id}
                     />

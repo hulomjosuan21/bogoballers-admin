@@ -35,6 +35,7 @@ import {
   FileQuestionMark,
   type LucideIcon,
 } from "lucide-react";
+import LeagueMatchCompletedPage from "@/pages/league-administrator/league/match/LeagueMatchCompletedPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -190,6 +191,15 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     permissions: [Permission.ViewScheduledMatches],
     showInSidebar: true,
     sidebarTitle: "Scheduled Match",
+    sidebarParent: "Match",
+    sidebarGroup: "league",
+  },
+  {
+    path: "pages/league/match/completed",
+    element: <LeagueMatchCompletedPage />,
+    permissions: [Permission.ViewScheduledMatches],
+    showInSidebar: true,
+    sidebarTitle: "Finished Match",
     sidebarParent: "Match",
     sidebarGroup: "league",
   },

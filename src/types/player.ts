@@ -19,6 +19,15 @@ export interface Player {
   total_points_scored: number;
   total_assists: number;
   total_rebounds: number;
+  total_steals: number;
+  total_blocks: number;
+  total_turnovers: number;
+  total_fg2_made: number;
+  total_fg2_attempts: number;
+  total_fg3_made: number;
+  total_fg3_attempts: number;
+  total_ft_made: number;
+  total_ft_attempts: number;
   total_join_league: number;
   is_ban: boolean;
   is_allowed: boolean;

@@ -9,7 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { MoreVertical, X } from "lucide-react";
+import { CheckIcon, MoreVertical, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,12 @@ import {
 import { DataTablePagination } from "@/components/data-table-pagination";
 import MultipleSelector from "@/components/ui/multiselect";
 import { DateTimePicker } from "@/components/datetime-picker";
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { useLeagueMatch } from "@/hooks/leagueMatch";
 import { Label } from "@/components/ui/label";
@@ -248,24 +253,35 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       header: "Referees",
       cell: ({ row }) => {
         const referees = row.original.referees;
-        return (
-          <div className="flex flex-wrap gap-1">
-            {referees && referees.length > 0 ? (
-              referees.map((ref) => (
-                <Badge key={ref} variant="secondary">
-                  {ref
-                    .split("_")
-                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                    .join(" ")}
+
+        return referees.length > 0 ? (
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="cursor-help gap-1">
+                  <CheckIcon
+                    className="text-emerald-500"
+                    size={12}
+                    aria-hidden="true"
+                  />
+                  {referees.length} Set
                 </Badge>
-              ))
-            ) : (
-              <Badge variant="outline" className="gap-1">
-                <X className="text-red-500" size={12} aria-hidden="true" />
-                Not Set
-              </Badge>
-            )}
-          </div>
+              </TooltipTrigger>
+              <TooltipContent className="py-3 max-w-xs">
+                <p className="text-[13px] font-medium mb-1">Match Referees:</p>
+                <ul className="list-disc list-inside space-y-0.5 text-xs text-muted-foreground">
+                  {referees.map((ref, idx) => (
+                    <li key={idx}>{ref}</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <Badge variant="outline" className="cursor-help gap-1">
+            <X className="text-rose-500" size={12} aria-hidden="true" />
+            {referees.length} Set
+          </Badge>
         );
       },
     },

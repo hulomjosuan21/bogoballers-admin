@@ -506,8 +506,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     saveTimeoutRef.current = window.setTimeout(() => {
-      console.log("Saving state to DB after 10 seconds of inactivity...");
-      saveEncryptedState(state);
+      try {
+        console.log("Saving state to DB after 10 seconds of inactivity...");
+        saveEncryptedState(state);
+      } catch (e) {
+        console.error(e);
+      }
     }, 1000);
 
     return () => {
