@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ManageCategories from "./league/ManageCategories";
+import UpdateOrganizationTab from "@/components/UpdateOrganization";
 
 export default function SettingsPage() {
   const tab1Content = () => (
@@ -40,9 +41,7 @@ export default function SettingsPage() {
             <ManageCategories />
           </TabsContent>
           <TabsContent value="organization">
-            <p className="text-muted-foreground pt-1 text-center text-xs">
-              Content for Tab 2
-            </p>
+            <UpdateOrganizationTab />
           </TabsContent>
         </Tabs>
       </ContentBody>

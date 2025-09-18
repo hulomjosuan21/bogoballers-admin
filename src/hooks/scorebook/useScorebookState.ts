@@ -21,6 +21,8 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
   const socketRef = useRef<Socket | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
 
+  const [latency, setLatency] = useState<number | null>(null);
+
   useEffect(() => {
     const socket = io(`${API_BASE_URL}/live`);
     socketRef.current = socket;
