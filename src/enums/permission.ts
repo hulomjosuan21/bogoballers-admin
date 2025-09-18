@@ -51,6 +51,7 @@ export function getUserPermissions(accountType: string): Permission[] {
         Permission.ViewScheduledMatches,
         Permission.ManageSettings,
         Permission.ViewLeagueAdmins,
+        Permission.ScoreBook,
       ];
     default:
       return [];

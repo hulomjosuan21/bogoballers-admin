@@ -15,6 +15,7 @@ import { useActiveLeague } from "@/hooks/useActiveLeague";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 import { FinishedMatchTable } from "@/tables/LeagueMatchFinishedTable";
+import { UpcomingMatchTable } from "@/tables/LeagueMatchUpcomingTable";
 
 export default function LeagueMatchCompletedPage() {
   const { activeLeagueData, activeLeagueError, activeLeagueCategories } =
@@ -55,7 +56,7 @@ export default function LeagueMatchCompletedPage() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Set Schedule" />
+      <ContentHeader title="Upcoming & Finished" />
       <ContentBody>
         {hasActiveLeague ? (
           <>
@@ -104,7 +105,21 @@ export default function LeagueMatchCompletedPage() {
                 </div>
 
                 {selectedCategory?.rounds.map((round) => (
-                  <TabsContent key={round.round_id} value={round.round_id}>
+                  <TabsContent
+                    key={round.round_id}
+                    value={round.round_id}
+                    className="space-y-2"
+                  >
+                    <div className="">
+                      <span className="font-semibold">Upcoming</span>
+                    </div>
+                    <UpcomingMatchTable
+                      leagueCategoryId={selectedCategory.league_category_id}
+                      roundId={round.round_id}
+                    />
+                    <div className="">
+                      <span className="font-semibold">Completed</span>
+                    </div>
                     <FinishedMatchTable
                       leagueCategoryId={selectedCategory.league_category_id}
                       roundId={round.round_id}

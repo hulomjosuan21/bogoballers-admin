@@ -58,23 +58,25 @@ export const PlayerRoster = memo(function PlayerRoster({
           dispatch={dispatch}
         />
 
-        <div className="p-3 border rounded-md">
-          <div className="pb-2 flex items-center gap-2">
-            <span className="font-semibold text-sm">Bench</span>
-            <Armchair className="h-4 w-4 text-muted-foreground" />
-          </div>
-          {playersOnBench.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {playersOnBench.map((player) => (
-                <PlayerChip key={player.player_id} player={player} />
-              ))}
+        {!viewMode && (
+          <div className="p-3 border rounded-md">
+            <div className="pb-2 flex items-center gap-2">
+              <span className="font-semibold text-sm">Bench</span>
+              <Armchair className="h-4 w-4 text-muted-foreground" />
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No players on the bench.
-            </p>
-          )}
-        </div>
+            {playersOnBench.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {playersOnBench.map((player) => (
+                  <PlayerChip key={player.player_id} player={player} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No players on the bench.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </DndContext>
   );

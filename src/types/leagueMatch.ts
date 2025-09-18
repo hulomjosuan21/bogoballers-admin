@@ -17,6 +17,7 @@ export interface LeagueMatch {
   scheduled_date: string | null;
   quarters: number;
   minutes_per_quarter: number;
+  minutes_per_overtime: number;
   court: string;
   referees: string[];
   previous_match_ids: string[];

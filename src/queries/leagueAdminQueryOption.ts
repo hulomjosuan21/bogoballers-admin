@@ -4,18 +4,17 @@ import { QUERY_KEYS } from "@/constants/queryKeys";
 import type { JwtPayload, LeagueAdministator } from "@/types/leagueAdmin";
 import type { Category } from "@/types/category";
 
-export const authLeagueAdminQueryOption = queryOptions<
-  LeagueAdministator,
-  Error
->({
-  queryKey: QUERY_KEYS.AUTH_LEAGUE_ADMIN,
-  queryFn: LeagueAdministratorService.auth,
-  staleTime: Infinity,
-  retry: false,
-  refetchOnWindowFocus: false,
-  refetchOnMount: false,
-  refetchOnReconnect: false,
-});
+export const authLeagueAdminQueryOption = (enabled: boolean = true) =>
+  queryOptions<LeagueAdministator, Error>({
+    queryKey: QUERY_KEYS.AUTH_LEAGUE_ADMIN,
+    queryFn: LeagueAdministratorService.auth,
+    staleTime: Infinity,
+    retry: false,
+    enabled,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
 
 export const leagueAdminCategoriesQueryOption = queryOptions<Category[], Error>(
   {

@@ -6,14 +6,14 @@ import {
 } from "@/queries/leagueAdminQueryOption";
 import { useQuery } from "@tanstack/react-query";
 
-export function useAuthLeagueAdmin() {
-  const query = useQuery(authLeagueAdminQueryOption);
+export function useAuthLeagueAdmin(enabled: boolean = true) {
+  const query = useQuery(authLeagueAdminQueryOption(enabled));
 
   return {
-    leagueAdmin: query.data,
+    leagueAdmin: query.data ?? null,
     leagueAdminLoading: query.isLoading || query.isPending || query.isFetching,
     refetchLeagueAdmin: query.refetch,
-    leagueAdminError: query.error,
+    leagueAdminError: query.error ?? null,
   };
 }
 

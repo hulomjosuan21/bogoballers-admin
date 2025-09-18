@@ -15,11 +15,14 @@ import {
 } from "@/components/ui/table";
 import { useLeagueMatch } from "@/hooks/leagueMatch";
 import type { LeagueMatch } from "@/types/leagueMatch";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
-import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
-import ContentHeader from "@/components/content-header";
-import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import { X } from "lucide-react";
+import { CheckIcon, X } from "lucide-react";
+import { formatDate12h } from "@/lib/app_utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Props = {
   leagueCategoryId?: string;
@@ -27,13 +30,10 @@ type Props = {
 };
 
 export function FinishedMatchTable({ leagueCategoryId, roundId }: Props) {
-  const { activeLeagueData, activeLeagueError } = useActiveLeague();
   const { leagueMatchData, leagueMatchLoading, leagueMatchError } =
     useLeagueMatch(leagueCategoryId, roundId, {
       condition: "Completed",
     });
-
-  const hasActiveLeague = !activeLeagueError && activeLeagueData;
 
   const columns: ColumnDef<LeagueMatch>[] = [
     {
@@ -94,10 +94,9 @@ export function FinishedMatchTable({ leagueCategoryId, roundId }: Props) {
     {
       accessorKey: "scheduled_date",
       header: "Date",
-      cell: ({ row }) =>
-        row.original.scheduled_date
-          ? new Date(row.original.scheduled_date).toLocaleDateString()
-          : "N/A",
+      cell: ({ row }) => (
+        <span>{formatDate12h(row.original.scheduled_date!)}</span>
+      ),
     },
     {
       accessorKey: "details",
@@ -120,23 +119,28 @@ export function FinishedMatchTable({ leagueCategoryId, roundId }: Props) {
       cell: ({ row }) => {
         const referees = row.original.referees;
         return (
-          <div className="flex flex-wrap gap-1">
-            {referees && referees.length > 0 ? (
-              referees.map((ref) => (
-                <Badge key={ref} variant="secondary">
-                  {ref
-                    .split("_")
-                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                    .join(" ")}
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="cursor-help gap-1">
+                  <CheckIcon
+                    className="text-emerald-500"
+                    size={12}
+                    aria-hidden="true"
+                  />
+                  {referees.length} Set
                 </Badge>
-              ))
-            ) : (
-              <Badge variant="outline" className="gap-1">
-                <X className="text-red-500" size={12} aria-hidden="true" />
-                Not Set
-              </Badge>
-            )}
-          </div>
+              </TooltipTrigger>
+              <TooltipContent className="py-3 max-w-xs">
+                <p className="text-[13px] font-medium mb-1">Match Referees:</p>
+                <ul className="list-disc list-inside space-y-0.5 text-xs text-muted-foreground">
+                  {referees.map((ref, idx) => (
+                    <li key={idx}>{ref}</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         );
       },
     },
@@ -158,63 +162,48 @@ export function FinishedMatchTable({ leagueCategoryId, roundId }: Props) {
   });
 
   return (
-    <ContentShell>
-      <ContentHeader title="Finished Matches" />
-      <ContentBody>
-        {hasActiveLeague ? (
-          <div className="overflow-hidden rounded-md border">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="bg-muted">
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
+    <div className="overflow-hidden rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id} className="bg-muted">
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
                 ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      {leagueMatchLoading
-                        ? "Loading data..."
-                        : leagueMatchError
-                        ? leagueMatchError.message
-                        : "No finished matches"}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        ) : (
-          <NoActiveLeagueAlert />
-        )}
-      </ContentBody>
-    </ContentShell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                {leagueMatchLoading
+                  ? "Loading data..."
+                  : leagueMatchError
+                  ? leagueMatchError.message
+                  : "No finished matches"}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

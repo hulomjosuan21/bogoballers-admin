@@ -20,7 +20,6 @@ import LeagueTeamsPage from "@/pages/league-administrator/league/team/LeagueTeam
 import AllPlayersPage from "@/pages/AllPlayersPage";
 import AllTeamsPage from "@/pages/AllTeamsPage";
 import TestGrid from "@/test/TestGrid";
-import ScorebookPage from "@/pages/scorebook/Scorebook";
 import { Permission } from "@/enums/permission";
 import {
   LayoutDashboard,
@@ -35,9 +34,30 @@ import {
   FileQuestionMark,
   type LucideIcon,
 } from "lucide-react";
-import LeagueMatchCompletedPage from "@/pages/league-administrator/league/match/LeagueMatchCompletedPage";
+import LeagueMatchCompletedPage from "@/pages/league-administrator/league/match/LeagueMatchUpcomingAndCompletedPage";
+import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
+import LoginPage from "@/pages/auth/LoginPage";
+import LandingPage from "@/pages/public/landing-page/LandingPage";
+import RegisterPage from "@/pages/auth/RegisterPage";
+import StartScorebookPage from "@/pages/scorebook/StartNewBook";
 
 export const publicRoutes: RouteObject[] = [
+  {
+    path: "/view/live-match/:match_id",
+    element: <ViewScorebookPage />,
+  },
+  {
+    path: "/auth/register",
+    element: <RegisterPage />,
+  },
+  {
+    path: "/",
+    element: <LandingPage />,
+  },
+  {
+    path: "/auth/login",
+    element: <LoginPage />,
+  },
   {
     path: "/about/league",
     element: <AboutLeaguePage />,
@@ -190,16 +210,16 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     element: <LeagueMatchScheduledPage />,
     permissions: [Permission.ViewScheduledMatches],
     showInSidebar: true,
-    sidebarTitle: "Scheduled Match",
+    sidebarTitle: "Scheduled",
     sidebarParent: "Match",
     sidebarGroup: "league",
   },
   {
-    path: "pages/league/match/completed",
+    path: "pages/league/match/upcoming&completed",
     element: <LeagueMatchCompletedPage />,
     permissions: [Permission.ViewScheduledMatches],
     showInSidebar: true,
-    sidebarTitle: "Finished Match",
+    sidebarTitle: "Upcoming & Completed",
     sidebarParent: "Match",
     sidebarGroup: "league",
   },
@@ -215,8 +235,14 @@ export const leagueAdminRoutes: AppRouteObject[] = [
 ];
 export const protectedRoutesWithoutSidebar: AppRouteObject[] = [
   {
-    path: "/scorebook/:match_id",
-    element: <ScorebookPage />,
+    path: "/scorebook/:match_id?",
+    element: <StartScorebookPage />,
+    permissions: [Permission.ScoreBook],
+    showInSidebar: false,
+  },
+  {
+    path: "/test/notsidebar",
+    element: <span>test</span>,
     permissions: [Permission.ScoreBook],
     showInSidebar: false,
   },
