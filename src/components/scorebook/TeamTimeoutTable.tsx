@@ -12,6 +12,7 @@ import {
 } from "../ui/table";
 import { Trash2 } from "lucide-react";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
+import { toast } from "sonner";
 
 type Props = {
   team: TeamBook;
@@ -29,6 +30,7 @@ export function TeamTimeoutTable({ team, viewMode = false }: Props) {
     });
     if (!confirm) return;
     dispatch({ type: "ADD_TIMEOUT", payload: { teamId: team.team_id } });
+    toast.info(`Team ${team.team_name} timed out`);
   };
 
   const handleRemoveTimeout = (index: number) => {

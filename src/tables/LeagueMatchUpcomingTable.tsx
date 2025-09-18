@@ -119,7 +119,7 @@ function DropSlot({
           </div>
         </div>
       ) : (
-        <span className="text-muted">Drop a match here</span>
+        <span className="text-muted">Drop a match here and start</span>
       )}
     </div>
   );
@@ -314,13 +314,8 @@ export function UpcomingMatchTable({
         <span className="font-semibold">Upcoming</span>
       </div>
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {/* Drop Slot */}
         <DropSlot match={selectedMatch} onRemove={handleRemove} />
-
-        {/* Table */}
         <div className="overflow-hidden rounded-md border">
-          {/* Continue Saved Matches */}
-
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

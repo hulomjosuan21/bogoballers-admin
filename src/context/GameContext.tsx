@@ -17,8 +17,8 @@ export type Action =
       payload: {
         teamId: string;
         quarter?: number;
-        stat: "teamFoul" | "coachT" | "none_memberT";
-        value: number;
+        stat: "teamFoul" | "coachT" | "none_memberT" | "capT_ball";
+        value: number | string;
       };
     }
   | { type: "ADD_TIMEOUT"; payload: { teamId: string } }
@@ -223,11 +223,16 @@ export const gameReducer = (
             (fq) => fq.qtr === quarter
           );
           if (foulQtrIndex > -1)
-            teamToUpdate.teamF_per_qtr[foulQtrIndex].foul = value;
-          else teamToUpdate.teamF_per_qtr.push({ qtr: quarter, foul: value });
+            teamToUpdate.teamF_per_qtr[foulQtrIndex].foul = Number(value);
+          else
+            teamToUpdate.teamF_per_qtr.push({
+              qtr: quarter,
+              foul: Number(value),
+            });
         }
-        if (stat === "coachT") teamToUpdate.coachT = value;
-        if (stat === "none_memberT") teamToUpdate.none_memberT = value;
+        if (stat === "coachT") teamToUpdate.coachT = Number(value);
+        if (stat === "none_memberT") teamToUpdate.none_memberT = Number(value);
+        if (stat === "capT_ball") teamToUpdate.capT_ball = String(value);
         if (isHomeTeam) newState.home_team = teamToUpdate;
         else newState.away_team = teamToUpdate;
         return newState;

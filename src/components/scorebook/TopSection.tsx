@@ -101,7 +101,7 @@ export function TopSection({ viewMode = false }: Props) {
         )}
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4 font-bold text-md">
+      <div className="flex items-center gap-2 sm:gap-4 font-bold text-sm sm:text-md">
         <span className="text-muted-foreground truncate max-w-[80px] sm:max-w-none">
           {state.home_team.team_name}
         </span>

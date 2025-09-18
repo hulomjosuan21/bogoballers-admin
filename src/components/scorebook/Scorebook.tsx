@@ -20,7 +20,6 @@ export default function Scorebook({ viewMode = false }: Props) {
           </h1>
 
           {viewMode ? (
-            // move tab list to the right if viewMode
             <div className="ml-auto mr-4">
               <TabsList className="grid grid-cols-2 gap-1" size="xs">
                 <TabsTrigger value="scorebook">
@@ -32,7 +31,6 @@ export default function Scorebook({ viewMode = false }: Props) {
               </TabsList>
             </div>
           ) : (
-            // keep it centered when not in viewMode
             <div className="absolute left-1/2 transform -translate-x-1/2">
               <TabsList className="grid grid-cols-2 gap-1" size="xs">
                 <TabsTrigger value="scorebook">

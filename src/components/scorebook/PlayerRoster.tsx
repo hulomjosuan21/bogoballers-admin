@@ -5,6 +5,8 @@ import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import { PlayerOnTheFloorTable } from "./PlayerOnTheFloorTable";
 import { PlayerChip } from "./PlayerChip";
 import { Armchair } from "lucide-react";
+import { useAlertDialog } from "@/hooks/userAlertDialog";
+import { toast } from "sonner";
 
 type Props = {
   viewMode?: boolean;
@@ -16,7 +18,7 @@ export const PlayerRoster = memo(function PlayerRoster({
   team,
 }: Props) {
   const { dispatch } = useGame();
-
+  const { openDialog } = useAlertDialog();
   const playersOnFloor = useMemo(
     () => team.players.filter((p) => !p.onBench),
     [team.players]
@@ -26,7 +28,7 @@ export const PlayerRoster = memo(function PlayerRoster({
     [team.players]
   );
 
-  function handleDragEnd(event: DragEndEvent) {
+  async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over) return;
 
@@ -38,6 +40,11 @@ export const PlayerRoster = memo(function PlayerRoster({
     );
 
     if (isBenchPlayerDragged && isFloorPlayerTarget) {
+      const confirm = await openDialog({
+        confirmText: "Confirm",
+        cancelText: "Cancel",
+      });
+      if (!confirm) return;
       dispatch({
         type: "SUBSTITUTE_PLAYER",
         payload: {
@@ -46,6 +53,7 @@ export const PlayerRoster = memo(function PlayerRoster({
           droppedId: String(over.id),
         },
       });
+      toast.info(`Player substituted`);
     }
   }
 

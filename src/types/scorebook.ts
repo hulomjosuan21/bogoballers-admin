@@ -35,6 +35,7 @@ export interface TeamBook {
   coach: string;
   coachT: number;
   none_memberT: number;
+  capT_ball: string | null;
   score_per_qtr: { qtr: number; score: number }[];
   teamF_per_qtr: { qtr: number; foul: number }[];
   timeouts: { qtr: number; game_time: string }[];

@@ -36,38 +36,38 @@ export function FullRosterSummaryTable({ team }: Props) {
       cell: (info) => info.getValue(),
     },
     {
-      header: "PTS",
+      header: "pts",
       accessorKey: "total_score",
       cell: (info) => (
         <span className="font-bold">{info.getValue() as number}</span>
       ),
     },
     {
-      header: "REB",
+      header: "reb",
       accessorKey: "summary.reb",
     },
     {
-      header: "AST",
+      header: "ast",
       accessorKey: "summary.ast",
     },
     {
-      header: "STL",
+      header: "stl",
       accessorKey: "summary.stl",
     },
     {
-      header: "BLK",
+      header: "blk",
       accessorKey: "summary.blk",
     },
 
     {
-      header: "2PT%",
+      header: "2pt%",
       cell: ({ row }) => {
         const { fg2m, fg2a } = row.original.summary;
         return formatPercentage(fg2m, fg2a);
       },
     },
     {
-      header: "3PT%",
+      header: "3pt%",
       cell: ({ row }) => {
         const { fg3m, fg3a } = row.original.summary;
         return formatPercentage(fg3m, fg3a);
@@ -75,18 +75,18 @@ export function FullRosterSummaryTable({ team }: Props) {
     },
 
     {
-      header: "FT%",
+      header: "ft%",
       cell: ({ row }) => {
         const { ftm, fta } = row.original.summary;
         return formatPercentage(ftm, fta);
       },
     },
     {
-      header: "PF",
+      header: "pf",
       accessorKey: "P",
     },
     {
-      header: "TF",
+      header: "tf",
       accessorKey: "T",
     },
   ];
@@ -99,8 +99,8 @@ export function FullRosterSummaryTable({ team }: Props) {
 
   return (
     <div className="rounded-md border">
-      <h3 className="text-sm font-semibold p-3 bg-muted/50">
-        Full Roster Summary
+      <h3 className="text-xs font-semibold p-3 bg-muted/50">
+        Team {team.team_name} Full Roster Summary
       </h3>
       <Table>
         <TableHeader>
@@ -121,7 +121,7 @@ export function FullRosterSummaryTable({ team }: Props) {
           {table.getRowModel().rows.map((row) => (
             <TableRow key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} className="py-2 text-sm">
+                <TableCell key={cell.id} className="py-2 text-xs sm:text-sm">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

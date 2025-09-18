@@ -17,7 +17,10 @@ export const TeamSection = memo(function TeamSection({
   team,
 }: Props) {
   const { dispatch } = useGame();
-  const handleStatChange = (stat: "coachT" | "none_memberT", value: string) => {
+  const handleStatChange = (
+    stat: "coachT" | "none_memberT" | "capT_ball",
+    value: string
+  ) => {
     const numericValue = parseInt(value, 10);
     if (!isNaN(numericValue)) {
       dispatch({
@@ -39,7 +42,7 @@ export const TeamSection = memo(function TeamSection({
       </div>
 
       <PlayerRoster viewMode={viewMode} team={team} />
-      <div className="grid grid-cols-2 gap-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
         <TeamStatsByQuarterTable team={team} viewMode={viewMode} />
         <TeamTimeoutTable team={team} viewMode={viewMode} />
       </div>
@@ -49,7 +52,7 @@ export const TeamSection = memo(function TeamSection({
           <InputAddon variant={"sm"}>CoachT</InputAddon>
           <Input
             type="number"
-            defaultValue={team.coachT}
+            value={team.coachT}
             onChange={(e) => handleStatChange("coachT", e.target.value)}
             disabled={viewMode}
             variant={"sm"}
@@ -59,8 +62,18 @@ export const TeamSection = memo(function TeamSection({
           <InputAddon variant={"sm"}>NoneMemberT</InputAddon>
           <Input
             type="number"
-            defaultValue={team.none_memberT}
+            value={team.none_memberT}
             onChange={(e) => handleStatChange("none_memberT", e.target.value)}
+            disabled={viewMode}
+            variant={"sm"}
+          />
+        </InputGroup>
+        <InputGroup>
+          <InputAddon variant={"sm"}>CAP'T BALL</InputAddon>
+          <Input
+            type="text"
+            value={team.capT_ball ?? ""}
+            onChange={(e) => handleStatChange("capT_ball", e.target.value)}
             disabled={viewMode}
             variant={"sm"}
           />
