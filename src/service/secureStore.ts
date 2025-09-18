@@ -25,12 +25,11 @@ class SecureDexie extends Dexie {
 }
 
 const db = new SecureDexie();
-
 const SECRET_KEY =
   import.meta.env.VITE_SECRET_KEY || "your-very-strong-secret-key";
-const STATE_KEY = import.meta.env.VITE_GAME_STATE_KEY || "currentGameState";
 
 export async function saveEncryptedState(
+  matchId: string,
   stateObject: GameState
 ): Promise<void> {
   try {
@@ -40,15 +39,20 @@ export async function saveEncryptedState(
       SECRET_KEY
     ).toString();
 
-    await db.gameState.put({ key: STATE_KEY, value: encryptedState });
+    await db.gameState.put({ key: matchId, value: encryptedState });
   } catch (error) {
     console.error("Failed to save state:", error);
   }
 }
 
-export async function loadDecryptedState(): Promise<GameState | null> {
+/**
+ * Load decrypted state by matchId
+ */
+export async function loadDecryptedState(
+  matchId: string
+): Promise<GameState | null> {
   try {
-    const record = await db.gameState.get(STATE_KEY);
+    const record = await db.gameState.get(matchId);
 
     if (record?.value) {
       const bytes = CryptoJS.AES.decrypt(record.value, SECRET_KEY);
@@ -63,7 +67,43 @@ export async function loadDecryptedState(): Promise<GameState | null> {
     return null;
   } catch (error) {
     console.error("Failed to load state:", error);
-    await db.gameState.delete(STATE_KEY);
+    await db.gameState.delete(matchId);
     return null;
+  }
+}
+
+export async function listSavedStates(): Promise<
+  { matchId: string; state: GameState }[]
+> {
+  try {
+    const records = await db.gameState.toArray();
+    const result: { matchId: string; state: GameState }[] = [];
+
+    for (const record of records) {
+      try {
+        const bytes = CryptoJS.AES.decrypt(record.value, SECRET_KEY);
+        const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+        if (decryptedString) {
+          const parsed = JSON.parse(decryptedString) as GameState;
+          result.push({ matchId: record.key, state: parsed });
+        }
+      } catch {
+        // skip corrupted records
+        await db.gameState.delete(record.key);
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Failed to list saved states:", error);
+    return [];
+  }
+}
+
+export async function deleteSavedState(matchId: string): Promise<void> {
+  try {
+    await db.gameState.delete(matchId);
+  } catch (error) {
+    console.error("Failed to delete saved state:", error);
   }
 }

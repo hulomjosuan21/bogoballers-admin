@@ -110,9 +110,6 @@ export default function LeagueMatchCompletedPage() {
                     value={round.round_id}
                     className="space-y-2"
                   >
-                    <div className="">
-                      <span className="font-semibold">Upcoming</span>
-                    </div>
                     <UpcomingMatchTable
                       leagueCategoryId={selectedCategory.league_category_id}
                       roundId={round.round_id}
