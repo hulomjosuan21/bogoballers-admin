@@ -84,7 +84,10 @@ type Props = {
 
 export default function CreateLeagueForm({ hasActive }: Props) {
   const [leagueAdmin, activeLeague] = useQueries({
-    queries: [authLeagueAdminQueryOption, getActiveLeagueQueryOption],
+    queries: [
+      authLeagueAdminQueryOption({ enabled: true }),
+      getActiveLeagueQueryOption,
+    ],
   });
   const { categoriesData } = useCategories();
   const navigate = useNavigate();

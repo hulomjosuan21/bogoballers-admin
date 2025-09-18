@@ -97,7 +97,10 @@ import type { Category, CreateCategory } from "@/types/category";
 
 export default function ManageCategories() {
   const [categories, leagueAdmin] = useQueries({
-    queries: [leagueAdminCategoriesQueryOption, authLeagueAdminQueryOption],
+    queries: [
+      leagueAdminCategoriesQueryOption,
+      authLeagueAdminQueryOption({ enabled: true }),
+    ],
   });
 
   const handleError = useErrorToast();

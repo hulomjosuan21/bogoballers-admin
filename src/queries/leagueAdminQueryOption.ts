@@ -4,7 +4,11 @@ import { QUERY_KEYS } from "@/constants/queryKeys";
 import type { JwtPayload, LeagueAdministator } from "@/types/leagueAdmin";
 import type { Category } from "@/types/category";
 
-export const authLeagueAdminQueryOption = (enabled: boolean = true) =>
+export const authLeagueAdminQueryOption = ({
+  enabled = true,
+}: {
+  enabled: boolean;
+}) =>
   queryOptions<LeagueAdministator, Error>({
     queryKey: QUERY_KEYS.AUTH_LEAGUE_ADMIN,
     queryFn: LeagueAdministratorService.auth,

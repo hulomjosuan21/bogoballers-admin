@@ -37,7 +37,7 @@ export default function App() {
   const [progress, setProgress] = useState(0);
 
   const protectedPaths = [
-    "/league-administrator", // Matches the base URL, e.g., for an index route
+    "/league-administrator",
     "/league-administrator/*",
     ...protectedRoutesWithoutSidebar.map((route) => route.path),
   ];

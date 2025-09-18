@@ -7,7 +7,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 export function useAuthLeagueAdmin(enabled: boolean = true) {
-  const query = useQuery(authLeagueAdminQueryOption(enabled));
+  const query = useQuery(authLeagueAdminQueryOption({ enabled }));
 
   return {
     leagueAdmin: query.data ?? null,

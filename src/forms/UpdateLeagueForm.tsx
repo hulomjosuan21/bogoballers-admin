@@ -83,7 +83,7 @@ export default function UpdateLeagueForm({
   activeLeague: League;
   activeLeagueLoading: boolean;
 }) {
-  const leagueAdmin = useQuery(authLeagueAdminQueryOption);
+  const leagueAdmin = useQuery(authLeagueAdminQueryOption({ enabled: true }));
   const { categoriesData } = useCategories();
 
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
