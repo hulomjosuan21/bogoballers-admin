@@ -110,25 +110,35 @@ export function TopSection({ viewMode = false }: Props) {
       </div>
 
       <div className="flex items-center gap-2">
-        <InputGroup>
+        {!viewMode ? (
+          <InputGroup>
+            <Input
+              type="text"
+              value={formatTime(state.time_seconds)}
+              onChange={handleTimeChange}
+              disabled={viewMode}
+              className="w-24 text-center font-mono text-2xl"
+            />
+            <InputAddon
+              onClick={() => dispatch({ type: "TOGGLE_TIMER" })}
+              mode={"icon"}
+            >
+              {state.timer_running ? (
+                <CirclePause className="h-4 w-4" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+            </InputAddon>
+          </InputGroup>
+        ) : (
           <Input
             type="text"
             value={formatTime(state.time_seconds)}
             onChange={handleTimeChange}
-            disabled={viewMode}
+            readOnly={viewMode}
             className="w-24 text-center font-mono text-2xl"
           />
-          <InputAddon
-            onClick={() => dispatch({ type: "TOGGLE_TIMER" })}
-            mode={"icon"}
-          >
-            {state.timer_running ? (
-              <CirclePause className="h-4 w-4" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}
-          </InputAddon>
-        </InputGroup>
+        )}
       </div>
     </div>
   );
