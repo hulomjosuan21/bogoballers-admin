@@ -17,19 +17,20 @@ const API_BASE_URL =
 export const useScorebookState = (matchId: string, isController: boolean) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
+  const [isNotFound, setIsNotFound] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const socket = io(`${API_BASE_URL}/live`);
     socketRef.current = socket;
-    const room = `match_room_${matchId}`;
+    const room = matchId;
     socket.emit("join", { room });
 
     const loadGame = async () => {
       try {
         if (isController) {
-          const localState = await loadDecryptedState();
+          const localState = await loadDecryptedState(matchId);
           if (localState && localState.present.match_id === matchId) {
             dispatch({ type: "HYDRATE_STATE", payload: localState });
             setIsLoading(false);
@@ -47,17 +48,16 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
           });
           setIsLoading(false);
         } else {
-          // Viewer requests the initial state from the server.
           socket.emit("viewer_request_initial_state", { room });
         }
       } catch (error) {
         console.error("Failed to load initial data:", error);
+        setIsNotFound(true);
         setIsLoading(false);
       }
     };
     loadGame();
 
-    // Viewer: Listens for the server's reply with the initial state.
     socket.on(
       "scorebook_initial_state",
       (initialPresentState: MatchBook | null) => {
@@ -70,18 +70,16 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
             };
             dispatch({ type: "HYDRATE_STATE", payload: initialState });
           } else {
-            console.log(
-              "Live match has not started yet. Waiting for first update."
-            );
+            setIsNotFound(true);
           }
           setIsLoading(false);
         }
       }
     );
 
-    // Viewer: Listens for all ongoing live updates.
     if (!isController) {
       socket.on("scorebook_updated", (newState: MatchBook) => {
+        setIsNotFound(false);
         dispatch({
           type: "HYDRATE_STATE",
           payload: { past: [], present: newState, future: [] },
@@ -94,13 +92,12 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
     };
   }, [matchId, isController]);
 
-  // Controller: Saves state locally and emits updates to the server.
   useEffect(() => {
     if (isController && !isLoading) {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       saveTimeoutRef.current = window.setTimeout(() => {
         if (state.present.match_id) {
-          saveEncryptedState(state);
+          saveEncryptedState(matchId, state);
           const room = `match_room_${matchId}`;
           socketRef.current?.emit("scorebook_update", {
             room,
@@ -114,5 +111,5 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
     }
   }, [state, isController, isLoading, matchId]);
 
-  return { state, dispatch, isLoading };
+  return { state, dispatch, isLoading, isNotFound };
 };

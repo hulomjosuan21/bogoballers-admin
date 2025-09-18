@@ -19,16 +19,31 @@ export default function Scorebook({ viewMode = false }: Props) {
             BogoBallers Digital Basketball Scorebook
           </h1>
 
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <TabsList className="grid grid-cols-2 gap-1" size="xs">
-              <TabsTrigger value="scorebook">
-                <FileSliders /> Scorebook
-              </TabsTrigger>
-              <TabsTrigger value="summary">
-                <Table2 /> Summary
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          {viewMode ? (
+            // move tab list to the right if viewMode
+            <div className="ml-auto mr-4">
+              <TabsList className="grid grid-cols-2 gap-1" size="xs">
+                <TabsTrigger value="scorebook">
+                  <FileSliders /> Scorebook
+                </TabsTrigger>
+                <TabsTrigger value="summary">
+                  <Table2 /> Summary
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          ) : (
+            // keep it centered when not in viewMode
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <TabsList className="grid grid-cols-2 gap-1" size="xs">
+                <TabsTrigger value="scorebook">
+                  <FileSliders /> Scorebook
+                </TabsTrigger>
+                <TabsTrigger value="summary">
+                  <Table2 /> Summary
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          )}
 
           {!viewMode && (
             <div className="flex gap-2">
@@ -36,7 +51,7 @@ export default function Scorebook({ viewMode = false }: Props) {
                 variant="outline"
                 size="sm"
                 onClick={() => dispatch({ type: "UNDO" })}
-                disabled={!canUndo || viewMode}
+                disabled={!canUndo}
               >
                 <Undo className="h-3 w-3" />
               </Button>
@@ -44,7 +59,7 @@ export default function Scorebook({ viewMode = false }: Props) {
                 variant="outline"
                 size="sm"
                 onClick={() => dispatch({ type: "REDO" })}
-                disabled={!canRedo || viewMode}
+                disabled={!canRedo}
               >
                 <Redo className="h-3 w-3" />
               </Button>

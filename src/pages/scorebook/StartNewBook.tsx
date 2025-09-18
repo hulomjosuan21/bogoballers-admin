@@ -1,6 +1,7 @@
 import Scorebook from "@/components/scorebook/Scorebook";
 import { GameProvider } from "@/context/GameContext";
 import { useScorebookState } from "@/hooks/scorebook/useScorebookState";
+import { Router } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 export default function StartScorebookPage() {
@@ -9,7 +10,18 @@ export default function StartScorebookPage() {
   const { state, dispatch, isLoading } = useScorebookState(match_id!, true);
 
   if (isLoading) {
-    return <div>Loading Scorebook...</div>;
+    return <div></div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <div className="flex flex-col justify-center items-center">
+          <Router className="text-primary" />
+          <span>Loading Scorebook...</span>
+        </div>
+      </div>
+    );
   }
 
   const contextValue = {

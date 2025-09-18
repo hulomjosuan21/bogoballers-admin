@@ -28,6 +28,11 @@ import { formatDate12h } from "@/lib/app_utils";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import {
+  deleteSavedState,
+  listSavedStates,
+  type GameState,
+} from "@/service/secureStore";
 
 type Props = {
   leagueCategoryId?: string;
@@ -129,6 +134,7 @@ export function UpcomingMatchTable({
     useLeagueMatch(leagueCategoryId, roundId, {
       condition: "Upcoming",
     });
+  const navigate = useNavigate();
 
   const [matches, setMatches] = useState<LeagueMatch[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<LeagueMatch | null>(
@@ -136,15 +142,25 @@ export function UpcomingMatchTable({
   );
   const [activeMatch, setActiveMatch] = useState<LeagueMatch | null>(null);
 
+  const [savedMatches, setSavedMatches] = useState<
+    { matchId: string; state: GameState }[]
+  >([]);
+
   useEffect(() => {
     if (leagueMatchData) {
       setMatches(
         leagueMatchData.filter(
-          (m) => m.public_league_match_id !== fromApi?.public_league_match_id
+          (m) =>
+            m.public_league_match_id !== fromApi?.public_league_match_id &&
+            !savedMatches.some((s) => s.matchId === m.league_match_id)
         )
       );
     }
-  }, [leagueMatchData, fromApi]);
+  }, [leagueMatchData, fromApi, savedMatches]);
+
+  useEffect(() => {
+    listSavedStates().then(setSavedMatches);
+  }, []);
 
   const columns: ColumnDef<LeagueMatch>[] = [
     {
@@ -244,88 +260,138 @@ export function UpcomingMatchTable({
 
   const handleRemove = () => {
     if (selectedMatch) {
-      setMatches((prev) => [...prev, selectedMatch]); // return to table
+      setMatches((prev) => [...prev, selectedMatch]);
       setSelectedMatch(null);
     }
   };
 
-  return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      {/* Drop Slot */}
-      <DropSlot match={selectedMatch} onRemove={handleRemove} />
+  const handleRemoveSaved = async (matchId: string) => {
+    await deleteSavedState(matchId);
+    setSavedMatches((prev) => prev.filter((m) => m.matchId !== matchId));
+  };
 
-      {/* Table */}
-      <div className="overflow-hidden rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-muted">
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
+  const handleContinue = (matchId: string) => {
+    navigate(`/scorebook/${matchId}`);
+  };
+
+  return (
+    <main className="space-y-2">
+      {savedMatches.length > 0 && (
+        <div className="mb-4 rounded-md border p-4">
+          <h3 className="mb-2 font-semibold">Continue Matches</h3>
+          <div className="flex flex-col gap-2">
+            {savedMatches.map((saved) => (
+              <div
+                key={saved.matchId}
+                className="flex items-center justify-between rounded bg-muted px-3 py-2"
+              >
+                <span>
+                  {saved.state.present.home_team.team_name} vs{" "}
+                  {saved.state.present.away_team.team_name}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleContinue(saved.matchId)}
+                  >
+                    Continue
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRemoveSaved(saved.matchId)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
             ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <DraggableRow key={row.id} match={row.original}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </DraggableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  {leagueMatchLoading
-                    ? "Loading data..."
-                    : leagueMatchError
-                    ? leagueMatchError.message
-                    : "No upcoming matches"}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      {createPortal(
-        <DragOverlay>
-          {activeMatch ? (
-            <div className="flex items-center gap-2 rounded-md border bg-background p-2 shadow-lg">
-              <img
-                src={activeMatch.home_team.team_logo_url}
-                alt={activeMatch.home_team.team_name}
-                className="h-6 w-6 rounded-sm object-cover"
-              />
-              <span>{activeMatch.home_team.team_name}</span>
-              <span className="mx-1">vs</span>
-              <img
-                src={activeMatch.away_team.team_logo_url}
-                alt={activeMatch.away_team.team_name}
-                className="h-6 w-6 rounded-sm object-cover"
-              />
-              <span>{activeMatch.away_team.team_name}</span>
-            </div>
-          ) : null}
-        </DragOverlay>,
-        document.body
+          </div>
+        </div>
       )}
-    </DndContext>
+
+      <div className="">
+        <span className="font-semibold">Upcoming</span>
+      </div>
+      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        {/* Drop Slot */}
+        <DropSlot match={selectedMatch} onRemove={handleRemove} />
+
+        {/* Table */}
+        <div className="overflow-hidden rounded-md border">
+          {/* Continue Saved Matches */}
+
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="bg-muted">
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <DraggableRow key={row.id} match={row.original}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </DraggableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    {leagueMatchLoading
+                      ? "Loading data..."
+                      : leagueMatchError
+                      ? leagueMatchError.message
+                      : "No upcoming matches"}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        {createPortal(
+          <DragOverlay>
+            {activeMatch ? (
+              <div className="flex items-center gap-2 rounded-md border bg-background p-2 shadow-lg">
+                <img
+                  src={activeMatch.home_team.team_logo_url}
+                  alt={activeMatch.home_team.team_name}
+                  className="h-6 w-6 rounded-sm object-cover"
+                />
+                <span>{activeMatch.home_team.team_name}</span>
+                <span className="mx-1">vs</span>
+                <img
+                  src={activeMatch.away_team.team_logo_url}
+                  alt={activeMatch.away_team.team_name}
+                  className="h-6 w-6 rounded-sm object-cover"
+                />
+                <span>{activeMatch.away_team.team_name}</span>
+              </div>
+            ) : null}
+          </DragOverlay>,
+          document.body
+        )}
+      </DndContext>
+    </main>
   );
 }
