@@ -16,8 +16,8 @@ export default function Scorebook({ viewMode = false, latency }: Props) {
   return (
     <div className="mx-auto px-1 pb-2 pt-4 space-y-2">
       <Tabs defaultValue="scorebook" className="text-sm text-muted-foreground">
-        <div className="flex items-center justify-between mb-2 relative">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 mb-2 relative">
+          <div className="flex items-center gap-1">
             <h1 className="ml-4 text-sm font-semibold">
               BogoBallers Digital Basketball Scorebook
             </h1>

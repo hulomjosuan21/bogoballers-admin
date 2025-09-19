@@ -102,17 +102,23 @@ export function TopSection({ viewMode = false }: Props) {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4 font-bold text-sm sm:text-md">
-        <span className="text-muted-foreground truncate max-w-[80px] sm:max-w-none">
+        <span className="sm:hidden">Home</span>
+        <span className="hidden sm:inline text-muted-foreground truncate max-w-[80px] sm:max-w-none">
           {state.home_team.team_name}
         </span>
+
         <span className="p-1 bg-primary text-primary-foreground rounded-md min-w-[40px] sm:min-w-[60px] text-center">
           {state.home_total_score}
         </span>
+
         <span className="text-xs sm:text-base">vs</span>
+
         <span className="p-1 bg-primary text-primary-foreground rounded-md min-w-[40px] sm:min-w-[60px] text-center">
           {state.away_total_score}
         </span>
-        <span className="text-muted-foreground truncate max-w-[80px] sm:max-w-none">
+
+        <span className="sm:hidden">Away</span>
+        <span className="hidden sm:inline text-muted-foreground truncate max-w-[80px] sm:max-w-none">
           {state.away_team.team_name}
         </span>
       </div>
