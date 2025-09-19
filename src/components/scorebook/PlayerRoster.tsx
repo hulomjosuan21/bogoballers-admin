@@ -17,7 +17,8 @@ export const PlayerRoster = memo(function PlayerRoster({
   viewMode,
   team,
 }: Props) {
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
+  const currentQuarter = state.current_quarter;
   const { openDialog } = useAlertDialog();
   const playersOnFloor = useMemo(
     () => team.players.filter((p) => !p.onBench),
@@ -27,7 +28,6 @@ export const PlayerRoster = memo(function PlayerRoster({
     () => team.players.filter((p) => p.onBench),
     [team.players]
   );
-
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over) return;
@@ -64,6 +64,7 @@ export const PlayerRoster = memo(function PlayerRoster({
           viewMode={viewMode}
           players={playersOnFloor}
           dispatch={dispatch}
+          currentQuarter={currentQuarter}
         />
 
         {!viewMode && (

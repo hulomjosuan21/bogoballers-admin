@@ -39,9 +39,7 @@ export default function LeagueMatchCompletedPage() {
     ) {
       const firstCategory = activeLeagueCategories[0];
       setSelectedCategory(firstCategory);
-      setActiveRoundId(
-        firstCategory.rounds[firstCategory.rounds.length - 1]?.round_id || null
-      );
+      setActiveRoundId(firstCategory.rounds[0]?.round_id || null);
     }
   }, [hasActiveLeague, activeLeagueCategories]);
 

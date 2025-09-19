@@ -29,6 +29,25 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
     const room = matchId;
     socket.emit("join", { room });
 
+    let pingInterval: NodeJS.Timeout;
+
+    socket.on("connect", () => {
+      pingInterval = setInterval(() => {
+        const startTime = Date.now();
+        socket.emit("ping", { timestamp: startTime });
+      }, 5000);
+    });
+
+    socket.on("pong", (data: { timestamp: number }) => {
+      const rtt = Date.now() - data.timestamp;
+      setLatency(rtt);
+    });
+
+    socket.on("disconnect", () => {
+      setLatency(null);
+      clearInterval(pingInterval);
+    });
+
     const loadGame = async () => {
       try {
         if (isController) {
@@ -91,6 +110,7 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
 
     return () => {
       socket.disconnect();
+      clearInterval(pingInterval);
     };
   }, [matchId, isController]);
 
@@ -113,5 +133,5 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
     }
   }, [state, isController, isLoading, matchId]);
 
-  return { state, dispatch, isLoading, isNotFound };
+  return { state, dispatch, isLoading, isNotFound, latency };
 };

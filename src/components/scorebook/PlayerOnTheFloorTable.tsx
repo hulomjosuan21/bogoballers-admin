@@ -28,22 +28,20 @@ import type { PlayerBook, PlayerStatsSummary } from "@/types/scorebook";
 import { type Action } from "@/context/GameContext";
 import { DroppableTableRow } from "./DroppableTableRow";
 import { memo } from "react";
-import { useGame } from "@/context/GameContext";
 
 type Props = {
   viewMode?: boolean;
   players: PlayerBook[];
   dispatch: React.Dispatch<Action>;
+  currentQuarter: number;
 };
 
 export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
   viewMode,
   players,
   dispatch,
+  currentQuarter,
 }: Props) {
-  const { state } = useGame();
-  const currentQuarter = state.current_quarter;
-
   const columns: ColumnDef<PlayerBook>[] = [
     {
       accessorKey: "player",
@@ -157,34 +155,61 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
                   <DropdownMenuLabel>Stats</DropdownMenuLabel>
                   <DropdownMenuGroup className="group-sm">
                     <DropdownMenuItem
-                      className="menu-sm"
-                      onSelect={() => updateStat("reb", 1)}
+                      className="menu-sm-d"
+                      onSelect={() => updateStat("ast", -1)}
                     >
-                      +REB
+                      - ast
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("ast", 1)}
                     >
-                      +AST
+                      + ast
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+
+                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm-d"
+                      onSelect={() => updateStat("stl", -1)}
+                    >
+                      - stl
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("stl", 1)}
                     >
-                      +STL
+                      + stl
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+
+                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm-d"
+                      onSelect={() => updateStat("blk", -1)}
+                    >
+                      - blk
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("blk", 1)}
                     >
-                      +BLK
+                      + blk
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+
+                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm-d"
+                      onSelect={() => updateStat("tov", -1)}
+                    >
+                      - tov
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("tov", 1)}
                     >
-                      +TOV
+                      + tov
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>

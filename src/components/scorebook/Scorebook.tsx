@@ -5,19 +5,39 @@ import { TopSection } from "./TopSection";
 import { FileSliders, Redo, Table2, Undo } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FullRosterSummaryTable } from "./FullRosterSummaryTable";
+import { Badge } from "../ui/badge";
+import { cn } from "@/lib/utils";
 
-type Props = { viewMode?: boolean };
+type Props = { viewMode?: boolean; latency: number | null };
 
-export default function Scorebook({ viewMode = false }: Props) {
+export default function Scorebook({ viewMode = false, latency }: Props) {
   const { state, dispatch, canUndo, canRedo } = useGame();
 
   return (
     <div className="mx-auto px-1 pb-2 pt-4 space-y-2">
       <Tabs defaultValue="scorebook" className="text-sm text-muted-foreground">
         <div className="flex items-center justify-between mb-2 relative">
-          <h1 className="ml-4 text-sm font-semibold">
-            BogoBallers Digital Basketball Scorebook
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="ml-4 text-sm font-semibold">
+              BogoBallers Digital Basketball Scorebook
+            </h1>
+            <Badge variant="outline" className="gap-1.5 text-xs font-light">
+              <span
+                className={cn(
+                  "size-1.5 rounded-full",
+                  latency == null
+                    ? "bg-gray-400"
+                    : latency < 100
+                    ? "bg-emerald-500"
+                    : latency < 200
+                    ? "bg-orange-500"
+                    : "bg-red-500"
+                )}
+                aria-hidden="true"
+              />
+              {latency != null ? `${latency}ms` : "Disconnected"}
+            </Badge>
+          </div>
 
           {viewMode ? (
             <div className="ml-auto mr-4">

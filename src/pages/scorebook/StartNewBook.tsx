@@ -7,7 +7,10 @@ import { useParams } from "react-router-dom";
 export default function StartScorebookPage() {
   const { match_id } = useParams();
 
-  const { state, dispatch, isLoading } = useScorebookState(match_id!, true);
+  const { state, dispatch, isLoading, latency } = useScorebookState(
+    match_id!,
+    true
+  );
 
   if (isLoading) {
     return <div></div>;
@@ -33,7 +36,7 @@ export default function StartScorebookPage() {
 
   return (
     <GameProvider value={contextValue}>
-      <Scorebook viewMode={false} />
+      <Scorebook viewMode={false} latency={latency} />
     </GameProvider>
   );
 }
