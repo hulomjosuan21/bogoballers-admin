@@ -55,7 +55,10 @@ export function TeamStatsByQuarterTable({ team, viewMode = false }: Props) {
 
             return (
               <TableRow key={qtrNum}>
-                <TableCell className="font-medium">Q{qtrNum}</TableCell>
+                <TableCell className="font-medium">
+                  {qtrNum <= 4 ? `Q${qtrNum}` : `OT ${qtrNum - 4}`}
+                </TableCell>
+
                 <TableCell>{qtrScoreData?.score ?? 0}</TableCell>
                 <TableCell>
                   <Input

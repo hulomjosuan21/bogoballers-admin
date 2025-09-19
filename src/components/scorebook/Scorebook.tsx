@@ -7,11 +7,52 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FullRosterSummaryTable } from "./FullRosterSummaryTable";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
+import { useHotkeys } from "react-hotkeys-hook";
+import { useNavigate } from "react-router-dom";
 
 type Props = { viewMode?: boolean; latency: number | null };
 
 export default function Scorebook({ viewMode = false, latency }: Props) {
   const { state, dispatch, canUndo, canRedo } = useGame();
+  const navigate = useNavigate();
+
+  useHotkeys("ctrl+shift+b, cmd+shift+b", () => {
+    navigate(-1);
+  });
+
+  useHotkeys(
+    "t",
+    () => {
+      dispatch({ type: "TOGGLE_TIMER" });
+      (document.activeElement as HTMLElement)?.blur();
+    },
+    {
+      enabled: !viewMode,
+    }
+  );
+
+  useHotkeys(
+    "ctrl+z, cmd+z",
+    () => {
+      dispatch({ type: "UNDO" });
+      (document.activeElement as HTMLElement)?.blur();
+    },
+    {
+      enabled: canUndo && !viewMode,
+    }
+  );
+
+  useHotkeys(
+    "ctrl+y, ctrl+shift+z, cmd+shift+z",
+    () => {
+      if (!canRedo) return;
+      dispatch({ type: "REDO" });
+      (document.activeElement as HTMLElement)?.blur();
+    },
+    {
+      enabled: canRedo && !viewMode,
+    }
+  );
 
   return (
     <div className="mx-auto px-1 pb-2 pt-4 space-y-2">

@@ -58,7 +58,7 @@ export function TeamTimeoutTable({ team, viewMode = false }: Props) {
         )}
       </div>
 
-      <div className="max-h-[170px] flex-grow overflow-y-auto">
+      <div className="max-h-fut flex-grow overflow-y-auto">
         <Table>
           <TableHeader>
             <TableRow>

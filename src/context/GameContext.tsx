@@ -125,6 +125,9 @@ export const gameReducer = (
         }
         return { ...newState, timer_running: false };
 
+      case "SET_TIME":
+        return { ...newState, time_seconds: currentAction.payload };
+
       case "ADD_OVERTIME": {
         const newTotalQuarters = newState.quarters + 1;
 

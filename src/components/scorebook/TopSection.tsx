@@ -57,9 +57,13 @@ export function TopSection({ viewMode = false }: Props) {
           <Select
             value={String(state.current_quarter)}
             onValueChange={(val) => {
-              const numericValue = Number(val);
-              if (!isNaN(numericValue)) {
-                dispatch({ type: "CHANGE_QUARTER", payload: numericValue });
+              if (val === "add-ot") {
+                dispatch({ type: "ADD_OVERTIME" });
+              } else {
+                const numericValue = Number(val);
+                if (!isNaN(numericValue)) {
+                  dispatch({ type: "CHANGE_QUARTER", payload: numericValue });
+                }
               }
             }}
             disabled={viewMode}
@@ -85,10 +89,6 @@ export function TopSection({ viewMode = false }: Props) {
                   <SelectSeparator />
                   <SelectItem
                     value="add-ot"
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      dispatch({ type: "ADD_OVERTIME" });
-                    }}
                     disabled={viewMode}
                     className="text-blue-500"
                   >
@@ -107,13 +107,13 @@ export function TopSection({ viewMode = false }: Props) {
           {state.home_team.team_name}
         </span>
 
-        <span className="p-1 bg-primary text-primary-foreground rounded-md min-w-[40px] sm:min-w-[60px] text-center">
+        <span className="p-1 bg-primary text-primary-foreground rounded-sm min-w-[40px] sm:min-w-[60px] text-center">
           {state.home_total_score}
         </span>
 
         <span className="text-xs sm:text-base">vs</span>
 
-        <span className="p-1 bg-primary text-primary-foreground rounded-md min-w-[40px] sm:min-w-[60px] text-center">
+        <span className="p-1 bg-primary text-primary-foreground rounded-sm min-w-[40px] sm:min-w-[60px] text-center">
           {state.away_total_score}
         </span>
 
@@ -131,6 +131,7 @@ export function TopSection({ viewMode = false }: Props) {
               variant={"sm"}
               value={formatTime(state.time_seconds)}
               onChange={handleTimeChange}
+              readOnly={viewMode || state.timer_running}
               className="w-24 text-center font-mono text-md"
             />
             <InputAddon
