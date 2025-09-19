@@ -39,6 +39,7 @@ export const initialMatchData: MatchBook = {
   minutes_per_overtime: 5,
   time_seconds: 10 * 60,
   is_overtime: false,
+
   timer_running: false,
   current_quarter: 1,
   home_team: {
@@ -47,6 +48,7 @@ export const initialMatchData: MatchBook = {
     team_name: "Bogo Sharks",
     coach: "Coach Smith",
     coachT: 0,
+    capT_ball: null,
     none_memberT: 0,
     score_per_qtr: [{ qtr: 1, score: 0 }],
     teamF_per_qtr: [{ qtr: 1, foul: 0 }],
@@ -59,6 +61,7 @@ export const initialMatchData: MatchBook = {
     team_name: "Cebu Eagles",
     coach: "Coach Jones",
     coachT: 0,
+    capT_ball: null,
     none_memberT: 0,
     score_per_qtr: [{ qtr: 1, score: 0 }],
     teamF_per_qtr: [{ qtr: 1, foul: 0 }],
