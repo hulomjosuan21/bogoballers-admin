@@ -235,7 +235,7 @@ export default function ManageAffiliates({
       )}
     >
       <div className="flex justify-between items-center gap-4">
-        <p className="text-helper">Manage league affiliates.</p>
+        <p className="text-helper">Manage league sponsors and partners.</p>
         <div className="flex gap-2 items-center">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>

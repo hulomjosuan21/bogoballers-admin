@@ -41,7 +41,7 @@ function buildNavFromRoutes(routes: AppRouteObject[]) {
     } else {
       navItems.push({
         title: route.sidebarTitle,
-        url: route.index ? "/league-administrator" : route.path,
+        url: route.index ? "/portal/league-administrator" : route.path,
         icon: route.icon,
       });
     }

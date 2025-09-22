@@ -170,13 +170,12 @@ export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
     []
   );
 
-  // FIX 3: Ensure we have valid data
   const tableData = useMemo(() => {
     return leagueTeamData || [];
   }, [leagueTeamData]);
 
   const table = useReactTable({
-    data: tableData, // Use actual data instead of empty array
+    data: tableData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

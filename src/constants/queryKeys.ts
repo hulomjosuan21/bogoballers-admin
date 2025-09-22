@@ -1,3 +1,4 @@
+import type { League } from "@/types/league";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import type { LeaguePlayer } from "@/types/player";
@@ -15,6 +16,12 @@ export const QUERY_KEYS = {
 
   PLAYERS_ALL: ["players-all"] as const,
   TEAMS_ALL: ["teams-all"] as const,
+  LEAGUE_ADMINS: ["league-admins-all"] as const,
+
+  LEAGUE_PUBLIC_ID: (
+    publicLeagueId?: string,
+    data?: Partial<League> & { condition: string }
+  ) => ["league-public-id", publicLeagueId, JSON.stringify(data)] as const,
 
   LEAGUE_PLAYER: (
     leagueId?: string,

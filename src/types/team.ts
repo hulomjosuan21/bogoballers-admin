@@ -35,6 +35,7 @@ export interface Team extends PlayersType {
 
 export interface LeagueTeam extends Team {
   league_team_id: string;
+  league_team_public_id: string;
   league_id: string;
   league_category_id: string;
   status: string;

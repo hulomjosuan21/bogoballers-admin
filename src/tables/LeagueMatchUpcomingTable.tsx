@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLeagueMatch } from "@/hooks/leagueMatch";
 import type { LeagueMatch } from "@/types/leagueMatch";
-import { GripVertical, X } from "lucide-react";
+import { GripVertical, MoreVertical, X } from "lucide-react";
 import { formatDate12h } from "@/lib/app_utils";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -33,6 +33,17 @@ import {
   listSavedStates,
   type GameState,
 } from "@/service/secureStore";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToggleMatchBookSection } from "@/stores/matchStore";
+import { ToggleState } from "@/stores/toggleStore";
 
 type Props = {
   leagueCategoryId?: string;
@@ -96,18 +107,18 @@ function DropSlot({
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center gap-2">
             <img
-              src={match.home_team.team_logo_url}
-              alt={match.home_team.team_name}
+              src={match.home_team!.team_logo_url}
+              alt={match.home_team!.team_name}
               className="h-8 w-8 rounded-sm object-cover"
             />
-            <span className="font-medium">{match.home_team.team_name}</span>
+            <span className="font-medium">{match.home_team!.team_name}</span>
             <span className="mx-2">vs</span>
             <img
-              src={match.away_team.team_logo_url}
-              alt={match.away_team.team_name}
+              src={match.away_team!.team_logo_url}
+              alt={match.away_team!.team_name}
               className="h-8 w-8 rounded-sm object-cover"
             />
-            <span className="font-medium">{match.away_team.team_name}</span>
+            <span className="font-medium">{match.away_team!.team_name}</span>
           </div>
           <div className="flex gap-2">
             <Button size="sm" onClick={handleStart}>
@@ -158,6 +169,8 @@ export function UpcomingMatchTable({
     }
   }, [leagueMatchData, fromApi, savedMatches]);
 
+  const { toggle } = useToggleMatchBookSection();
+
   useEffect(() => {
     listSavedStates().then(setSavedMatches);
   }, []);
@@ -183,11 +196,11 @@ export function UpcomingMatchTable({
         return (
           <div className="flex items-center gap-2">
             <img
-              src={home_team.team_logo_url}
-              alt={home_team.team_name}
+              src={home_team!.team_logo_url}
+              alt={home_team!.team_name}
               className="h-8 w-8 rounded-sm object-cover"
             />
-            <span>{home_team.team_name}</span>
+            <span>{home_team!.team_name}</span>
           </div>
         );
       },
@@ -200,11 +213,11 @@ export function UpcomingMatchTable({
         return (
           <div className="flex items-center gap-2">
             <img
-              src={away_team.team_logo_url}
-              alt={away_team.team_name}
+              src={away_team!.team_logo_url}
+              alt={away_team!.team_name}
               className="h-8 w-8 rounded-sm object-cover"
             />
-            <span>{away_team.team_name}</span>
+            <span>{away_team!.team_name}</span>
           </div>
         );
       },
@@ -275,7 +288,7 @@ export function UpcomingMatchTable({
   };
 
   return (
-    <main className="space-y-2">
+    <div className="space-y-2">
       {savedMatches.length > 0 && (
         <div className="mb-4 rounded-md border p-4">
           <h3 className="mb-2 font-semibold">Continue Matches</h3>
@@ -290,19 +303,41 @@ export function UpcomingMatchTable({
                   {saved.state.present.away_team.team_name}
                 </span>
                 <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleContinue(saved.matchId)}
-                  >
-                    Continue
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleRemoveSaved(saved.matchId)}
-                  >
-                    Remove
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreVertical />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem
+                          onClick={() => handleContinue(saved.matchId)}
+                        >
+                          Continue
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleRemoveSaved(saved.matchId)}
+                        >
+                          Remove
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            toggle(
+                              saved.state.present,
+                              ToggleState.SHOW_SAVED_MATCH
+                            )
+                          }
+                        >
+                          Finalize
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             ))}
@@ -310,9 +345,6 @@ export function UpcomingMatchTable({
         </div>
       )}
 
-      <div className="">
-        <span className="font-semibold">Upcoming</span>
-      </div>
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <DropSlot match={selectedMatch} onRemove={handleRemove} />
         <div className="overflow-hidden rounded-md border">
@@ -369,24 +401,24 @@ export function UpcomingMatchTable({
             {activeMatch ? (
               <div className="flex items-center gap-2 rounded-md border bg-background p-2 shadow-lg">
                 <img
-                  src={activeMatch.home_team.team_logo_url}
-                  alt={activeMatch.home_team.team_name}
+                  src={activeMatch.home_team!.team_logo_url}
+                  alt={activeMatch.home_team!.team_name}
                   className="h-6 w-6 rounded-sm object-cover"
                 />
-                <span>{activeMatch.home_team.team_name}</span>
+                <span>{activeMatch.home_team!.team_name}</span>
                 <span className="mx-1">vs</span>
                 <img
-                  src={activeMatch.away_team.team_logo_url}
-                  alt={activeMatch.away_team.team_name}
+                  src={activeMatch.away_team!.team_logo_url}
+                  alt={activeMatch.away_team!.team_name}
                   className="h-6 w-6 rounded-sm object-cover"
                 />
-                <span>{activeMatch.away_team.team_name}</span>
+                <span>{activeMatch.away_team!.team_name}</span>
               </div>
             ) : null}
           </DragOverlay>,
           document.body
         )}
       </DndContext>
-    </main>
+    </div>
   );
 }

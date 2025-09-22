@@ -60,6 +60,7 @@ type SheetFormData = {
   referees?: { label: string; value: string }[];
   quarters?: number;
   minutes_per_quarter?: number;
+  minutes_per_overtime?: number;
 };
 
 type Props = {
@@ -109,6 +110,7 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
         court: selectedMatch.court || "",
         quarters: selectedMatch.quarters || undefined,
         minutes_per_quarter: selectedMatch.minutes_per_quarter || undefined,
+        minutes_per_overtime: selectedMatch.minutes_per_overtime || undefined,
         scheduled_date: selectedMatch.scheduled_date
           ? new Date(selectedMatch.scheduled_date)
           : undefined,
@@ -136,6 +138,7 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       court: sheetFormData.court,
       quarters: sheetFormData.quarters,
       minutes_per_quarter: sheetFormData.minutes_per_quarter,
+      minutes_per_overtime: sheetFormData.minutes_per_overtime,
       referees: sheetFormData.referees?.map((opt) => opt.value),
       scheduled_date: sheetFormData.scheduled_date
         ? sheetFormData.scheduled_date.toISOString()
@@ -166,6 +169,7 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       court: sheetFormData.court,
       quarters: sheetFormData.quarters,
       minutes_per_quarter: sheetFormData.minutes_per_quarter,
+      minutes_per_overtime: sheetFormData.minutes_per_overtime,
       referees: sheetFormData.referees?.map((opt) => opt.value),
       scheduled_date: sheetFormData.scheduled_date.toISOString(),
       status: "Scheduled",
@@ -191,6 +195,16 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       header: "Home team",
       cell: ({ row }) => {
         const { home_team } = row.original;
+
+        if (!home_team) {
+          return (
+            <Badge variant="outline" className="gap-1">
+              <X className="text-red-500" size={12} aria-hidden="true" />
+              TBD
+            </Badge>
+          );
+        }
+
         return (
           <div className="flex items-center gap-2">
             <img
@@ -203,11 +217,22 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
         );
       },
     },
+
     {
       accessorKey: "away-team",
       header: "Away team",
       cell: ({ row }) => {
         const { away_team } = row.original;
+
+        if (!away_team) {
+          return (
+            <Badge variant="outline" className="gap-1">
+              <X className="text-red-500" size={12} aria-hidden="true" />
+              TBD
+            </Badge>
+          );
+        }
+
         return (
           <div className="flex items-center gap-2">
             <img
@@ -385,14 +410,14 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
             </SheetDescription>
           </SheetHeader>
           <div className="grid space-y-4">
-            <div className="grid gap-2">
+            <div className="space-y-1">
               <Label htmlFor="scheduled_date">Schedule Date & Time</Label>
               <DateTimePicker
                 dateTime={sheetFormData.scheduled_date}
                 setDateTime={(date) => handleFormChange("scheduled_date", date)}
               />
             </div>
-            <div className="grid gap-2">
+            <div className="space-y-1">
               <Label htmlFor="court">Court</Label>
               <Select
                 value={sheetFormData.court}
@@ -410,8 +435,8 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
+            <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="quarters">Quarters</Label>
                 <Input
                   type="number"
@@ -423,7 +448,7 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
                   }
                 />
               </div>
-              <div className="grid gap-2">
+              <div className="space-y-1">
                 <Label htmlFor="minutes_per_quarter">Minutes per Quarter</Label>
                 <Input
                   type="number"
@@ -438,8 +463,25 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
                   }
                 />
               </div>
+              <div className="space-y-1">
+                <Label htmlFor="minutes_per_overtime">
+                  Minutes per overtime
+                </Label>
+                <Input
+                  type="number"
+                  placeholder="e.g., 10"
+                  id="minutes_per_overtime"
+                  value={sheetFormData.minutes_per_overtime || ""}
+                  onChange={(e) =>
+                    handleFormChange(
+                      "minutes_per_overtime",
+                      e.target.valueAsNumber
+                    )
+                  }
+                />
+              </div>
             </div>
-            <div className="grid gap-2">
+            <div className="space-y-1">
               <MultipleSelector
                 maxSelected={3}
                 hidePlaceholderWhenSelected

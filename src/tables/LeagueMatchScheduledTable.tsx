@@ -65,6 +65,7 @@ type SheetFormData = {
   away_team_score?: number;
   winner_team_id?: string;
   status?: string;
+  minutes_per_overtime?: number;
 };
 
 type Props = {
@@ -99,9 +100,11 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
     const referees = (activeLeagueData?.league_referees ?? []).filter(
       (ref) => ref.is_available
     );
+
     const courts = (activeLeagueData?.league_courts ?? []).filter(
       (court) => court.is_available
     );
+
     setRefereesOption(referees);
     setCourtOption(courts);
   }, [activeLeagueData]);
@@ -112,6 +115,7 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
         court: selectedMatch.court || "",
         quarters: selectedMatch.quarters || undefined,
         minutes_per_quarter: selectedMatch.minutes_per_quarter || undefined,
+        minutes_per_overtime: selectedMatch.minutes_per_overtime || undefined,
         scheduled_date: selectedMatch.scheduled_date
           ? new Date(selectedMatch.scheduled_date)
           : undefined,
@@ -120,10 +124,6 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
             label: ref,
             value: ref,
           })) || [],
-        home_team_score: selectedMatch.home_team_score ?? undefined,
-        away_team_score: selectedMatch.away_team_score ?? undefined,
-        winner_team_id: selectedMatch.winner_team_id ?? undefined,
-        status: selectedMatch.status,
       });
     }
   }, [selectedMatch]);
@@ -144,9 +144,9 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
         let newStatus = prev.status;
 
         if (homeScore > awayScore) {
-          newWinnerId = selectedMatch.home_team_id;
+          newWinnerId = selectedMatch.home_team_id!;
         } else if (awayScore > homeScore) {
-          newWinnerId = selectedMatch.away_team_id;
+          newWinnerId = selectedMatch.away_team_id!;
         } else {
           newWinnerId = undefined;
           if (newStatus === "Completed") newStatus = "Scheduled";
@@ -179,31 +179,15 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
   const handleSaveChanges = () => {
     if (!selectedMatch) return;
 
-    const loser_team_id = sheetFormData.winner_team_id
-      ? sheetFormData.winner_team_id === selectedMatch.home_team_id
-        ? selectedMatch.away_team_id
-        : selectedMatch.home_team_id
-      : undefined;
-
-    // Determine status
-    const status =
-      sheetFormData.winner_team_id || loser_team_id
-        ? "Completed"
-        : sheetFormData.status;
-
     const payload: Partial<LeagueMatch> = {
       court: sheetFormData.court,
       quarters: sheetFormData.quarters,
       minutes_per_quarter: sheetFormData.minutes_per_quarter,
+      minutes_per_overtime: sheetFormData.minutes_per_overtime,
       referees: sheetFormData.referees?.map((opt) => opt.value),
       scheduled_date: sheetFormData.scheduled_date
         ? sheetFormData.scheduled_date.toISOString()
         : undefined,
-      home_team_score: sheetFormData.home_team_score,
-      away_team_score: sheetFormData.away_team_score,
-      winner_team_id: sheetFormData.winner_team_id,
-      loser_team_id,
-      status,
     };
 
     const updateApi = async () => {
@@ -231,11 +215,11 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
         return (
           <div className="flex items-center gap-2">
             <img
-              src={home_team.team_logo_url}
-              alt={home_team.team_name}
+              src={home_team!.team_logo_url}
+              alt={home_team!.team_name}
               className="h-8 w-8 rounded-sm object-cover"
             />
-            <span>{home_team.team_name}</span>
+            <span>{home_team!.team_name}</span>
           </div>
         );
       },
@@ -248,11 +232,11 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
         return (
           <div className="flex items-center gap-2">
             <img
-              src={away_team.team_logo_url}
-              alt={away_team.team_name}
+              src={away_team!.team_logo_url}
+              alt={away_team!.team_name}
               className="h-8 w-8 rounded-sm object-cover"
             />
-            <span>{away_team.team_name}</span>
+            <span>{away_team!.team_name}</span>
           </div>
         );
       },
@@ -291,15 +275,15 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
           return <span className="text-muted-foreground">--</span>;
         }
         const winner =
-          winner_team_id === home_team.team_id ? home_team : away_team;
+          winner_team_id === home_team!.team_id ? home_team : away_team;
         return (
           <div className="flex items-center gap-2 font-medium">
             <img
-              src={winner.team_logo_url}
-              alt={winner.team_name}
+              src={winner!.team_logo_url}
+              alt={winner!.team_name}
               className="h-6 w-6 rounded-sm object-cover"
             />
-            <span>{winner.team_name}</span>
+            <span>{winner!.team_name}</span>
           </div>
         );
       },
@@ -469,26 +453,23 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       <DataTablePagination showPageSize={true} table={table} />
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent
-          aria-describedby={undefined}
-          className="flex flex-col gap-4"
-        >
+        <SheetContent aria-describedby={undefined}>
           <SheetHeader>
             <SheetTitle>Manage Match</SheetTitle>
             <SheetDescription>
-              Update match details. Winner and status are set automatically
-              based on score.
+              Update match details or set the final schedule. Click the
+              appropriate save button below.
             </SheetDescription>
           </SheetHeader>
-          <div className="space-y-4 overflow-y-auto pr-4">
-            <div className="grid gap-2">
+          <div className="grid space-y-4">
+            <div className="space-y-1">
               <Label htmlFor="scheduled_date">Schedule Date & Time</Label>
               <DateTimePicker
                 dateTime={sheetFormData.scheduled_date}
                 setDateTime={(date) => handleFormChange("scheduled_date", date)}
               />
             </div>
-            <div className="grid gap-2">
+            <div className="space-y-1">
               <Label htmlFor="court">Court</Label>
               <Select
                 value={sheetFormData.court}
@@ -506,8 +487,8 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
+            <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="quarters">Quarters</Label>
                 <Input
                   type="number"
@@ -519,7 +500,7 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
                   }
                 />
               </div>
-              <div className="grid gap-2">
+              <div className="space-y-1">
                 <Label htmlFor="minutes_per_quarter">Minutes per Quarter</Label>
                 <Input
                   type="number"
@@ -534,9 +515,25 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
                   }
                 />
               </div>
+              <div className="space-y-1">
+                <Label htmlFor="minutes_per_overtime">
+                  Minutes per overtime
+                </Label>
+                <Input
+                  type="number"
+                  placeholder="e.g., 10"
+                  id="minutes_per_overtime"
+                  value={sheetFormData.minutes_per_overtime || ""}
+                  onChange={(e) =>
+                    handleFormChange(
+                      "minutes_per_overtime",
+                      e.target.valueAsNumber
+                    )
+                  }
+                />
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label>Referees</Label>
+            <div className="space-y-1">
               <MultipleSelector
                 maxSelected={3}
                 hidePlaceholderWhenSelected
@@ -548,50 +545,6 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
                 }))}
                 placeholder="Select referees..."
               />
-            </div>
-
-            <div className="space-y-2 rounded-md border p-4">
-              <h4 className="font-medium">Match Result</h4>
-              <p className="text-sm text-muted-foreground">
-                Enter the final score to automatically assign a winner and
-                complete the match.
-              </p>
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="home_score">
-                    {selectedMatch?.home_team.team_name} Score
-                  </Label>
-                  <Input
-                    type="number"
-                    id="home_score"
-                    placeholder="e.g., 98"
-                    value={sheetFormData.home_team_score ?? ""}
-                    onChange={(e) =>
-                      handleFormChange(
-                        "home_team_score",
-                        e.target.valueAsNumber
-                      )
-                    }
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="away_score">
-                    {selectedMatch?.away_team.team_name} Score
-                  </Label>
-                  <Input
-                    type="number"
-                    id="away_score"
-                    placeholder="e.g., 95"
-                    value={sheetFormData.away_team_score ?? ""}
-                    onChange={(e) =>
-                      handleFormChange(
-                        "away_team_score",
-                        e.target.valueAsNumber
-                      )
-                    }
-                  />
-                </div>
-              </div>
             </div>
           </div>
           <SheetFooter className="mt-auto">

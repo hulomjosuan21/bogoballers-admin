@@ -2,13 +2,23 @@ import { TeamSection } from "./TeamSection";
 import { useGame } from "@/context/GameContext";
 import { Button } from "../ui/button";
 import { TopSection } from "./TopSection";
-import { FileSliders, Redo, Table2, Undo } from "lucide-react";
+import { FileSliders, MoreVertical, Redo, Table2, Undo } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FullRosterSummaryTable } from "./FullRosterSummaryTable";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Props = { viewMode?: boolean; latency: number | null };
 
@@ -16,8 +26,8 @@ export default function Scorebook({ viewMode = false, latency }: Props) {
   const { state, dispatch, canUndo, canRedo } = useGame();
   const navigate = useNavigate();
 
-  useHotkeys("ctrl+shift+b, cmd+shift+b", () => {
-    navigate(-1);
+  useHotkeys("esc", () => navigate(-1), {
+    enabled: !viewMode,
   });
 
   useHotkeys(
@@ -31,6 +41,11 @@ export default function Scorebook({ viewMode = false, latency }: Props) {
     }
   );
 
+  const handleUndo = () => {
+    if (!canUndo) return;
+    dispatch({ type: "UNDO" });
+  };
+
   useHotkeys(
     "ctrl+z, cmd+z",
     () => {
@@ -42,10 +57,14 @@ export default function Scorebook({ viewMode = false, latency }: Props) {
     }
   );
 
+  const handleRedo = () => {
+    if (!canRedo) return;
+    dispatch({ type: "REDO" });
+  };
+
   useHotkeys(
     "ctrl+y, ctrl+shift+z, cmd+shift+z",
     () => {
-      if (!canRedo) return;
       dispatch({ type: "REDO" });
       (document.activeElement as HTMLElement)?.blur();
     },
@@ -59,6 +78,50 @@ export default function Scorebook({ viewMode = false, latency }: Props) {
       <Tabs defaultValue="scorebook" className="text-sm text-muted-foreground">
         <div className="flex items-center justify-between gap-2 mb-2 relative">
           <div className="flex items-center gap-1">
+            {!viewMode && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="ml-4">
+                  <DropdownMenuLabel>Menu</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup className="mb-2">
+                    <DropdownMenuItem
+                      onClick={() => dispatch({ type: "TOGGLE_TIMER" })}
+                    >
+                      Toggle timer
+                      <DropdownMenuShortcut>t</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm-d"
+                      onSelect={handleUndo}
+                      disabled={!canUndo}
+                    >
+                      undo
+                      <DropdownMenuShortcut>ctrl+z</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={!canRedo}
+                      className="menu-sm"
+                      onSelect={handleRedo}
+                    >
+                      redo
+                      <DropdownMenuShortcut>ctrl+shift+z</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate(-1)}>
+                    Back <DropdownMenuShortcut>esc</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <h1 className="ml-4 text-sm font-semibold">
               BogoBallers Digital Basketball Scorebook
             </h1>

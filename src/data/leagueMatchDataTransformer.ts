@@ -51,32 +51,32 @@ export const transformApiDataToScorebookState = (
 
     home_team: {
       side: "home",
-      team_id: apiMatch.home_team.team_id,
-      team_name: apiMatch.home_team.team_name,
-      coach: apiMatch.home_team.coach_name,
+      team_id: apiMatch.home_team!.team_id,
+      team_name: apiMatch.home_team!.team_name,
+      coach: apiMatch.home_team!.coach_name,
       capT_ball: null,
       coachT: 0,
       none_memberT: 0,
       score_per_qtr: [{ qtr: 1, score: 0 }],
       teamF_per_qtr: [{ qtr: 1, foul: 0 }],
       timeouts: [],
-      players: apiMatch.home_team.league_players.map((p) =>
-        transformPlayer(p, apiMatch.home_team.team_id)
+      players: apiMatch.home_team!.league_players.map((p) =>
+        transformPlayer(p, apiMatch.home_team!.team_id)
       ),
     },
     away_team: {
       side: "away",
-      team_id: apiMatch.away_team.team_id,
-      team_name: apiMatch.away_team.team_name,
-      coach: apiMatch.away_team.coach_name,
+      team_id: apiMatch.away_team!.team_id,
+      team_name: apiMatch.away_team!.team_name,
+      coach: apiMatch.away_team!.coach_name,
       coachT: 0,
       capT_ball: null,
       none_memberT: 0,
       score_per_qtr: [{ qtr: 1, score: 0 }],
       teamF_per_qtr: [{ qtr: 1, foul: 0 }],
       timeouts: [],
-      players: apiMatch.away_team.league_players.map((p) =>
-        transformPlayer(p, apiMatch.away_team.team_id)
+      players: apiMatch.away_team!.league_players.map((p) =>
+        transformPlayer(p, apiMatch.away_team!.team_id)
       ),
     },
   };

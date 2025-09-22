@@ -8,6 +8,7 @@ import { useToggleOfficialLeagueTeamSection } from "@/stores/leagueTeamStores";
 import { ToggleState } from "@/stores/toggleStore";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
+import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 
 export default function LeagueTeamsPage() {
   const {
@@ -36,6 +37,10 @@ export default function LeagueTeamsPage() {
       setActiveCategoryId(activeLeagueCategories[0].league_category_id);
     }
   }, [hasActiveLeague, activeLeagueCategories]);
+
+  if (activeLeagueData?.status == "Pending") {
+    return <LeagueNotApproveYet />;
+  }
 
   return (
     <ContentShell>

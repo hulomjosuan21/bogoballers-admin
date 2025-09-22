@@ -1,17 +1,15 @@
-// src/types/index.ts
-
 export interface PlayerStatsSummary {
-  fg2m: number; // Field Goal 2-points Made
-  fg2a: number; // Field Goal 2-points Attempted
+  fg2m: number;
+  fg2a: number;
   fg3m: number;
   fg3a: number;
-  ftm: number; // Free Throw Made
-  fta: number; // Free Throw Attempted
-  reb: number; // Rebounds
-  ast: number; // Assists
-  stl: number; // Steals
-  blk: number; // Blocks
-  tov: number; // Turnovers
+  ftm: number;
+  fta: number;
+  reb: number;
+  ast: number;
+  stl: number;
+  blk: number;
+  tov: number;
 }
 
 export interface PlayerBook {
@@ -22,8 +20,8 @@ export interface PlayerBook {
   jersey_number: number;
   total_score: number;
   score_per_qtr: { qtr: number; score: number }[];
-  P: number; // Personal Fouls
-  T: number; // Technical Fouls
+  P: number;
+  T: number;
   summary: PlayerStatsSummary;
   onBench: boolean;
 }

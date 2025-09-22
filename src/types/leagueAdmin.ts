@@ -10,6 +10,7 @@ export type LeagueAdministator = {
   organization_logo_url: string;
   league_admin_created_at: string;
   league_admin_updated_at: string;
+  is_operational: boolean;
   account: User;
 };
 

@@ -33,13 +33,18 @@ import {
   SquarePen,
   FileQuestionMark,
   type LucideIcon,
+  MessageSquare,
 } from "lucide-react";
-import LeagueMatchCompletedPage from "@/pages/league-administrator/league/match/LeagueMatchUpcomingAndCompletedPage";
+import LeagueMatchCompletedPage from "@/pages/league-administrator/league/match/LeagueMatchUpcoming";
 import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
 import LoginPage from "@/pages/auth/LoginPage";
 import LandingPage from "@/pages/public/landing-page/LandingPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import StartScorebookPage from "@/pages/scorebook/StartNewBook";
+import LeagueAdminPagesLGU from "@/pages/LeagueAdminPagesLGU";
+import ConversationListPage from "@/pages/ConversationListPage";
+import ChatLoader from "@/components/ChatLoader";
+import ChatScreen from "@/components/ChatScreen";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -104,8 +109,30 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "platform",
   },
   {
+    path: "chat",
+    element: <ConversationListPage />,
+    permissions: [Permission.ViewChat],
+    showInSidebar: true,
+    sidebarTitle: "Chats",
+    icon: MessageSquare,
+    sidebarGroup: "platform",
+  },
+  {
+    path: "start-chat/:partnerId/:partnerName",
+    element: <ChatLoader />,
+    permissions: [Permission.ViewChat],
+    showInSidebar: false,
+  },
+  {
+    path: "chat/:partnerId",
+    element: <ChatScreen />,
+    permissions: [Permission.ViewChat],
+    showInSidebar: false,
+  },
+
+  {
     path: "pages/league-admins",
-    element: <span>sdasd</span>,
+    element: <LeagueAdminPagesLGU />,
     permissions: [Permission.ViewLeagueAdmins],
     showInSidebar: true,
     sidebarTitle: "League Admins",
@@ -215,11 +242,11 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
   },
   {
-    path: "pages/league/match/upcoming&completed",
+    path: "pages/league/match/upcoming",
     element: <LeagueMatchCompletedPage />,
     permissions: [Permission.ViewScheduledMatches],
     showInSidebar: true,
-    sidebarTitle: "Upcoming & Completed",
+    sidebarTitle: "Upcoming",
     sidebarParent: "Match",
     sidebarGroup: "league",
   },

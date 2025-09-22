@@ -1,9 +1,18 @@
 import { ApiResponse } from "@/lib/apiResponse";
 import axiosClient from "@/lib/axiosClient";
 import type { Category } from "@/types/category";
+import type { League } from "@/types/league";
 import type { JwtPayload, LeagueAdministator } from "@/types/leagueAdmin";
 
 class LeagueAdministratorService {
+  static async getMany() {
+    const response = await axiosClient.get<
+      (LeagueAdministator & { active_league: League | null })[]
+    >("/league-administrator/all");
+
+    return response.data;
+  }
+
   static async authJwt() {
     const response = await axiosClient.get<JwtPayload>(
       "/league-administrator/auth/jwt",

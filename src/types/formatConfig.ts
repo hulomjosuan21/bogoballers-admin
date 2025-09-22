@@ -14,7 +14,8 @@ export interface KnockoutConfig {
 
 export interface DoubleEliminationConfig {
   group_count: number;
-
+  progress_group: number;
+  max_progress_group: number;
   max_loss: number;
   brackets: string[];
 }
@@ -26,7 +27,7 @@ export interface BestOfConfig {
 }
 
 export interface TwiceToBeatConfig {
-  advantaged_team: string;
-  challenger_team: string;
-  max_games: number;
+  advantaged_team?: string;
+  challenger_team?: string;
+  max_games?: number;
 }

@@ -5,15 +5,18 @@ import { queryClient } from "@/lib/queryClient";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ReactFlowProvider } from "@xyflow/react";
 import { AlertDialogProvider } from "@/hooks/userAlertDialog";
+import { SocketProvider } from "./SocketProvider";
 
 export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
-        <ReactFlowProvider>
-          <AlertDialogProvider>{children}</AlertDialogProvider>
-          <ReactQueryDevtools initialIsOpen={false} />
-        </ReactFlowProvider>
+        <SocketProvider>
+          <ReactFlowProvider>
+            <AlertDialogProvider>{children}</AlertDialogProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </ReactFlowProvider>
+        </SocketProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

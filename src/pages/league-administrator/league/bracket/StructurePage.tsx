@@ -14,6 +14,7 @@ import {
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
+import BracketWrapper from "./BracketWrapper";
 
 export default function BracketStructurePage() {
   const { activeLeagueData, activeLeagueError, activeLeagueCategories } =
@@ -37,9 +38,7 @@ export default function BracketStructurePage() {
     ) {
       const firstCategory = activeLeagueCategories[0];
       setSelectedCategory(firstCategory);
-      setActiveRoundId(
-        firstCategory.rounds[firstCategory.rounds.length - 1]?.round_id || null
-      );
+      setActiveRoundId(firstCategory.rounds[0]?.round_id || null);
     }
   }, [hasActiveLeague, activeLeagueCategories]);
 
@@ -88,25 +87,25 @@ export default function BracketStructurePage() {
                   </Select>
 
                   <TabsList className="flex flex-wrap gap-2">
-                    {selectedCategory?.rounds
-                      .map((round) => (
-                        <TabsTrigger
-                          key={round.round_id}
-                          value={round.round_id}
-                          className="w-[175px]"
-                        >
-                          {round.round_name}
-                        </TabsTrigger>
-                      ))
-                      .reverse()}
+                    {selectedCategory?.rounds.map((round) => (
+                      <TabsTrigger
+                        key={round.round_id}
+                        value={round.round_id}
+                        className="w-[175px]"
+                      >
+                        {round.round_name}
+                      </TabsTrigger>
+                    ))}
                   </TabsList>
                 </div>
 
                 {selectedCategory?.rounds.map((round) => (
-                  <TabsContent
-                    key={round.round_id}
-                    value={round.round_id}
-                  ></TabsContent>
+                  <TabsContent key={round.round_id} value={round.round_id}>
+                    <BracketWrapper
+                      leagueCategoryId={selectedCategory.league_category_id}
+                      roundId={round.round_id}
+                    />
+                  </TabsContent>
                 ))}
               </Tabs>
             )}

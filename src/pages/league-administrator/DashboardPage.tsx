@@ -53,6 +53,7 @@ const LeagueSection = ({ league, wrap }: { league: League; wrap: boolean }) => {
       Completed: { status: "degraded", label: "Completed" },
       Postponed: { status: "offline", label: "Postponed" },
       Cancelled: { status: "offline", label: "Cancelled" },
+      Pending: { status: "offline", label: "Pending" },
     };
     const s = map[status];
     return (

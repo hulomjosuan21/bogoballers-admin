@@ -15,6 +15,7 @@ import { useActiveLeague } from "@/hooks/useActiveLeague";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 import { ScheduleMatchTable } from "@/tables/LeagueMatchScheduledTable";
+import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 
 export default function LeagueMatchScheduledPage() {
   const { activeLeagueData, activeLeagueError, activeLeagueCategories } =
@@ -50,6 +51,10 @@ export default function LeagueMatchScheduledPage() {
     setSelectedCategory(category);
     setActiveRoundId(category?.rounds[0]?.round_id || null);
   };
+
+  if (activeLeagueData?.status == "Pending") {
+    return <LeagueNotApproveYet />;
+  }
 
   return (
     <ContentShell>

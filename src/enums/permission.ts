@@ -14,6 +14,7 @@ export enum Permission {
   ManageSettings,
   ScoreBook,
   ViewLeagueAdmins,
+  ViewChat,
 }
 
 export function getUserPermissions(accountType: string): Permission[] {
@@ -34,6 +35,7 @@ export function getUserPermissions(accountType: string): Permission[] {
         Permission.ViewScheduledMatches,
         Permission.ManageSettings,
         Permission.ScoreBook,
+        Permission.ViewChat,
       ];
     case "League_Administrator_LGU":
       return [
@@ -52,6 +54,7 @@ export function getUserPermissions(accountType: string): Permission[] {
         Permission.ManageSettings,
         Permission.ViewLeagueAdmins,
         Permission.ScoreBook,
+        Permission.ViewChat,
       ];
     default:
       return [];

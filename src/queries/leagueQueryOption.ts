@@ -24,3 +24,18 @@ export const getActiveLeagueAnalyticsQueryOption = (leagueId?: string) =>
     refetchOnMount: false,
     refetchOnReconnect: false,
   });
+
+export const getActiveLeagueByPublicIdQueryOption = (
+  publicLeagueId?: string,
+  data?: Partial<League> & { condition: string }
+) =>
+  queryOptions<League | null, Error>({
+    queryKey: QUERY_KEYS.LEAGUE_PUBLIC_ID(publicLeagueId, data),
+    queryFn: () => LeagueService.fetchGetOneByPublicId(publicLeagueId!, data),
+    enabled: !!publicLeagueId,
+    staleTime: Infinity,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });

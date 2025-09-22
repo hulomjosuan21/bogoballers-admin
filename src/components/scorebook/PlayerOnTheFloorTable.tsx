@@ -156,6 +156,20 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
                   <DropdownMenuGroup className="group-sm">
                     <DropdownMenuItem
                       className="menu-sm-d"
+                      onSelect={() => updateStat("reb", -1)}
+                    >
+                      - reb
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("reb", 1)}
+                    >
+                      + reb
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm-d"
                       onSelect={() => updateStat("ast", -1)}
                     >
                       - ast

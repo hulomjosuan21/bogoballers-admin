@@ -10,6 +10,7 @@ import {
 } from "@/components/league-team/LeagueTeamManagementComponents";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
+import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 
 export default function TeamSubmissionPage() {
   const { activeLeagueId, activeLeagueData, activeLeagueCategories } =
@@ -25,6 +26,10 @@ export default function TeamSubmissionPage() {
       setActiveCategoryId(activeLeagueCategories[0].league_category_id);
     }
   }, [hasActiveLeague, activeLeagueCategories]);
+
+  if (activeLeagueData?.status == "Pending") {
+    return <LeagueNotApproveYet />;
+  }
 
   return (
     <ContentShell>

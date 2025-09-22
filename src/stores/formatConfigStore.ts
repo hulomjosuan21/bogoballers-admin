@@ -18,6 +18,8 @@ interface FormatConfigState {
     label: string;
     group_count: string;
     max_loss: string;
+    progress_group: string;
+    max_progress_group: string;
   };
   boConfig: {
     label: string;
@@ -56,6 +58,8 @@ export const useFormatConfigStore = create<FormatConfigState>()(
         label: "",
         group_count: "",
         max_loss: "",
+        progress_group: "",
+        max_progress_group: "",
       },
       boConfig: {
         label: "",

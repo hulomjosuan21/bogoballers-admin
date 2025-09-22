@@ -1,7 +1,7 @@
 import LeagueCategoryCanvas from "./LeagueCategoryManagementXYFlowCanvas";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { default as ContentHeader } from "@/components/content-header";
-import { CloudAlert } from "lucide-react";
+import { CloudAlert, Loader2 } from "lucide-react";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import {
   Alert,
@@ -12,14 +12,33 @@ import {
 import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
+import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 export default function LeagueCategoryManagementPage() {
-  const { activeLeagueId } = useActiveLeague();
+  const { activeLeagueId, activeLeagueData, activeLeagueLoading } =
+    useActiveLeague();
 
   const {
     activeLeagueCategories,
     activeLeagueCategoriesLoading,
     activeLeagueCategoriesError,
   } = useActiveLeagueCategories(activeLeagueId);
+
+  if (activeLeagueLoading || activeLeagueCategoriesLoading) {
+    return (
+      <ContentShell>
+        <ContentBody>
+          <div className="flex flex-col items-center justify-center h-64">
+            <Loader2 className="animate-spin w-16 h-16 mb-4" />
+            <p className="font-medium">Loading categories...</p>
+          </div>
+        </ContentBody>
+      </ContentShell>
+    );
+  }
+
+  if (activeLeagueData?.status == "Pending") {
+    return <LeagueNotApproveYet />;
+  }
 
   return (
     <>

@@ -95,8 +95,19 @@ export class LeagueService {
 
   static async fetchActive() {
     const response = await axiosClient.post<League>("/league/active", {
-      status: "Scheduled",
+      condition: "Active",
     });
+
+    return response.data;
+  }
+
+  static async fetchGetOneByPublicId<
+    T extends Partial<League> & { condition: string }
+  >(publicLeagueId: string, data?: T) {
+    const response = await axiosClient.post<League>(
+      `/league/${publicLeagueId}/view`,
+      data ?? undefined
+    );
 
     return response.data;
   }

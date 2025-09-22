@@ -58,7 +58,10 @@ export function FullRosterSummaryTable({ team }: Props) {
       header: "blk",
       accessorKey: "summary.blk",
     },
-
+    {
+      header: "tov",
+      accessorKey: "summary.tov",
+    },
     {
       header: "2pt%",
       cell: ({ row }) => {

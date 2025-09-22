@@ -88,7 +88,6 @@ export async function listSavedStates(): Promise<
           result.push({ matchId: record.key, state: parsed });
         }
       } catch {
-        // skip corrupted records
         await db.gameState.delete(record.key);
       }
     }

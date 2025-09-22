@@ -6,10 +6,10 @@ export interface LeagueMatch {
   league_id: string;
   league_category_id: string;
   round_id: string;
-  home_team_id: string;
-  home_team: LeagueTeam;
-  away_team_id: string;
-  away_team: LeagueTeam;
+  home_team_id: string | null;
+  home_team: LeagueTeam | null;
+  away_team_id: string | null;
+  away_team: LeagueTeam | null;
   home_team_score: number | null;
   away_team_score: number | null;
   winner_team_id: string | null;
@@ -33,6 +33,12 @@ export interface LeagueMatch {
   is_third_place: boolean;
   is_exhibition: boolean;
   status: string;
+
+  stage_number: number | null;
+  depends_on_match_ids: string[];
+  is_placeholder: boolean;
+  bracket_stage_label: string | null;
+
   league_match_created_at: string;
   league_match_updated_at: string;
 }

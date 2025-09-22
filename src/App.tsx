@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import LoginPage from "@/pages/auth/LoginPage";
 import LeagueAdminLayout from "@/layouts/LeagueAdminLayout";
+import { toast } from "sonner";
 
 function NotFoundPage() {
   const navigate = useNavigate();
@@ -37,8 +38,8 @@ export default function App() {
   const [progress, setProgress] = useState(0);
 
   const protectedPaths = [
-    "/league-administrator",
-    "/league-administrator/*",
+    "portal/league-administrator",
+    "portal/league-administrator/*",
     ...protectedRoutesWithoutSidebar.map((route) => route.path),
   ];
 
@@ -78,6 +79,18 @@ export default function App() {
       );
     }
 
+    if (!leagueAdmin.is_operational) {
+      toast.error(
+        "This account is not yet given the privilege to operate. Please wait for your local government unit to grant access."
+      );
+
+      return (
+        <Routes>
+          <Route path="*" element={<LoginPage />} />
+        </Routes>
+      );
+    }
+
     const userPermissions = getUserPermissions(
       leagueAdmin.account.account_type
     );
@@ -95,7 +108,10 @@ export default function App() {
 
     return (
       <Routes>
-        <Route path="/league-administrator" element={<LeagueAdminLayout />}>
+        <Route
+          path="portal/league-administrator"
+          element={<LeagueAdminLayout />}
+        >
           {filteredLeagueAdminRoutes.map((route, index) => (
             <Route
               key={index}

@@ -37,9 +37,12 @@ export const buildFormatConfig = (
       return {
         group_count: parseInt(deConfig.group_count) || 1,
         max_loss: parseInt(deConfig.max_loss) || 2,
+        progress_group: parseInt(deConfig.progress_group) || 1,
+        max_progress_group: parseInt(deConfig.max_progress_group) || 6,
         brackets: ["winners", "losers"],
         label: deConfig.label || "• Standard",
       };
+
     case "bestof_3":
       return {
         group_count: parseInt(boConfig.group_count) || 1,

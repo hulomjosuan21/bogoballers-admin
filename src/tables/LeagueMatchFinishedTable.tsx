@@ -44,11 +44,11 @@ export function FinishedMatchTable({ leagueCategoryId, roundId }: Props) {
         return (
           <div className="flex items-center gap-2">
             <img
-              src={home_team.team_logo_url}
-              alt={home_team.team_name}
+              src={home_team!.team_logo_url}
+              alt={home_team!.team_name}
               className="h-8 w-8 rounded-sm object-cover"
             />
-            <span>{home_team.team_name}</span>
+            <span>{home_team!.team_name}</span>
           </div>
         );
       },
@@ -61,11 +61,11 @@ export function FinishedMatchTable({ leagueCategoryId, roundId }: Props) {
         return (
           <div className="flex items-center gap-2">
             <img
-              src={away_team.team_logo_url}
-              alt={away_team.team_name}
+              src={away_team!.team_logo_url}
+              alt={away_team!.team_name}
               className="h-8 w-8 rounded-sm object-cover"
             />
-            <span>{away_team.team_name}</span>
+            <span>{away_team!.team_name}</span>
           </div>
         );
       },

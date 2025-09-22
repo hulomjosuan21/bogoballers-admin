@@ -52,7 +52,7 @@ export function LoginForm({
     try {
       const res = await LeagueAdministratorService.login(formData);
       toast.success(res.message);
-      window.location.href = "/league-administrator";
+      window.location.href = "/portal/league-administrator";
       form.reset();
     } catch (e) {
       handleError(e);

@@ -91,6 +91,8 @@ export function FormatNodeMenu({
     advantaged_team?: string;
     challenger_team?: string;
     max_games?: string;
+    progress_group?: string;
+    max_progress_group?: string;
   }>({});
 
   const {
@@ -142,6 +144,8 @@ export function FormatNodeMenu({
             max_loss: parseInt(deConfig.max_loss) || 2,
             brackets: ["winners", "losers"],
             label: deConfig.label || "• Standard",
+            progress_group: deConfig.progress_group || 1,
+            max_progress_group: deConfig.max_progress_group || 2,
           },
         };
       case RoundFormatTypesEnum.BestOf:
@@ -257,6 +261,12 @@ export function FormatNodeMenu({
           }),
           ...(tempConfig.max_loss !== undefined && {
             max_loss: tempConfig.max_loss,
+          }),
+          ...(tempConfig.progress_group !== undefined && {
+            progress_group: tempConfig.progress_group,
+          }),
+          ...(tempConfig.max_progress_group !== undefined && {
+            max_progress_group: tempConfig.max_progress_group,
           }),
         });
         break;
@@ -524,6 +534,7 @@ export function FormatNodeMenu({
                         placeholder="Enter number of groups"
                       />
                     </div>
+
                     <div className="space-y-1">
                       <Label htmlFor={`${format_type}-maxLoss`}>
                         Max Losses
@@ -541,6 +552,54 @@ export function FormatNodeMenu({
                           })
                         }
                         placeholder="Enter max losses"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor={`${format_type}-progressGroup`}>
+                        Starting Stage
+                      </Label>
+                      <Input
+                        id={`${format_type}-progressGroup`}
+                        type="number"
+                        min={1}
+                        max={6}
+                        value={
+                          tempConfig.progress_group ??
+                          deConfig.progress_group ??
+                          1
+                        }
+                        onChange={(e) =>
+                          setTempConfig({
+                            ...tempConfig,
+                            progress_group: e.target.value,
+                          })
+                        }
+                        placeholder="Enter starting stage"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor={`${format_type}-maxProgressGroup`}>
+                        Max Stages
+                      </Label>
+                      <Input
+                        id={`${format_type}-maxProgressGroup`}
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={
+                          tempConfig.max_progress_group ??
+                          deConfig.max_progress_group ??
+                          6
+                        }
+                        onChange={(e) =>
+                          setTempConfig({
+                            ...tempConfig,
+                            max_progress_group: e.target.value,
+                          })
+                        }
+                        placeholder="Enter max stages"
                       />
                     </div>
                   </>

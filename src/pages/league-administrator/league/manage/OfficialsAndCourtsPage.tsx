@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import ErrorLoading from "@/components/error-loading";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
+import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 
 export default function LeagueOfficialsPage() {
   const { activeLeagueData, activeLeagueLoading, activeLeagueError } =
@@ -15,6 +16,10 @@ export default function LeagueOfficialsPage() {
   const hasActiveLeague = useMemo(() => {
     return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
   }, [activeLeagueData]);
+
+  if (activeLeagueData?.status == "Pending") {
+    return <LeagueNotApproveYet />;
+  }
 
   return (
     <ContentShell>
