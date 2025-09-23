@@ -37,6 +37,7 @@ export default function LeagueAdministratorDataGrid() {
 
   const handleOperationalChange = async (id: string, value: boolean) => {
     try {
+      console.log(`${id} ${value}`);
     } catch (err) {
       console.error("Failed to update operational status", err);
     }
