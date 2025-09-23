@@ -47,6 +47,7 @@ import ConversationListPage from "@/pages/ConversationListPage";
 import ChatLoader from "@/components/ChatLoader";
 import ChatScreen from "@/components/ChatScreen";
 import LeagueMatches from "@/pages/league-administrator/league/match/LeagueMatches";
+import LiveAdminPage from "@/pages/LiveAdminPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -88,6 +89,10 @@ export const publicRoutes: RouteObject[] = [
   {
     path: "/test/grid",
     element: <TestGrid />,
+  },
+  {
+    path: "/live/matches",
+    element: <LiveAdminPage />,
   },
 ];
 

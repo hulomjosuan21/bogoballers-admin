@@ -14,7 +14,11 @@ import axiosClient from "@/lib/axiosClient";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http//localhost:5000";
 
-export const useScorebookState = (matchId: string, isController: boolean) => {
+export const useScorebookState = (
+  matchId: string,
+  isController: boolean,
+  leagueAdministratorId?: string
+) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
   const [isNotFound, setIsNotFound] = useState(false);
@@ -36,6 +40,13 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
         const startTime = Date.now();
         socket.emit("ping", { timestamp: startTime });
       }, 5000);
+
+      if (isController && leagueAdministratorId) {
+        socket.emit("admin_start_live", {
+          league_administrator_id: leagueAdministratorId,
+          league_match_id: matchId,
+        });
+      }
     });
 
     socket.on("pong", (data: { timestamp: number }) => {
@@ -46,6 +57,12 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
     socket.on("disconnect", () => {
       setLatency(null);
       clearInterval(pingInterval);
+
+      if (isController && leagueAdministratorId) {
+        socket.emit("admin_stop_live", {
+          league_administrator_id: leagueAdministratorId,
+        });
+      }
     });
 
     const loadGame = async () => {
@@ -109,6 +126,12 @@ export const useScorebookState = (matchId: string, isController: boolean) => {
     }
 
     return () => {
+      if (isController && leagueAdministratorId) {
+        socket.emit("admin_stop_live", {
+          league_administrator_id: leagueAdministratorId,
+        });
+      }
+
       socket.disconnect();
       clearInterval(pingInterval);
     };

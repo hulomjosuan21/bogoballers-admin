@@ -5,6 +5,7 @@ import { TextEffect } from "@/components/ui/text-effect";
 import { HeroHeader } from "./header";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { AppImage } from "@/assets";
+import LiveAdminPage from "@/pages/LiveAdminPage";
 
 export default function HeroSection() {
   return (
@@ -272,6 +273,7 @@ export default function HeroSection() {
             </div>
           </div>
         </section>
+        <LiveAdminPage />
       </main>
     </>
   );
