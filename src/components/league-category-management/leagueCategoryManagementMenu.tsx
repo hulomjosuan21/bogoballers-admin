@@ -157,6 +157,7 @@ export function FormatNodeMenu({
             group_count: parseInt(boConfig.group_count) || 1,
             games: parseInt(boConfig.games) || 3,
             label: boConfig.label || "• Best of 3",
+            advances_per_group: parseInt(boConfig.advances_per_group) || 2,
           },
         };
       case RoundFormatTypesEnum.TwiceToBeat:
@@ -286,6 +287,9 @@ export function FormatNodeMenu({
             group_count: tempConfig.group_count,
           }),
           ...(tempConfig.games !== undefined && { games: tempConfig.games }),
+          ...(tempConfig.advances_per_group !== undefined && {
+            advances_per_group: tempConfig.advances_per_group,
+          }),
         });
         break;
       }
@@ -646,6 +650,29 @@ export function FormatNodeMenu({
                         placeholder="Enter number of games"
                       />
                     </div>
+                    <div className="space-y-1">
+                      <Label htmlFor={`${format_type}-advancesPerGroup`}>
+                        Advances per Group
+                      </Label>
+                      <Input
+                        id={`${format_type}-advancesPerGroup`}
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={
+                          tempConfig.advances_per_group ??
+                          boConfig.advances_per_group ??
+                          ""
+                        }
+                        onChange={(e) =>
+                          setTempConfig({
+                            ...tempConfig,
+                            advances_per_group: e.target.value,
+                          })
+                        }
+                        placeholder="Enter advances per group"
+                      />
+                    </div>
                   </>
                 )}
                 {format_type === RoundFormatTypesEnum.TwiceToBeat && (
@@ -670,9 +697,7 @@ export function FormatNodeMenu({
                         <SelectTrigger id={`${format_type}-advantagedTeam`}>
                           <SelectValue placeholder="Select advantaged team" />
                         </SelectTrigger>
-                        <SelectContent>
-                          {/* Empty as per requirement */}
-                        </SelectContent>
+                        <SelectContent></SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-1">

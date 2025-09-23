@@ -34,6 +34,7 @@ import {
   FileQuestionMark,
   type LucideIcon,
   MessageSquare,
+  ChevronsRightLeft,
 } from "lucide-react";
 import LeagueMatchCompletedPage from "@/pages/league-administrator/league/match/LeagueMatchUpcoming";
 import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
@@ -45,6 +46,7 @@ import LeagueAdminPagesLGU from "@/pages/LeagueAdminPagesLGU";
 import ConversationListPage from "@/pages/ConversationListPage";
 import ChatLoader from "@/components/ChatLoader";
 import ChatScreen from "@/components/ChatScreen";
+import LeagueMatches from "@/pages/league-administrator/league/match/LeagueMatches";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -107,6 +109,16 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarTitle: "Dashboard",
     icon: LayoutDashboard,
     sidebarGroup: "platform",
+  },
+  {
+    path: "league-matches",
+    element: <LeagueMatches />,
+    showInSidebar: true,
+    icon: ChevronsRightLeft,
+    sidebarGroup: "league",
+    sidebarParent: "Match",
+    sidebarTitle: "Matches",
+    permissions: [Permission.ViewScheduledMatches],
   },
   {
     path: "chat",

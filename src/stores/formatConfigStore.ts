@@ -25,6 +25,7 @@ interface FormatConfigState {
     label: string;
     group_count: string;
     games: string;
+    advances_per_group: string;
   };
   ttbConfig: {
     label: string;
@@ -65,6 +66,7 @@ export const useFormatConfigStore = create<FormatConfigState>()(
         label: "",
         group_count: "",
         games: "",
+        advances_per_group: "",
       },
       ttbConfig: {
         label: "",

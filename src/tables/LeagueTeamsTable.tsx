@@ -76,7 +76,7 @@ export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
         cell: ({ row }) => {
           const team = row.original;
           return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {team.team_logo_url ? (
                 <ImageZoom>
                   <img
@@ -88,7 +88,14 @@ export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
               ) : (
                 <div className="h-8 w-8 rounded-md bg-muted" />
               )}
-              <span className="font-medium">{team.team_name}</span>
+              <div className="space-y-px">
+                <div className="font-medium text-foreground">
+                  {row.original.team_name}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  wins:{row.original.wins} losses:{row.original.losses}
+                </div>
+              </div>
             </div>
           );
         },
@@ -100,21 +107,6 @@ export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
           const team = row.original;
           return <span>{team.league_players?.length || 0}</span>;
         },
-      },
-      {
-        accessorKey: "wins",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Total wins
-            <ArrowUpDown className="ml-1 h-4 w-4" />
-          </Button>
-        ),
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.wins || 0}</span>
-        ),
       },
       {
         accessorKey: "points",
@@ -129,36 +121,6 @@ export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
         ),
         cell: ({ row }) => (
           <span className="font-medium">{row.original.points || 0}</span>
-        ),
-      },
-      {
-        accessorKey: "losses",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Total losses
-            <ArrowUpDown className="ml-1 h-4 w-4" />
-          </Button>
-        ),
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.losses || 0}</span>
-        ),
-      },
-      {
-        accessorKey: "draws",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Total draws
-            <ArrowUpDown className="ml-1 h-4 w-4" />
-          </Button>
-        ),
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.draws || 0}</span>
         ),
       },
       {

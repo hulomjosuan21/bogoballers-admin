@@ -48,7 +48,10 @@ export default function LeagueTeamsPage() {
       <ContentBody>
         {!hasActiveLeague && <NoActiveLeagueAlert />}
 
-        {hasActiveLeague &&
+        {state === ToggleState.SHOW_LEAGUE_TEAM && data ? (
+          <LeagueTeamReadyForMatchSection data={data} />
+        ) : (
+          hasActiveLeague &&
           activeLeagueCategories &&
           activeLeagueCategories.length > 0 && (
             <Tabs
@@ -73,9 +76,7 @@ export default function LeagueTeamsPage() {
                   key={category.league_category_id}
                   value={category.league_category_id}
                 >
-                  {state === ToggleState.SHOW_LEAGUE_TEAM && data ? (
-                    <LeagueTeamReadyForMatchSection data={data} />
-                  ) : activeLeagueId ? (
+                  {activeLeagueId ? (
                     <LeagueTeamsTable
                       leagueCategoryId={category.league_category_id}
                       leagueId={activeLeagueId}
@@ -84,7 +85,8 @@ export default function LeagueTeamsPage() {
                 </TabsContent>
               ))}
             </Tabs>
-          )}
+          )
+        )}
       </ContentBody>
     </ContentShell>
   );

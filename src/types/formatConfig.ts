@@ -22,6 +22,7 @@ export interface DoubleEliminationConfig {
 
 export interface BestOfConfig {
   group_count: number;
+  advances_per_group: number;
 
   games: number;
 }

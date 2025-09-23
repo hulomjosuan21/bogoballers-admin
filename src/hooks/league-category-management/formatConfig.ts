@@ -48,6 +48,7 @@ export const buildFormatConfig = (
         group_count: parseInt(boConfig.group_count) || 1,
         games: parseInt(boConfig.games) || 3,
         label: boConfig.label || "• Best of 3",
+        advances_per_group: parseInt(boConfig.advances_per_group) || 1,
       };
     case "twicetobeat_final":
       return {
