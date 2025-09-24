@@ -50,4 +50,9 @@ export const QUERY_KEYS = {
     data?: Partial<LeagueMatch> & { condition: string }
   ) =>
     ["league-match", leagueCategoryId, roundId, JSON.stringify(data)] as const,
+
+  DYNAMIC_KEY_LEAGUE_TEAM_FOR_CHECKED: (
+    leagueCategoryId?: string,
+    roundId?: string
+  ) => ["checked-league-team", leagueCategoryId, roundId],
 };

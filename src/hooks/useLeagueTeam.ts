@@ -1,6 +1,9 @@
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { queryClient } from "@/lib/queryClient";
-import { getLeagueTeamQueryOptions } from "@/queries/leagueTeamQueryOption";
+import {
+  getLeagueTeamQueryOptions,
+  makeLeagueTeamDynamicQueryOption,
+} from "@/queries/leagueTeamQueryOption";
 import type { LeagueTeam } from "@/types/team";
 import { useQuery } from "@tanstack/react-query";
 
@@ -26,4 +29,21 @@ export async function refetchLeagueTeam(
     queryKey: QUERY_KEYS.LEAGUE_TEAM(leagueCategoryId, data),
     exact: true,
   });
+}
+
+export function useLeagueTeamDynamicQuery(
+  queryKey: unknown[],
+  queryFn: () => Promise<LeagueTeam[]>,
+  extra?: Parameters<typeof makeLeagueTeamDynamicQueryOption>[2]
+) {
+  const query = useQuery(
+    makeLeagueTeamDynamicQueryOption(queryKey, queryFn, extra)
+  );
+
+  return {
+    dynamicLeagueTeamData: query.data ?? [], // always safe array
+    dynamicLeagueTeamLoading: query.isLoading,
+    dynamicLeagueTeamError: query.error,
+    refetchDynamicLeagueTeam: query.refetch,
+  };
 }

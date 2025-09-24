@@ -70,6 +70,14 @@ export class LeagueTeamService {
     return response.data;
   }
 
+  static async getTeamsChecked(leagueCategoryId: string, roundId: string) {
+    const url = `/league-team/all-checked/${leagueCategoryId}/${roundId}`;
+
+    const response = await axiosClient.get<LeagueTeam[]>(url);
+
+    return response.data;
+  }
+
   static async refund(payload: Refund) {
     const response = await axiosClient.post<{ message: string }>(
       `/league-team/refund?remove=${payload.remove}`,

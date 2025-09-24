@@ -17,3 +17,19 @@ export const getLeagueTeamQueryOptions = (
     refetchOnMount: false,
     refetchOnReconnect: false,
   });
+
+export const makeLeagueTeamDynamicQueryOption = (
+  queryKey: unknown[],
+  queryFn: () => Promise<LeagueTeam[]>,
+  extra?: Partial<ReturnType<typeof queryOptions<LeagueTeam[], Error>>>
+) =>
+  queryOptions<LeagueTeam[], Error>({
+    queryKey,
+    queryFn,
+    staleTime: Infinity,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    ...extra,
+  });

@@ -35,6 +35,7 @@ import {
   type LucideIcon,
   MessageSquare,
   ChevronsRightLeft,
+  Network,
 } from "lucide-react";
 import LeagueMatchCompletedPage from "@/pages/league-administrator/league/match/LeagueMatchUpcoming";
 import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
@@ -48,6 +49,7 @@ import ChatLoader from "@/components/ChatLoader";
 import ChatScreen from "@/components/ChatScreen";
 import LeagueMatches from "@/pages/league-administrator/league/match/LeagueMatches";
 import LiveAdminPage from "@/pages/LiveAdminPage";
+import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/LeagueMatchManualMatching";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -181,6 +183,15 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     showInSidebar: true,
     sidebarTitle: "Manage Categories",
     icon: GitBranchPlus,
+    sidebarGroup: "league",
+  },
+  {
+    path: "pages/league/manual/matching",
+    element: <ManualMatchingPage />,
+    permissions: [Permission.ManageCategories],
+    showInSidebar: true,
+    sidebarTitle: "Manual Match Management",
+    icon: Network,
     sidebarGroup: "league",
   },
   {

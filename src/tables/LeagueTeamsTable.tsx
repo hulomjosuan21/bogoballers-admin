@@ -40,20 +40,22 @@ import {
 } from "@/stores/leagueTeamStores";
 import { ToggleState } from "@/stores/toggleStore";
 import type { LeagueTeam } from "@/types/team";
-import { useLeagueTeam } from "@/hooks/useLeagueTeam";
+import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
+import { QUERY_KEYS } from "@/constants/queryKeys";
+import { LeagueTeamService } from "@/service/leagueTeamService";
 
 type Props = {
   leagueId?: string;
   leagueCategoryId?: string;
+  roundId?: string;
 };
 
-export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
-  const { leagueTeamLoading, leagueTeamData } = useLeagueTeam(
-    leagueCategoryId,
-    {
-      condition: "Official",
-    }
-  );
+export default function LeagueTeamsTable({ leagueCategoryId, roundId }: Props) {
+  const { dynamicLeagueTeamData, dynamicLeagueTeamLoading } =
+    useLeagueTeamDynamicQuery(
+      QUERY_KEYS.DYNAMIC_KEY_LEAGUE_TEAM_FOR_CHECKED(leagueCategoryId, roundId),
+      () => LeagueTeamService.getTeamsChecked(leagueCategoryId!, roundId!)
+    );
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -133,8 +135,8 @@ export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
   );
 
   const tableData = useMemo(() => {
-    return leagueTeamData || [];
-  }, [leagueTeamData]);
+    return dynamicLeagueTeamData;
+  }, [dynamicLeagueTeamData]);
 
   const table = useReactTable({
     data: tableData,
@@ -195,7 +197,7 @@ export default function LeagueTeamsTable({ leagueCategoryId }: Props) {
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
-                  {leagueTeamLoading ? "Loading..." : "No data."}
+                  {dynamicLeagueTeamLoading ? "Loading..." : "No data."}
                 </TableCell>
               </TableRow>
             )}

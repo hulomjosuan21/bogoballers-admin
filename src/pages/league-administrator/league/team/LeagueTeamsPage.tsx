@@ -9,8 +9,20 @@ import { ToggleState } from "@/stores/toggleStore";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
+import type { LeagueCategory } from "@/types/leagueCategoryTypes";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function LeagueTeamsPage() {
+  const { state, data } = useToggleOfficialLeagueTeamSection();
+
   const {
     activeLeagueId,
     activeLeagueData,
@@ -18,15 +30,15 @@ export default function LeagueTeamsPage() {
     activeLeagueCategories,
   } = useActiveLeague();
 
-  const { state, data } = useToggleOfficialLeagueTeamSection();
-
   const hasActiveLeague =
     !activeLeagueError &&
     activeLeagueData &&
     activeLeagueCategories &&
     activeLeagueCategories.length > 0;
 
-  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<LeagueCategory | null>(null);
+  const [activeRoundId, setActiveRoundId] = useState<string | null>(null);
 
   useEffect(() => {
     if (
@@ -34,9 +46,21 @@ export default function LeagueTeamsPage() {
       activeLeagueCategories &&
       activeLeagueCategories.length > 0
     ) {
-      setActiveCategoryId(activeLeagueCategories[0].league_category_id);
+      const firstCategory = activeLeagueCategories[0];
+      setSelectedCategory(firstCategory);
+      setActiveRoundId(firstCategory.rounds[0]?.round_id || null);
     }
   }, [hasActiveLeague, activeLeagueCategories]);
+
+  const handleCategorySelect = (categoryId: string) => {
+    const category =
+      activeLeagueCategories?.find(
+        (c) => c.league_category_id === categoryId
+      ) || null;
+    setSelectedCategory(category);
+
+    setActiveRoundId(category?.rounds[0]?.round_id || null);
+  };
 
   if (activeLeagueData?.status == "Pending") {
     return <LeagueNotApproveYet />;
@@ -44,48 +68,68 @@ export default function LeagueTeamsPage() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Official Teams" />
+      <ContentHeader title="Teams" />
       <ContentBody>
-        {!hasActiveLeague && <NoActiveLeagueAlert />}
-
         {state === ToggleState.SHOW_LEAGUE_TEAM && data ? (
           <LeagueTeamReadyForMatchSection data={data} />
-        ) : (
-          hasActiveLeague &&
-          activeLeagueCategories &&
-          activeLeagueCategories.length > 0 && (
-            <Tabs
-              value={activeCategoryId ?? ""}
-              onValueChange={setActiveCategoryId}
-              className="text-sm text-muted-foreground"
-            >
-              <TabsList className="flex flex-wrap gap-2 mb-2">
-                {activeLeagueCategories.map((category) => (
-                  <TabsTrigger
-                    key={category.league_category_id}
-                    value={category.league_category_id}
-                    className="w-[200px]"
+        ) : hasActiveLeague ? (
+          <>
+            {selectedCategory && selectedCategory.rounds.length > 0 && (
+              <Tabs
+                value={activeRoundId || undefined}
+                onValueChange={setActiveRoundId}
+                className="text-sm text-muted-foreground"
+              >
+                <div className="flex flex-wrap gap-2 items-center mb-2">
+                  <Select
+                    onValueChange={handleCategorySelect}
+                    value={selectedCategory?.league_category_id || ""}
                   >
-                    {category.category_name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select League Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Active League Categories</SelectLabel>
+                        {activeLeagueCategories?.map((category) => (
+                          <SelectItem
+                            key={category.league_category_id}
+                            value={category.league_category_id}
+                          >
+                            {category.category_name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
 
-              {activeLeagueCategories.map((category) => (
-                <TabsContent
-                  key={category.league_category_id}
-                  value={category.league_category_id}
-                >
-                  {activeLeagueId ? (
+                  <TabsList className="flex flex-wrap gap-2">
+                    {selectedCategory?.rounds.map((round) => (
+                      <TabsTrigger
+                        key={round.round_id}
+                        value={round.round_id}
+                        className="w-[175px]"
+                      >
+                        {round.round_name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+
+                {selectedCategory?.rounds.map((round) => (
+                  <TabsContent key={round.round_id} value={round.round_id}>
                     <LeagueTeamsTable
-                      leagueCategoryId={category.league_category_id}
+                      leagueCategoryId={selectedCategory.league_category_id}
                       leagueId={activeLeagueId}
+                      roundId={round.round_id}
                     />
-                  ) : null}
-                </TabsContent>
-              ))}
-            </Tabs>
-          )
+                  </TabsContent>
+                ))}
+              </Tabs>
+            )}
+          </>
+        ) : (
+          <NoActiveLeagueAlert />
         )}
       </ContentBody>
     </ContentShell>
