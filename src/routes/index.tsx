@@ -172,7 +172,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     element: <LeagueCategoryManagementPage />,
     permissions: [Permission.ManageCategories],
     showInSidebar: true,
-    sidebarTitle: "Manage Categories",
+    sidebarTitle: "Automatic Match Management",
     icon: GitBranchPlus,
     sidebarGroup: "league",
   },

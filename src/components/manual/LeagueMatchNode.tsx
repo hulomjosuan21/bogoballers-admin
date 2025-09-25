@@ -1,0 +1,114 @@
+import React, { memo, useCallback } from "react";
+import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
+import { type LeagueMatchNodeData, type LeagueTeam } from "@/types/manual";
+import { useFlowDispatch } from "@/context/FlowContext";
+
+const TeamDropZone = ({
+  team,
+  placeholder,
+}: {
+  team?: LeagueTeam | null;
+  placeholder: string;
+}) => (
+  <div className="border border-dashed h-14 w-28 rounded-sm grid place-content-center text-center p-1 bg-background/50">
+    {team ? (
+      <span className="text-xs font-semibold text-foreground truncate">
+        {team.team_name}
+      </span>
+    ) : (
+      <span className="text-xs font-thin text-muted-foreground">
+        {placeholder}
+      </span>
+    )}
+  </div>
+);
+
+const LeagueMatchNode: React.FC<NodeProps<Node<LeagueMatchNodeData>>> = ({
+  id,
+  data,
+}) => {
+  const dispatch = useFlowDispatch();
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent, teamSlot: "home" | "away") => {
+      event.preventDefault();
+      event.stopPropagation();
+      const teamString = event.dataTransfer.getData(
+        "application/reactflow-team"
+      );
+      if (!teamString) return;
+
+      try {
+        const team: LeagueTeam = JSON.parse(teamString);
+        const newMatchData = { ...data.league_match };
+
+        if (teamSlot === "home") {
+          newMatchData.home_team_id = team.league_team_id;
+          newMatchData.home_team = team;
+        } else {
+          newMatchData.away_team_id = team.league_team_id;
+          newMatchData.away_team = team;
+        }
+
+        dispatch({
+          type: "UPDATE_NODE_DATA",
+          payload: { nodeId: id, data: { league_match: newMatchData } },
+        });
+      } catch (e) {
+        console.error("Failed to parse team data on drop", e);
+      }
+    },
+    [id, data.league_match, dispatch]
+  );
+
+  return (
+    <div className="p-2 border rounded-md bg-card">
+      <div className="text-xs text-muted-foreground mb-1 text-center">
+        {data.league_match.display_name || `Match ${id.substring(0, 4)}`}
+      </div>
+      <div className="flex gap-2 justify-between">
+        <div onDragOver={onDragOver} onDrop={(e) => onDrop(e, "home")}>
+          <TeamDropZone
+            team={data.league_match.home_team}
+            placeholder="Home Team"
+          />
+        </div>
+        <div onDragOver={onDragOver} onDrop={(e) => onDrop(e, "away")}>
+          <TeamDropZone
+            team={data.league_match.away_team}
+            placeholder="Away Team"
+          />
+        </div>
+      </div>
+
+      <Handle type="target" position={Position.Left} id="match-input" />
+
+      <div className="absolute right-[-20px] top-[33%] text-xs text-blue-500 transform -translate-y-1/2">
+        W
+      </div>
+      <Handle
+        type="source"
+        position={Position.Right}
+        id={`winner-${id}`}
+        style={{ top: "33%", background: "hsl(var(--sky-500, 202 89% 51%))" }}
+      />
+
+      <div className="absolute right-[-20px] top-[66%] text-xs text-red-500 transform -translate-y-1/2">
+        L
+      </div>
+      <Handle
+        type="source"
+        position={Position.Right}
+        id={`loser-${id}`}
+        style={{ top: "66%", background: "hsl(var(--destructive))" }}
+      />
+    </div>
+  );
+};
+
+export default memo(LeagueMatchNode);
