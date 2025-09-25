@@ -85,7 +85,7 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
                 if ("round" in payloadData && payloadData.round) {
                   updatedData.round = {
                     ...updatedData.round,
-                    ...payloadData.round, // This is now type-safe
+                    ...payloadData.round,
                   };
                 }
                 break;
@@ -94,7 +94,7 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
                 if ("group" in payloadData && payloadData.group) {
                   updatedData.group = {
                     ...updatedData.group,
-                    ...payloadData.group, // This is now type-safe
+                    ...payloadData.group,
                   };
                 }
                 break;
@@ -106,7 +106,7 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
                 ) {
                   updatedData.league_category = {
                     ...updatedData.league_category,
-                    ...payloadData.league_category, // This is now type-safe
+                    ...payloadData.league_category,
                   };
                 }
                 break;
