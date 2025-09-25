@@ -51,7 +51,6 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
       return action.payload;
 
     case "ADD_NODE": {
-      // Prevent adding a category node if one with the same ID already exists
       if (
         action.payload.type === "leagueCategory" &&
         state.nodes.some((n) => n.id === action.payload.id)
@@ -67,16 +66,14 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
         nodes: state.nodes.map((node) => {
           if (node.id === action.payload.nodeId) {
             const updatedData = { ...node.data };
-            const payloadData = action.payload.data; // For brevity and clarity
+            const payloadData = action.payload.data;
 
             switch (updatedData.type) {
               case "league_match":
-                // The 'in' operator acts as a type guard.
-                // It confirms 'league_match' exists on payloadData before accessing it.
                 if ("league_match" in payloadData && payloadData.league_match) {
                   updatedData.league_match = {
                     ...updatedData.league_match,
-                    ...payloadData.league_match, // This is now type-safe
+                    ...payloadData.league_match,
                   };
                 }
                 break;

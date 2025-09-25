@@ -25,7 +25,7 @@ export type LeagueMatchNodeData = {
   type: "league_match";
   league_match: Partial<LeagueMatch>;
 };
-export type GroupNodeData = { type: "group"; group: IGroup };
+export type GroupNodeData = { type: "group"; group: Partial<IGroup> };
 
 export type FlowNodeData =
   | LeagueCategoryNodeData
