@@ -53,6 +53,7 @@ import { Label } from "@/components/ui/label";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import { LeagueMatchService } from "@/service/leagueMatchService";
+import { getErrorMessage } from "@/lib/error";
 
 type SheetFormData = {
   scheduled_date?: Date;
@@ -189,6 +190,18 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
     });
   };
 
+  function handleRefresh(): void {
+    const refresh = async () => {
+      await refetchLeagueMatch();
+    };
+
+    toast.promise(refresh(), {
+      loading: "Loading...",
+      success: "Done",
+      error: (e) => getErrorMessage(e),
+    });
+  }
+
   const columns: ColumnDef<LeagueMatch>[] = [
     {
       accessorKey: "home-team",
@@ -217,7 +230,6 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
         );
       },
     },
-
     {
       accessorKey: "away-team",
       header: "Away team",
@@ -244,6 +256,10 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
           </div>
         );
       },
+    },
+    {
+      accessorKey: "display_name",
+      header: "Group",
     },
     {
       accessorKey: "court",
@@ -398,7 +414,14 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination showPageSize={true} table={table} />
+      <div className="flex gap-2 items-center">
+        <div className="flex-1">
+          <DataTablePagination showPageSize={true} table={table} />
+        </div>
+        <Button variant={"outline"} size={"sm"} onClick={handleRefresh}>
+          Refresh
+        </Button>
+      </div>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent aria-describedby={undefined}>

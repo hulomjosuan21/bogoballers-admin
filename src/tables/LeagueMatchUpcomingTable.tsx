@@ -224,7 +224,7 @@ export function UpcomingMatchTable({
     },
     {
       accessorKey: "scheduled_date",
-      header: "Date",
+      header: "Schedule",
       cell: ({ row }) => (
         <span>{formatDate12h(row.original.scheduled_date!)}</span>
       ),
@@ -243,6 +243,10 @@ export function UpcomingMatchTable({
           </Badge>
         );
       },
+    },
+    {
+      accessorKey: "display_name",
+      header: "Group",
     },
   ];
 

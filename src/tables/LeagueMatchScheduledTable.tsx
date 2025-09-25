@@ -54,6 +54,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getErrorMessage } from "@/lib/error";
 
 type SheetFormData = {
   scheduled_date?: Date;
@@ -206,6 +207,18 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
     });
   };
 
+  function handleRefresh(): void {
+    const refresh = async () => {
+      await refetchLeagueMatch();
+    };
+
+    toast.promise(refresh(), {
+      loading: "Loading...",
+      success: "Done",
+      error: (e) => getErrorMessage(e),
+    });
+  }
+
   const columns: ColumnDef<LeagueMatch>[] = [
     {
       accessorKey: "home-team",
@@ -356,6 +369,10 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
       },
     },
     {
+      accessorKey: "display_name",
+      header: "Group",
+    },
+    {
       accessorKey: "scheduled_date",
       header: "Scheduled date",
       cell: ({ row }) => (
@@ -450,7 +467,14 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination showPageSize={true} table={table} />
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <DataTablePagination showPageSize={true} table={table} />
+        </div>
+        <Button variant={"outline"} size={"sm"} onClick={handleRefresh}>
+          Refresh
+        </Button>
+      </div>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent aria-describedby={undefined}>

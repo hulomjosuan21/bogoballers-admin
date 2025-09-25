@@ -16,22 +16,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "../ui/button";
 import { useFormatConfigStore } from "@/stores/formatConfigStore";
-import {
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import type {
   BestOfConfig,
   DoubleEliminationConfig,
   KnockoutConfig,
   RoundRobinConfig,
-  TwiceToBeatConfig,
 } from "@/types/formatConfig";
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
-// import { Checkbox } from "../ui/checkbox";
 
 export function RoundNodeMenu({
   onDragStart,
@@ -73,7 +66,6 @@ export function FormatNodeMenu({
       | KnockoutConfig
       | DoubleEliminationConfig
       | BestOfConfig
-      | TwiceToBeatConfig
   ) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -100,12 +92,10 @@ export function FormatNodeMenu({
     koConfig,
     deConfig,
     boConfig,
-    ttbConfig,
     setRRConfig,
     setKOConfig,
     setDEConfig,
     setBOConfig,
-    setTTBConfig,
   } = useFormatConfigStore();
 
   const getConfigForFormat = (formatType: RoundFormatTypesEnum) => {
@@ -144,8 +134,8 @@ export function FormatNodeMenu({
             max_loss: parseInt(deConfig.max_loss) || 2,
             brackets: ["winners", "losers"],
             label: deConfig.label || "• Standard",
-            progress_group: deConfig.progress_group || 1,
-            max_progress_group: deConfig.max_progress_group || 2,
+            progress_group: parseInt(deConfig.progress_group) || 1,
+            max_progress_group: parseInt(deConfig.max_progress_group) || 2,
           },
         };
       case RoundFormatTypesEnum.BestOf:
@@ -158,18 +148,6 @@ export function FormatNodeMenu({
             games: parseInt(boConfig.games) || 3,
             label: boConfig.label || "• Best of 3",
             advances_per_group: parseInt(boConfig.advances_per_group) || 2,
-          },
-        };
-      case RoundFormatTypesEnum.TwiceToBeat:
-        return {
-          label: ttbConfig.label || "• Finals Format",
-          format_type: RoundFormatTypesEnum.TwiceToBeat,
-          variant: "twicetobeat_final",
-          format_config: {
-            advantaged_team: ttbConfig.advantaged_team || "",
-            challenger_team: ttbConfig.challenger_team || "",
-            max_games: parseInt(ttbConfig.max_games) || 2,
-            label: ttbConfig.label || "• Finals Format",
           },
         };
       default:
@@ -293,26 +271,6 @@ export function FormatNodeMenu({
         });
         break;
       }
-      case RoundFormatTypesEnum.TwiceToBeat: {
-        if (!validateNumber(tempConfig.max_games, 1, 3, "Max Games")) {
-          toast.error("Please provide valid values for all changed fields");
-          return;
-        }
-        setTTBConfig({
-          ...ttbConfig,
-          ...(tempConfig.label !== undefined && { label: tempConfig.label }),
-          ...(tempConfig.advantaged_team !== undefined && {
-            advantaged_team: tempConfig.advantaged_team,
-          }),
-          ...(tempConfig.challenger_team !== undefined && {
-            challenger_team: tempConfig.challenger_team,
-          }),
-          ...(tempConfig.max_games !== undefined && {
-            max_games: tempConfig.max_games,
-          }),
-        });
-        break;
-      }
     }
     setOpen(false);
     setTempConfig({});
@@ -393,7 +351,6 @@ export function FormatNodeMenu({
                       koConfig.label ??
                       deConfig.label ??
                       boConfig.label ??
-                      ttbConfig.label ??
                       ""
                     }
                     onChange={(e) =>
@@ -671,79 +628,6 @@ export function FormatNodeMenu({
                           })
                         }
                         placeholder="Enter advances per group"
-                      />
-                    </div>
-                  </>
-                )}
-                {format_type === RoundFormatTypesEnum.TwiceToBeat && (
-                  <>
-                    <div className="space-y-1">
-                      <Label htmlFor={`${format_type}-advantagedTeam`}>
-                        Advantaged Team
-                      </Label>
-                      <Select
-                        value={
-                          tempConfig.advantaged_team ??
-                          ttbConfig.advantaged_team ??
-                          ""
-                        }
-                        onValueChange={(value) =>
-                          setTempConfig({
-                            ...tempConfig,
-                            advantaged_team: value,
-                          })
-                        }
-                      >
-                        <SelectTrigger id={`${format_type}-advantagedTeam`}>
-                          <SelectValue placeholder="Select advantaged team" />
-                        </SelectTrigger>
-                        <SelectContent></SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor={`${format_type}-challengerTeam`}>
-                        Challenger Team
-                      </Label>
-                      <Select
-                        value={
-                          tempConfig.challenger_team ??
-                          ttbConfig.challenger_team ??
-                          ""
-                        }
-                        onValueChange={(value) =>
-                          setTempConfig({
-                            ...tempConfig,
-                            challenger_team: value,
-                          })
-                        }
-                      >
-                        <SelectTrigger id={`${format_type}-challengerTeam`}>
-                          <SelectValue placeholder="Select challenger team" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {/* Empty as per requirement */}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor={`${format_type}-maxGames`}>
-                        Max Games
-                      </Label>
-                      <Input
-                        id={`${format_type}-maxGames`}
-                        type="number"
-                        min={1}
-                        max={3}
-                        value={
-                          tempConfig.max_games ?? ttbConfig.max_games ?? ""
-                        }
-                        onChange={(e) =>
-                          setTempConfig({
-                            ...tempConfig,
-                            max_games: e.target.value,
-                          })
-                        }
-                        placeholder="Enter max games"
                       />
                     </div>
                   </>

@@ -134,6 +134,7 @@ export function useNodeManagement({
               round_format: round.round_format,
               round_id: round.round_id,
               format_config: round.format_config,
+              round: round,
             } satisfies FormatNodeData,
           });
 
@@ -400,8 +401,7 @@ export function useNodeManagement({
     },
     [nodes, viewOnly]
   );
-  const { rrConfig, koConfig, deConfig, boConfig, ttbConfig } =
-    useFormatConfigStore();
+  const { rrConfig, koConfig, deConfig, boConfig } = useFormatConfigStore();
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -424,12 +424,6 @@ export function useNodeManagement({
         const formatConfig = buildFormatConfig(variant);
         if (!activeLeagueCategoriesMetaData) return;
 
-        const categoryMeta = activeLeagueCategoriesMetaData.find(
-          (meta) => meta.league_category_id === round.league_category_id
-        );
-
-        if (!categoryMeta) return;
-
         const roundFormat: LeagueRoundFormat = {
           format_type: label as RoundFormatTypesEnum,
           pairing_method: "random",
@@ -437,7 +431,6 @@ export function useNodeManagement({
           position: targetNode.position,
           format_config: {
             ...formatConfig,
-            team_count: categoryMeta.eligible_teams_count,
           },
         };
 
@@ -452,7 +445,6 @@ export function useNodeManagement({
                   ...roundFormat,
                   format_config: {
                     ...formatConfig,
-                    team_count: categoryMeta.eligible_teams_count,
                   },
                 },
               };
@@ -553,7 +545,6 @@ export function useNodeManagement({
       koConfig,
       deConfig,
       boConfig,
-      ttbConfig,
     ]
   );
 

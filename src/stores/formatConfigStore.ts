@@ -27,17 +27,11 @@ interface FormatConfigState {
     games: string;
     advances_per_group: string;
   };
-  ttbConfig: {
-    label: string;
-    advantaged_team: string;
-    challenger_team: string;
-    max_games: string;
-  };
+
   setRRConfig: (config: Partial<FormatConfigState["rrConfig"]>) => void;
   setKOConfig: (config: Partial<FormatConfigState["koConfig"]>) => void;
   setDEConfig: (config: Partial<FormatConfigState["deConfig"]>) => void;
   setBOConfig: (config: Partial<FormatConfigState["boConfig"]>) => void;
-  setTTBConfig: (config: Partial<FormatConfigState["ttbConfig"]>) => void;
 }
 
 export const useFormatConfigStore = create<FormatConfigState>()(
@@ -68,12 +62,7 @@ export const useFormatConfigStore = create<FormatConfigState>()(
         games: "",
         advances_per_group: "",
       },
-      ttbConfig: {
-        label: "",
-        advantaged_team: "",
-        challenger_team: "",
-        max_games: "",
-      },
+
       setRRConfig: (config) =>
         set((state) => ({
           rrConfig: { ...state.rrConfig, ...config },
@@ -89,10 +78,6 @@ export const useFormatConfigStore = create<FormatConfigState>()(
       setBOConfig: (config) =>
         set((state) => ({
           boConfig: { ...state.boConfig, ...config },
-        })),
-      setTTBConfig: (config) =>
-        set((state) => ({
-          ttbConfig: { ...state.ttbConfig, ...config },
         })),
     }),
     {

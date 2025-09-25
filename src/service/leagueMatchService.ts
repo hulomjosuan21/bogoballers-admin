@@ -28,6 +28,16 @@ export class LeagueMatchService {
     return response.data;
   }
 
+  static async progressNext(
+    leagueId: string,
+    currentLeagueCategoryId: string,
+    auto_proceed: boolean
+  ) {
+    const url = `/league-match/progress-next/${leagueId}/${currentLeagueCategoryId}?auto_proceed=${auto_proceed}`;
+
+    return (await axiosClient.put<{ message: string }>(url)).data;
+  }
+
   static async finalizeOne(leagueMatchId: string, data: MatchBook) {
     const url = `/league-match/${leagueMatchId}/finalize`;
 

@@ -1,4 +1,4 @@
-import type { XYPosition } from "@xyflow/react";
+import type { NodeTypes, XYPosition } from "@xyflow/react";
 import type {
   LeagueCategory,
   LeagueCategoryRound,
@@ -20,9 +20,9 @@ export interface ILeagueCategoryRound extends LeagueCategoryRound {
 
 export type LeagueCategoryNodeData = { category: ILeagueCategory };
 
-export type LeagueCategoryRoundNodeData = { round: ILeagueCategoryRound };
 export type LeagueMatchNodeData = { match: ILeagueMatch };
 
+export type LeagueCategoryRoundNodeData = { round: ILeagueCategoryRound };
 export type NodeData =
   | LeagueCategoryNodeData
   | LeagueCategoryRoundNodeData

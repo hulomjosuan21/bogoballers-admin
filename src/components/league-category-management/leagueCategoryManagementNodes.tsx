@@ -12,12 +12,30 @@ import {
   type FormatNodeData,
   type RoundNodeData,
 } from "@/types/leagueCategoryTypes";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   LeagueCategoryNodeSheet,
   RoundNodeSheet,
 } from "@/components/league-category-management/LeagueCategoryManagementComponents";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
   const { category, viewOnly, metadata } = data;
@@ -161,7 +179,13 @@ export function RoundNode({
 
 export function FormatNode({ data }: { data: FormatNodeData }) {
   const { getEdges } = useReactFlow();
+  const { round } = data;
   const errorShownRef = useRef(false);
+
+  const [advantagedTeam, setAdvantagedTeam] = useState<string | null>(null);
+  const [challengerTeam, setChallengerTeam] = useState<string | null>(null);
+
+  const leagueTeams: { league_team_id: string; team_name: string }[] = [];
 
   const validateConnection = (conn: Connection | Edge) => {
     const edges = getEdges();
@@ -181,6 +205,49 @@ export function FormatNode({ data }: { data: FormatNodeData }) {
     return conn.sourceHandle === "bottom";
   };
 
+  const isFinalOrSemifinal =
+    round?.round_name?.toLowerCase() === "final" ||
+    round?.round_name?.toLowerCase() === "semifinal";
+
+  const updateSeriesConfig = (
+    key: "advantaged_team" | "challenger_team",
+    value: string
+  ) => {
+    if (!data.round_format?.format_config) return;
+
+    if (!data.round_format.format_config.series_config) {
+      data.round_format.format_config.series_config = {
+        type: "TwiceToBeat",
+        advantaged_team: null,
+        challenger_team: null,
+        max_games: 2,
+      };
+    }
+
+    data.round_format.format_config.series_config[key] = value;
+  };
+
+  const handleSave = async () => {
+    if (!advantagedTeam || !challengerTeam) {
+      toast.error("Please select both teams before saving");
+      return;
+    }
+
+    updateSeriesConfig("advantaged_team", advantagedTeam);
+    updateSeriesConfig("challenger_team", challengerTeam);
+
+    // 🔥 Call API here if needed
+    // await api.updateSeriesConfig({
+    //   round_id: round.round_id,
+    //   advantaged_team: advantagedTeam,
+    //   challenger_team: challengerTeam,
+    //   type: "TwiceToBeat",
+    //   max_games: 2,
+    // });
+
+    toast.success("Twice-to-Beat setup saved!");
+  };
+
   return (
     <div
       className="rounded-md p-2 flex flex-col gap-1 border-2 bg-background"
@@ -188,7 +255,90 @@ export function FormatNode({ data }: { data: FormatNodeData }) {
         errorShownRef.current = false;
       }}
     >
-      <span className="text-xs font-semibold">Format: {data.label}</span>
+      <span className="text-xs font-semibold">
+        Format: {data.round_format?.format_config?.label ?? data.label}
+      </span>
+
+      {isFinalOrSemifinal && (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              Configure {round.round_name}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Twice-to-Beat Setup</DialogTitle>
+              <DialogDescription>
+                Select the advantaged and challenger teams for the{" "}
+                {round.round_name}.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-4 py-4">
+              {/* Advantaged */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="advantaged">Advantaged</Label>
+                <Select
+                  value={advantagedTeam ?? ""}
+                  onValueChange={(value) => {
+                    setAdvantagedTeam(value);
+                    updateSeriesConfig("advantaged_team", value);
+                  }}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {leagueTeams
+                      .filter((t) => t.league_team_id !== challengerTeam)
+                      .map((t) => (
+                        <SelectItem
+                          key={t.league_team_id}
+                          value={t.league_team_id}
+                        >
+                          {t.team_name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Challenger */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="challenger">Challenger</Label>
+                <Select
+                  value={challengerTeam ?? ""}
+                  onValueChange={(value) => {
+                    setChallengerTeam(value);
+                    updateSeriesConfig("challenger_team", value);
+                  }}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {leagueTeams
+                      .filter((t) => t.league_team_id !== advantagedTeam)
+                      .map((t) => (
+                        <SelectItem
+                          key={t.league_team_id}
+                          value={t.league_team_id}
+                        >
+                          {t.team_name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button onClick={handleSave}>Save Setup</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {data._isNew ? (
         <span className="text-xs text-primary font-medium">

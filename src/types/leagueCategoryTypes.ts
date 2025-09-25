@@ -204,6 +204,7 @@ export interface FormatNodeData {
   round_format?: LeagueRoundFormat;
   round_id?: string;
   variant?: string;
+  round?: LeagueCategoryRound;
   _isNew?: boolean;
   [key: string]: unknown;
 }

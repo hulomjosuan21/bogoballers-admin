@@ -21,9 +21,5 @@ export const getPredefinedFormatConfigs = (): Array<{
       label: "Configurable",
       format_type: RoundFormatTypesEnum.BestOf,
     },
-    {
-      label: "Configurable",
-      format_type: RoundFormatTypesEnum.TwiceToBeat,
-    },
   ];
 };

@@ -16,7 +16,7 @@ export const buildFormatConfig = (
   | (DoubleEliminationConfig & { label: string })
   | (BestOfConfig & { label: string })
   | (TwiceToBeatConfig & { label: string }) => {
-  const { rrConfig, koConfig, deConfig, boConfig, ttbConfig } = store;
+  const { rrConfig, koConfig, deConfig, boConfig } = store;
 
   switch (variant) {
     case "roundrobin_1group":
@@ -50,13 +50,7 @@ export const buildFormatConfig = (
         label: boConfig.label || "• Best of 3",
         advances_per_group: parseInt(boConfig.advances_per_group) || 1,
       };
-    case "twicetobeat_final":
-      return {
-        advantaged_team: ttbConfig.advantaged_team || "",
-        challenger_team: ttbConfig.challenger_team || "",
-        max_games: parseInt(ttbConfig.max_games) || 2,
-        label: ttbConfig.label || "• Finals Format",
-      };
+
     default:
       return {} as any;
   }

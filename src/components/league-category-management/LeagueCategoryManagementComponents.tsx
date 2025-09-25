@@ -39,6 +39,7 @@ import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { getErrorMessage } from "@/lib/error";
 import { refetchActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 import { LeagueRoundService } from "@/service/leagueRoundService";
+import { LeagueMatchService } from "@/service/leagueMatchService";
 export function LeagueCategoryNodeSheet({
   data,
   disable,
@@ -246,31 +247,25 @@ export function RoundNodeSheet({
       try {
         if (status !== originalStatus.current) {
           const confirm = await openDialog({
-            title: "Confirm Round Progression",
-            description:
-              "Updating this round will automatically adjust the status of the previous or next round accordingly.",
             confirmText: "Yes",
             cancelText: "No",
           });
 
-          let changes;
-          if (confirm) {
-            changes = { round_status: status, auto_proceed: true };
-          } else {
-            changes = { round_status: status, auto_proceed: false };
-          }
+          if (!confirm) return;
 
           const response = await LeagueCategoryRoundService.progressRound({
             roundId: round.round_id,
-            changes: changes,
+            changes: { round_status: status, auto_proceed: false },
           });
 
           await refetchActiveLeagueCategories(activeLeagueId);
+          originalStatus.current = status;
           return response;
         }
 
         return "No updates required";
       } finally {
+        setPending(false);
       }
     };
 
@@ -298,6 +293,39 @@ export function RoundNodeSheet({
     };
 
     toast.promise(generate(), {
+      loading: "Updating round...",
+      success: (res) => res.message,
+      error: (err) => getErrorMessage(err),
+    });
+  };
+
+  const handleProceedNextRound = () => {
+    const proceed = async () => {
+      const confirm = await openDialog({
+        title: "Confirm Round Progression",
+        description:
+          "Updating this round will automatically adjust the status of the previous or next round accordingly.",
+        confirmText: "Yes",
+        cancelText: "No",
+      });
+
+      let auto_proceed = false;
+      if (confirm) {
+        auto_proceed = true;
+      }
+
+      try {
+        return await LeagueMatchService.progressNext(
+          activeLeagueId!,
+          data.round.round_id,
+          auto_proceed
+        );
+      } finally {
+        await refetchActiveLeagueCategories(activeLeagueId);
+      }
+    };
+
+    toast.promise(proceed(), {
       loading: "Updating round...",
       success: (res) => res.message,
       error: (err) => getErrorMessage(err),
@@ -348,9 +376,6 @@ export function RoundNodeSheet({
                   <SelectItem value={RoundStateEnum.Ongoing}>
                     Ongoing
                   </SelectItem>
-                  <SelectItem value={RoundStateEnum.Finished}>
-                    Finished
-                  </SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-helper">
@@ -367,7 +392,8 @@ export function RoundNodeSheet({
                   : "Regenerate Match"}
               </Button>
               <Button
-                disabled={data.round.round_status != RoundStateEnum.Finished}
+                disabled={data.round.round_status !== RoundStateEnum.Ongoing}
+                onClick={handleProceedNextRound}
               >
                 Proceed to next round
               </Button>

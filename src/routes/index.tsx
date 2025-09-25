@@ -117,16 +117,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     icon: LayoutDashboard,
     sidebarGroup: "platform",
   },
-  {
-    path: "league-matches",
-    element: <LeagueMatches />,
-    showInSidebar: true,
-    icon: ChevronsRightLeft,
-    sidebarGroup: "league",
-    sidebarParent: "Match",
-    sidebarTitle: "Matches",
-    permissions: [Permission.ViewScheduledMatches],
-  },
+
   {
     path: "chat",
     element: <ConversationListPage />,
@@ -277,6 +268,16 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarTitle: "Upcoming",
     sidebarParent: "Match",
     sidebarGroup: "league",
+  },
+  {
+    path: "league-matches",
+    element: <LeagueMatches />,
+    showInSidebar: true,
+    icon: ChevronsRightLeft,
+    sidebarGroup: "league",
+    sidebarParent: "Match",
+    sidebarTitle: "Matches",
+    permissions: [Permission.ViewScheduledMatches],
   },
   {
     path: "pages/settings",

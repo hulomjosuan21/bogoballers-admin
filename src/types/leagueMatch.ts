@@ -40,5 +40,6 @@ export interface LeagueMatch {
   bracket_stage_label: string | null;
 
   league_match_created_at: string;
+  display_name: string | null;
   league_match_updated_at: string;
 }

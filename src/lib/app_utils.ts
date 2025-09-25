@@ -28,7 +28,8 @@ export function formatNumber(n: number) {
 }
 
 export function formatDate12h(dateStr: string): string {
-  const date = new Date(dateStr); // 👈 parse string into Date
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   let hours = date.getHours();

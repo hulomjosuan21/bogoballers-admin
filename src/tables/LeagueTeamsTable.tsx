@@ -43,23 +43,34 @@ import type { LeagueTeam } from "@/types/team";
 import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { LeagueTeamService } from "@/service/leagueTeamService";
+import { Badge } from "@/components/ui/badge";
 
 type Props = {
   leagueId?: string;
   leagueCategoryId?: string;
   roundId?: string;
+  viewOnly?: boolean;
 };
 
-export default function LeagueTeamsTable({ leagueCategoryId, roundId }: Props) {
-  const { dynamicLeagueTeamData, dynamicLeagueTeamLoading } =
-    useLeagueTeamDynamicQuery(
-      QUERY_KEYS.DYNAMIC_KEY_LEAGUE_TEAM_FOR_CHECKED(leagueCategoryId, roundId),
-      () => LeagueTeamService.getTeamsChecked(leagueCategoryId!, roundId!)
-    );
+export default function LeagueTeamsTable({
+  leagueCategoryId,
+  roundId,
+  viewOnly = false,
+}: Props) {
+  const {
+    dynamicLeagueTeamData,
+    dynamicLeagueTeamLoading,
+    refetchDynamicLeagueTeam,
+  } = useLeagueTeamDynamicQuery(
+    QUERY_KEYS.DYNAMIC_KEY_LEAGUE_TEAM_FOR_CHECKED(leagueCategoryId, roundId),
+    () => LeagueTeamService.getTeamsChecked(leagueCategoryId!, roundId!)
+  );
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    actions: !viewOnly,
+  });
   const [rowSelection, setRowSelection] = useState({});
 
   const columns: ColumnDef<LeagueTeam>[] = useMemo(
@@ -92,7 +103,25 @@ export default function LeagueTeamsTable({ leagueCategoryId, roundId }: Props) {
               )}
               <div className="space-y-px">
                 <div className="font-medium text-foreground">
-                  {row.original.team_name}
+                  {row.original.team_name}{" "}
+                  {row.original.is_eliminated && (
+                    <Badge variant={"destructive"} className="text-xs">
+                      Eliminated
+                    </Badge>
+                  )}
+                  {row.original.is_champion && row.original.final_rank == 1 && (
+                    <Badge className="text-xs">Champion</Badge>
+                  )}
+                  {row.original.final_rank == 2 && (
+                    <Badge className="text-xs" variant={"outline"}>
+                      Runner up
+                    </Badge>
+                  )}
+                  {row.original.final_rank == 3 && (
+                    <Badge className="text-xs" variant={"secondary"}>
+                      Third place
+                    </Badge>
+                  )}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   wins:{row.original.wins} losses:{row.original.losses}
@@ -128,11 +157,24 @@ export default function LeagueTeamsTable({ leagueCategoryId, roundId }: Props) {
       {
         id: "actions",
         enableHiding: false,
+        columnVisibility: !viewOnly ? true : false,
         cell: ({ row }) => <ActionCell row={row} />,
       },
     ],
-    []
+    [viewOnly]
   );
+
+  function handleRefresh(): void {
+    const refresh = async () => {
+      await refetchDynamicLeagueTeam();
+    };
+
+    toast.promise(refresh(), {
+      loading: "Loading...",
+      success: "Done",
+      error: (e) => getErrorMessage(e),
+    });
+  }
 
   const tableData = useMemo(() => {
     return dynamicLeagueTeamData;
@@ -204,7 +246,14 @@ export default function LeagueTeamsTable({ leagueCategoryId, roundId }: Props) {
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination showPageSize={false} table={table} />
+      <div className="flex gap-2 items-center">
+        <div className="flex-1">
+          <DataTablePagination showPageSize={false} table={table} />
+        </div>
+        <Button variant={"outline"} size={"sm"} onClick={handleRefresh}>
+          Refresh
+        </Button>
+      </div>
     </div>
   );
 }
