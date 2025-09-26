@@ -7,7 +7,7 @@ import {
   ManualLeagueCategoryNodeMenu,
   ManualLeagueTeamNodeMenu,
   ManualRoundNodeMenu,
-} from "@/components/manual/menus";
+} from "@/components/manual-management/ManualNodeMenus";
 import { ManualMatchingCanvas } from "./LeagueMatchManualXyFlowCanvas";
 
 function ManualMatchingPageContent() {

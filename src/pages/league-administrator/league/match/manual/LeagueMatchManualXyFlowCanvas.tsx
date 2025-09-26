@@ -8,6 +8,7 @@ import {
   type OnEdgesChange,
   type OnConnect,
   type Connection,
+  type Edge,
 } from "@xyflow/react";
 import { useFlowDispatch, useFlowState } from "@/context/FlowContext";
 import type {
@@ -16,8 +17,10 @@ import type {
   LeagueCategoryRoundNodeData,
   LeagueMatchNodeData,
 } from "@/types/manual";
-import { nodeTypes } from "@/components/manual";
+import { nodeTypes } from "@/components/manual-management";
 import type { LeagueMatch } from "@/types/leagueMatch";
+import { useAlertDialog } from "@/hooks/userAlertDialog";
+import { toast } from "sonner";
 
 function useDragAndDrop() {
   const { screenToFlowPosition } = useReactFlow();
@@ -54,13 +57,82 @@ function useDragAndDrop() {
   return { onDrop, onDragOver };
 }
 
+const getCascadeDeleteChanges = (
+  rootNodeId: string,
+  nodes: FlowNode[],
+  edges: Edge[]
+) => {
+  const nodesToDelete = new Set<string>([rootNodeId]);
+  const edgesToDelete = new Set<string>();
+
+  // A queue to process nodes whose children we need to find
+  const queue = [rootNodeId];
+
+  while (queue.length > 0) {
+    const currentNodeId = queue.shift()!;
+
+    const outgoingEdges = edges.filter((edge) => edge.source === currentNodeId);
+
+    for (const edge of outgoingEdges) {
+      edgesToDelete.add(edge.id);
+
+      const targetNodeId = edge.target;
+
+      if (!nodesToDelete.has(targetNodeId)) {
+        nodesToDelete.add(targetNodeId);
+        queue.push(targetNodeId);
+      }
+    }
+  }
+
+  return { nodesToDelete, edgesToDelete };
+};
+
 export function ManualMatchingCanvas() {
   const { nodes, edges } = useFlowState();
   const dispatch = useFlowDispatch();
+  const { openDialog } = useAlertDialog();
   const { onDrop, onDragOver } = useDragAndDrop();
 
-  const onNodesChange: OnNodesChange = (changes) =>
-    dispatch({ type: "ON_NODES_CHANGE", payload: changes });
+  const onNodesChange: OnNodesChange = useCallback(
+    async (changes) => {
+      const categoryChange = changes.find((change) => {
+        if (change.type === "remove") {
+          const node = nodes.find((n) => n.id === change.id);
+          return node?.type === "leagueCategory";
+        }
+        return false;
+      });
+
+      if (categoryChange) {
+        const confirm = await openDialog({
+          title: "Confirm Deletion",
+          description:
+            "Are you sure? This will remove all connected rounds, groups, and matches.",
+        });
+
+        if (!confirm) return;
+
+        const { nodesToDelete, edgesToDelete } = getCascadeDeleteChanges(
+          categoryChange.id,
+          nodes,
+          edges
+        );
+        const newNodes = nodes.filter((n) => !nodesToDelete.has(n.id));
+        const newEdges = edges.filter((e) => !edgesToDelete.has(e.id));
+
+        dispatch({
+          type: "SET_STATE",
+          payload: { nodes: newNodes, edges: newEdges },
+        });
+
+        toast.success("Category and all connected nodes were deleted.");
+      } else {
+        dispatch({ type: "ON_NODES_CHANGE", payload: changes });
+      }
+    },
+    [nodes, edges, dispatch, openDialog]
+  );
   const onEdgesChange: OnEdgesChange = (changes) =>
     dispatch({ type: "ON_EDGES_CHANGE", payload: changes });
 

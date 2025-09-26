@@ -1,5 +1,5 @@
 export { default as DashboardPage } from "./league-administrator/DashboardPage";
-export { default as LeagueCategoryManagementPage } from "./league-administrator/league/category/LeagueCategoryManagementPage";
+export { default as LeagueCategoryManagementPage } from "./league-administrator/league/match/automatic/LeagueCategoryManagementPage";
 export { default as LeagueCreationPage } from "./league-administrator/league/create/LeagueCreationPage";
 export { default as PlayerSubmissionPage } from "./league-administrator/league/player/PlayerSubmissionPage";
 export { default as TeamSubmissionPage } from "./league-administrator/league/team/TeamSubmissionPage";

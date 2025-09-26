@@ -24,9 +24,22 @@ import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
 import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeam } from "@/types/team";
 import type { LeagueMatch } from "@/types/leagueMatch";
+import { useFlowState } from "@/context/FlowContext";
 
 export function ManualLeagueCategoryNodeMenu() {
   const { activeLeagueCategories } = useActiveLeague();
+
+  const { nodes } = useFlowState();
+
+  const categoryNodeIdsOnCanvas = new Set(
+    nodes
+      .filter((node) => node.type === "leagueCategory")
+      .map((node) => node.id)
+  );
+
+  const availableCategories = activeLeagueCategories.filter(
+    (category) => !categoryNodeIdsOnCanvas.has(category.league_category_id)
+  );
 
   const onDragStart = (event: React.DragEvent, category: LeagueCategory) => {
     const nodePayload: Omit<Node, "position"> = {
@@ -43,7 +56,7 @@ export function ManualLeagueCategoryNodeMenu() {
 
   return (
     <div className="flex flex-col gap-2 justify-center">
-      {activeLeagueCategories.map((value) => (
+      {availableCategories.map((value) => (
         <div
           key={value.league_category_id}
           onDragStart={(event) => onDragStart(event, value)}
