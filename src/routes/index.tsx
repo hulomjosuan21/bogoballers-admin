@@ -12,6 +12,7 @@ import {
   LeagueMatchScheduledPage,
   LeagueUpdatePage,
   BracketStructurePage,
+  ManageLeagueCategoriesPage,
 } from "@/pages";
 import AboutLeaguePage from "@/pages/public/learnings/AboutLeague";
 import LeaderboardPage from "@/pages/leaderboard/LeaderboardPage";
@@ -49,7 +50,7 @@ import ChatLoader from "@/components/ChatLoader";
 import ChatScreen from "@/components/ChatScreen";
 import LeagueMatches from "@/pages/league-administrator/league/match/LeagueMatches";
 import LiveAdminPage from "@/pages/LiveAdminPage";
-import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/LeagueMatchManualMatching";
+import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/ManualManagementPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -167,6 +168,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     icon: SquarePen,
     sidebarGroup: "league",
   },
+
   {
     path: "pages/league/automatic/management",
     element: <LeagueCategoryManagementPage />,
@@ -194,10 +196,11 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     showInSidebar: true,
     sidebarTitle: "Players",
     icon: UserRound,
+    sidebarParent: "Manage",
     sidebarGroup: "league",
   },
   {
-    path: "pages/league/teams",
+    path: "pages/league/team/official",
     element: <LeagueTeamsPage />,
     permissions: [Permission.ManageTeams],
     showInSidebar: true,
@@ -213,6 +216,15 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     showInSidebar: true,
     sidebarTitle: "Submissions",
     sidebarParent: "Team",
+    sidebarGroup: "league",
+  },
+  {
+    path: "pages/league-categories/manage",
+    element: <ManageLeagueCategoriesPage />,
+    permissions: [Permission.ManageCategories],
+    showInSidebar: true,
+    sidebarTitle: "League Categories",
+    sidebarParent: "Manage",
     sidebarGroup: "league",
   },
   {
@@ -272,7 +284,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
   },
   {
-    path: "league-matches",
+    path: "pages/league-matches",
     element: <LeagueMatches />,
     showInSidebar: true,
     icon: ChevronsRightLeft,

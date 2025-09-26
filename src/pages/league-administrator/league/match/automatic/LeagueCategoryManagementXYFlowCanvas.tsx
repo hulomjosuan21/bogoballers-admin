@@ -13,7 +13,7 @@ import {
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { default as ContentHeader } from "@/components/content-header";
 import { Button } from "@/components/ui/button";
-import { Loader2, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import {
   Sheet,
@@ -33,14 +33,12 @@ import { NoteBox } from "@/components/nodebox";
 type LeagueCategoryCanvasProps = {
   leagueId?: string;
   categories?: LeagueCategory[] | null;
-  isLoading: boolean;
-  error: unknown;
+  error: Error | null;
   viewOnly?: boolean;
 };
 export default function LeagueCategoryCanvas({
   leagueId,
   categories,
-  isLoading,
   error,
   viewOnly = false,
 }: LeagueCategoryCanvasProps) {
@@ -50,7 +48,6 @@ export default function LeagueCategoryCanvas({
     selectedNodes,
     originalNodesRef,
     initialNodesRef,
-    categoriesRef,
     setEdges,
     setDeletedNodeIds,
     initializeFromCategories,
@@ -180,7 +177,7 @@ export default function LeagueCategoryCanvas({
 
   return (
     <ContentShell>
-      <ContentHeader title="Category Management">
+      <ContentHeader title="Automatic Management">
         {!viewOnly && hasUnsavedChanges && (
           <Button variant={"outline"} size={"sm"} onClick={handleSaveChanges}>
             Save Changes ({getTotalChangesCount})
@@ -204,20 +201,12 @@ export default function LeagueCategoryCanvas({
           </SheetContent>
         </Sheet>
       </ContentHeader>
-      <ContentBody className="flex-row">
-        {isLoading ? (
-          <div className="centered-container">
-            <Loader2 className="animate-spin text-primary" />
-          </div>
-        ) : error ? (
-          <div className="centered-container">
+      <ContentBody className="flex-row relative">
+        {categoryCanvas}
+
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
             <p className="text-primary">{(error as any).message}</p>
-          </div>
-        ) : categoriesRef.current && categoriesRef.current.length > 0 ? (
-          categoryCanvas
-        ) : (
-          <div className="centered-container">
-            <p className="text-muted-foreground">No categories available</p>
           </div>
         )}
       </ContentBody>

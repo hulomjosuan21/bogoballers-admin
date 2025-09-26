@@ -10,7 +10,6 @@ import { ImageUploadField } from "@/components/image-upload-field";
 import type { DateRange } from "react-day-picker";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-
 import { ButtonLoading } from "@/components/custom-buttons";
 import { disableOnLoading } from "@/lib/app_utils";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +28,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { authLeagueAdminQueryOption } from "@/queries/leagueAdminQueryOption";
 import { Check, ChevronsUpDown } from "lucide-react";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
@@ -36,7 +42,9 @@ import { getErrorMessage } from "@/lib/error";
 import { useCategories } from "@/hooks/useLeagueAdmin";
 import { refetchActiveLeague } from "@/hooks/useActiveLeague";
 import type { League } from "@/types/league";
-type LeagueUpdatePayload = {
+import { LeagueService } from "@/service/leagueService";
+
+export type LeagueUpdatePayload = {
   league_title?: string;
   league_description?: string;
   league_address?: string;
@@ -45,13 +53,17 @@ type LeagueUpdatePayload = {
   sportsmanship_rules?: string[];
   registration_deadline?: string;
   opening_date?: string;
-  league_categories?: string[]; // ✅ force string[]
+  league_categories?: string[];
+  status?: string;
 };
+
 export default function UpdateLeagueForm({
   hasActive,
   activeLeague,
   activeLeagueLoading,
+  leagueId,
 }: {
+  leagueId: string;
   hasActive: boolean;
   activeLeague: League;
   activeLeagueLoading: boolean;
@@ -59,7 +71,6 @@ export default function UpdateLeagueForm({
   const leagueAdmin = useQuery(authLeagueAdminQueryOption({ enabled: true }));
   const { categoriesData } = useCategories();
 
-  // Local states
   const [leagueTitle, setLeagueTitle] = useState("");
   const [leagueDescription, setLeagueDescription] = useState("");
   const [selectedAddress, setLeagueAddress] = useState("");
@@ -72,6 +83,7 @@ export default function UpdateLeagueForm({
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [rules, setRules] = useState<string[]>([]);
+  const [status, setStatus] = useState<string>("");
   const [isProcessing, setProcessing] = useState(false);
 
   useEffect(() => {
@@ -82,6 +94,7 @@ export default function UpdateLeagueForm({
       setOverAllBudget(activeLeague.league_budget || 0);
       setLeagueBanner(activeLeague.banner_url || null);
       setRules(activeLeague.sportsmanship_rules || []);
+      setStatus(activeLeague.status || "Scheduled");
 
       if (activeLeague.registration_deadline) {
         setRegistrationDeadline(new Date(activeLeague.registration_deadline));
@@ -109,18 +122,24 @@ export default function UpdateLeagueForm({
     const updateLeague = async () => {
       try {
         const categoryIds = selectedCategories.map((opt) => opt.value);
-
         const payload: Partial<LeagueUpdatePayload> = {};
-        if (leagueTitle !== activeLeague.league_title)
+
+        // Only include changed fields
+        if (leagueTitle !== activeLeague.league_title) {
           payload.league_title = leagueTitle;
-        if (leagueDescription !== activeLeague.league_description)
+        }
+        if (leagueDescription !== activeLeague.league_description) {
           payload.league_description = leagueDescription;
-        if (selectedAddress !== activeLeague.league_address)
+        }
+        if (selectedAddress !== activeLeague.league_address) {
           payload.league_address = selectedAddress;
-        if (overAllBudget !== activeLeague.league_budget)
+        }
+        if (overAllBudget !== activeLeague.league_budget) {
           payload.league_budget = overAllBudget;
-        if (leagueBanner !== activeLeague.banner_url)
-          payload.banner_url = leagueBanner as any;
+        }
+        if (leagueBanner !== activeLeague.banner_url) {
+          payload.banner_url = leagueBanner;
+        }
         if (
           rules.join(",") !== (activeLeague.sportsmanship_rules || []).join(",")
         ) {
@@ -131,12 +150,14 @@ export default function UpdateLeagueForm({
           registrationDadline.toISOString() !==
             activeLeague.registration_deadline
         ) {
+          // Send ISO string to match backend expectation
           payload.registration_deadline = registrationDadline.toISOString();
         }
         if (
           openingDate &&
           openingDate.toISOString() !== activeLeague.opening_date
         ) {
+          // Send ISO string to match backend expectation
           payload.opening_date = openingDate.toISOString();
         }
         if (
@@ -145,11 +166,23 @@ export default function UpdateLeagueForm({
         ) {
           payload.league_categories = categoryIds;
         }
+        if (status !== activeLeague.status) {
+          payload.status = status;
+        }
 
-        console.log("Payload to send:", payload);
+        // Only send request if there are changes
+        if (Object.keys(payload).length === 0) {
+          toast.info("No changes detected");
+          setProcessing(false);
+          return { message: "No changes to update" };
+        }
+
+        const response = await LeagueService.updateOne(leagueId, payload);
 
         await refetchActiveLeague();
-        return { message: "League updated successfully!" };
+        return response;
+      } catch (err) {
+        throw err;
       } finally {
         setProcessing(false);
       }
@@ -178,6 +211,15 @@ export default function UpdateLeagueForm({
       </div>
     );
   }
+
+  // Define status options
+  const statusOptions = [
+    { value: "Scheduled", label: "Scheduled" },
+    { value: "Ongoing", label: "Ongoing" },
+    { value: "Completed", label: "Completed" },
+    { value: "Postponed", label: "Postponed" },
+    { value: "Cancelled", label: "Cancelled" },
+  ];
 
   return (
     <section
@@ -285,6 +327,20 @@ export default function UpdateLeagueForm({
             dateRange={dateRange}
             setDateRange={setDateRange}
           />
+
+          <Label htmlFor="status">League Status</Label>
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger id="status">
+              <SelectValue placeholder="Select Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

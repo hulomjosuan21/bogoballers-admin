@@ -32,14 +32,10 @@ export default function LeagueMatches() {
   const [activeRoundId, setActiveRoundId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (
-      hasActiveLeague &&
-      activeLeagueCategories &&
-      activeLeagueCategories.length > 0
-    ) {
+    if (hasActiveLeague && activeLeagueCategories.length > 0) {
       const firstCategory = activeLeagueCategories[0];
       setSelectedCategory(firstCategory);
-      setActiveRoundId(firstCategory.rounds[0]?.round_id || null);
+      setActiveRoundId(firstCategory.rounds?.[0]?.round_id || null);
     }
   }, [hasActiveLeague, activeLeagueCategories]);
 
@@ -49,11 +45,10 @@ export default function LeagueMatches() {
         (c) => c.league_category_id === categoryId
       ) || null;
     setSelectedCategory(category);
-
-    setActiveRoundId(category?.rounds[0]?.round_id || null);
+    setActiveRoundId(category?.rounds?.[0]?.round_id || null);
   };
 
-  if (activeLeagueData?.status == "Pending") {
+  if (activeLeagueData?.status === "Pending") {
     return <LeagueNotApproveYet />;
   }
 
@@ -63,7 +58,7 @@ export default function LeagueMatches() {
       <ContentBody>
         {hasActiveLeague ? (
           <>
-            {selectedCategory && selectedCategory.rounds.length > 0 && (
+            {selectedCategory && (
               <Tabs
                 value={activeRoundId || undefined}
                 onValueChange={setActiveRoundId}
@@ -92,27 +87,30 @@ export default function LeagueMatches() {
                     </SelectContent>
                   </Select>
 
-                  <TabsList className="flex flex-wrap gap-2">
-                    {selectedCategory?.rounds.map((round) => (
-                      <TabsTrigger
-                        key={round.round_id}
-                        value={round.round_id}
-                        className="w-[175px]"
-                      >
-                        {round.round_name}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+                  {selectedCategory.rounds?.length > 0 && (
+                    <TabsList className="flex flex-wrap gap-2">
+                      {selectedCategory.rounds.map((round) => (
+                        <TabsTrigger
+                          key={round.round_id}
+                          value={round.round_id}
+                          className="w-[175px]"
+                        >
+                          {round.round_name}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  )}
                 </div>
 
-                {selectedCategory?.rounds.map((round) => (
-                  <TabsContent key={round.round_id} value={round.round_id}>
-                    <LeagueMatchesTable
-                      leagueCategoryId={selectedCategory.league_category_id}
-                      roundId={round.round_id}
-                    />
-                  </TabsContent>
-                ))}
+                {selectedCategory.rounds?.length > 0 &&
+                  selectedCategory.rounds.map((round) => (
+                    <TabsContent key={round.round_id} value={round.round_id}>
+                      <LeagueMatchesTable
+                        leagueCategoryId={selectedCategory.league_category_id}
+                        roundId={round.round_id}
+                      />
+                    </TabsContent>
+                  ))}
               </Tabs>
             )}
           </>

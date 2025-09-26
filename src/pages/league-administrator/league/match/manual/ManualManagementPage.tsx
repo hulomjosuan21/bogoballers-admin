@@ -4,7 +4,6 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ContentHeader from "@/components/content-header";
 import {
   ManualEmptyLeagueMatchNode,
-  ManualLeagueCategoryNodeMenu,
   ManualLeagueTeamNodeMenu,
   ManualRoundNodeMenu,
 } from "@/components/manual-management/ManualNodeMenus";
@@ -13,7 +12,7 @@ import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { toast } from "sonner";
 import { manualLeagueService } from "@/service/manualLeagueManagementService";
 import { Button } from "@/components/ui/button";
-import { ArrowRightFromLine } from "lucide-react";
+import { ArrowRightLeft } from "lucide-react";
 
 function ManualMatchingPageContent() {
   const { activeLeagueId } = useActiveLeague();
@@ -45,19 +44,12 @@ function ManualMatchingPageContent() {
 
   const rightMenu = (
     <div className="w-fit flex flex-col gap-2">
-      <ManualEmptyLeagueMatchNode leagueId="" />
-      <Tabs
-        defaultValue="category"
-        className="w-fit text-xs text-muted-foreground"
-      >
+      <ManualEmptyLeagueMatchNode />
+      <Tabs defaultValue="round" className="text-xs text-muted-foreground">
         <TabsList size="xs">
-          <TabsTrigger value="category">Category</TabsTrigger>
           <TabsTrigger value="round">Round</TabsTrigger>
           <TabsTrigger value="teams">Teams</TabsTrigger>
         </TabsList>
-        <TabsContent value="category">
-          <ManualLeagueCategoryNodeMenu />
-        </TabsContent>
         <TabsContent value="round">
           <ManualRoundNodeMenu />
         </TabsContent>
@@ -70,9 +62,9 @@ function ManualMatchingPageContent() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Manual Matching">
-        <Button onClick={handleSyncBracket} size="sm">
-          <ArrowRightFromLine />
+      <ContentHeader title="Manual Management">
+        <Button onClick={handleSyncBracket} size="sm" className="">
+          <ArrowRightLeft className="w-4 h-4" />
           Sync Bracket
         </Button>
       </ContentHeader>

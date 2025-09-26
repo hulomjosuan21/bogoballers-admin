@@ -108,7 +108,7 @@ export function ManualGroupNodeMenu() {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Enter group name"
-          className="w-32 h-8"
+          className="w-34 h-8"
         />
         <Button onClick={handleAdd} size="sm" variant="outline" className="h-8">
           Add
@@ -269,12 +269,11 @@ export function ManualLeagueTeamNodeMenu() {
   );
 }
 
-export function ManualEmptyLeagueMatchNode({ leagueId }: { leagueId: string }) {
+export function ManualEmptyLeagueMatchNode() {
   const onDragStart = (event: React.DragEvent) => {
     const matchId = uuidv4();
     const newMatch: Partial<LeagueMatch> = {
       league_match_id: matchId,
-      league_id: leagueId,
       league_category_id: "",
       round_id: "",
       home_team_id: null,

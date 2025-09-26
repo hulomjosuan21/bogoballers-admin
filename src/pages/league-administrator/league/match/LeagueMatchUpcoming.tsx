@@ -37,11 +37,7 @@ export default function LeagueMatchCompletedPage() {
   const { state, data: selectMatch } = useToggleMatchBookSection();
 
   useEffect(() => {
-    if (
-      hasActiveLeague &&
-      activeLeagueCategories &&
-      activeLeagueCategories.length > 0
-    ) {
+    if (hasActiveLeague && activeLeagueCategories.length > 0) {
       const firstCategory = activeLeagueCategories[0];
       setSelectedCategory(firstCategory);
       setActiveRoundId(firstCategory.rounds[0]?.round_id || null);
@@ -57,7 +53,7 @@ export default function LeagueMatchCompletedPage() {
     setActiveRoundId(category?.rounds[0]?.round_id || null);
   };
 
-  if (activeLeagueData?.status == "Pending") {
+  if (activeLeagueData?.status === "Pending") {
     return <LeagueNotApproveYet />;
   }
 
@@ -76,13 +72,14 @@ export default function LeagueMatchCompletedPage() {
             <FinalizaMatchSection match={selectMatch} />
           ) : (
             <>
-              {selectedCategory && selectedCategory.rounds.length > 0 && (
+              {selectedCategory && (
                 <Tabs
                   value={activeRoundId || undefined}
                   onValueChange={setActiveRoundId}
                   className="text-sm text-muted-foreground"
                 >
                   <div className="flex flex-wrap gap-2 items-center mb-2">
+                    {/* Category Selector */}
                     <Select
                       onValueChange={handleCategorySelect}
                       value={selectedCategory?.league_category_id || ""}
@@ -105,8 +102,9 @@ export default function LeagueMatchCompletedPage() {
                       </SelectContent>
                     </Select>
 
+                    {/* Round Tabs */}
                     <TabsList className="flex flex-wrap gap-2">
-                      {selectedCategory?.rounds.map((round) => (
+                      {selectedCategory.rounds?.map((round) => (
                         <TabsTrigger
                           key={round.round_id}
                           value={round.round_id}
@@ -118,7 +116,8 @@ export default function LeagueMatchCompletedPage() {
                     </TabsList>
                   </div>
 
-                  {selectedCategory?.rounds.map((round) => (
+                  {/* Round Contents */}
+                  {selectedCategory.rounds?.map((round) => (
                     <TabsContent key={round.round_id} value={round.round_id}>
                       <UpcomingMatchTable
                         leagueCategoryId={selectedCategory.league_category_id}

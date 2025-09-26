@@ -29,6 +29,8 @@ export interface Player {
   total_ft_made: number;
   total_ft_attempts: number;
   total_join_league: number;
+  platform_points: number;
+  platform_points_per_game: number;
   is_ban: boolean;
   is_allowed: boolean;
   valid_documents: string[] | null;

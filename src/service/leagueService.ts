@@ -11,6 +11,7 @@ import axiosClient from "@/lib/axiosClient";
 import type { LeagueCreateOfficialCreate } from "@/tables/ManageOfficialsTable";
 import type { LeagueRefereeCreate } from "@/tables/ManageRefereesTable";
 import type { LeagueAffiliateCreate } from "@/tables/ManangeAffiliateTable";
+import type { LeagueUpdatePayload } from "@/forms/UpdateLeagueForm";
 
 type FieldKeyMap = {
   league_courts: LeagueCourt;
@@ -109,6 +110,12 @@ export class LeagueService {
       data ?? undefined
     );
 
+    return response.data;
+  }
+
+  static async updateOne(leagueId: string, data: LeagueUpdatePayload) {
+    const url = `/league/${leagueId}/update`;
+    const response = await axiosClient.put<{ message: string }>(url, data);
     return response.data;
   }
 

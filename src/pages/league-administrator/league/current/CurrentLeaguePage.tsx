@@ -14,7 +14,8 @@ import { useActiveLeague } from "@/hooks/useActiveLeague";
 import UpdateLeagueForm from "@/forms/UpdateLeagueForm";
 import { useNavigate } from "react-router-dom";
 export default function LeagueUpdatePage() {
-  const { activeLeagueData, activeLeagueLoading } = useActiveLeague();
+  const { activeLeagueId, activeLeagueData, activeLeagueLoading } =
+    useActiveLeague();
   const navigate = useNavigate();
 
   const hasActiveLeague = useMemo(() => {
@@ -54,6 +55,7 @@ export default function LeagueUpdatePage() {
         )}
         {!activeLeagueLoading && activeLeagueData && (
           <UpdateLeagueForm
+            leagueId={activeLeagueId!}
             hasActive={!hasActiveLeague}
             activeLeague={activeLeagueData}
             activeLeagueLoading={activeLeagueLoading}

@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { TeamSubmissionTable } from "@/tables/LeagueTeamSubmissionTable";
 import {
   LeagueTeamSheetSheetSubmissionSheet,
@@ -27,7 +34,11 @@ export default function TeamSubmissionPage() {
     }
   }, [hasActiveLeague, activeLeagueCategories]);
 
-  if (activeLeagueData?.status == "Pending") {
+  const activeCategory = activeLeagueCategories?.find(
+    (cat) => cat.league_category_id === activeCategoryId
+  );
+
+  if (activeLeagueData?.status === "Pending") {
     return <LeagueNotApproveYet />;
   }
 
@@ -38,40 +49,42 @@ export default function TeamSubmissionPage() {
         {!hasActiveLeague || !activeLeagueCategories?.length ? (
           <NoActiveLeagueAlert />
         ) : (
-          <Tabs
-            value={activeCategoryId}
-            onValueChange={setActiveCategoryId}
-            className="text-sm text-muted-foreground"
-          >
-            <ScrollArea>
-              <TabsList className="flex gap-2 mb-2">
-                {activeLeagueCategories.map((cat) => (
-                  <TabsTrigger
-                    key={cat.league_category_id}
-                    value={cat.league_category_id}
-                    className="w-[200px]"
-                  >
-                    {cat.category_name ?? "Unnamed Category"}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-
-            {activeLeagueCategories.map((cat) => (
-              <TabsContent
-                key={cat.league_category_id}
-                value={cat.league_category_id}
+          <>
+            <div className="flex items-center mb-2">
+              <Select
+                value={activeCategoryId}
+                onValueChange={setActiveCategoryId}
               >
+                <SelectTrigger className="w-[250px]">
+                  <SelectValue placeholder="Select League Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Active League Categories</SelectLabel>
+                    {activeLeagueCategories.map((cat) => (
+                      <SelectItem
+                        key={cat.league_category_id}
+                        value={cat.league_category_id}
+                      >
+                        {cat.category_name ?? "Unnamed Category"}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {activeCategory && (
+              <>
                 <LeagueTeamSheetSheetSubmissionSheet />
                 <RefundDialog />
                 <TeamSubmissionTable
-                  leagueCategoryId={cat.league_category_id}
+                  leagueCategoryId={activeCategory.league_category_id}
                   leagueId={activeLeagueId}
                 />
-              </TabsContent>
-            ))}
-          </Tabs>
+              </>
+            )}
+          </>
         )}
       </ContentBody>
     </ContentShell>

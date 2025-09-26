@@ -1,5 +1,5 @@
 export { default as DashboardPage } from "./league-administrator/DashboardPage";
-export { default as LeagueCategoryManagementPage } from "./league-administrator/league/match/automatic/LeagueCategoryManagementPage";
+export { default as LeagueCategoryManagementPage } from "./league-administrator/league/match/automatic/AutomaticManagementPage";
 export { default as LeagueCreationPage } from "./league-administrator/league/create/LeagueCreationPage";
 export { default as PlayerSubmissionPage } from "./league-administrator/league/player/PlayerSubmissionPage";
 export { default as TeamSubmissionPage } from "./league-administrator/league/team/TeamSubmissionPage";
@@ -11,3 +11,4 @@ export { default as LeagueMatchSetUnSchedulePage } from "./league-administrator/
 export { default as LeagueMatchScheduledPage } from "./league-administrator/league/match/LeagueMatchScheduledPage";
 export { default as LeagueUpdatePage } from "./league-administrator/league/current/CurrentLeaguePage";
 export { default as BracketStructurePage } from "./league-administrator/league/bracket/StructurePage";
+export { default as ManageLeagueCategoriesPage } from "./league-administrator/league/league-category/ManageLeagueCategoryPage";
