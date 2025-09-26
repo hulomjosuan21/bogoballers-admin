@@ -1,9 +1,7 @@
-// src/context/FlowContext.tsx
 import React, {
   createContext,
   useReducer,
   useContext,
-  useEffect,
   type ReactNode,
 } from "react";
 import {
@@ -14,10 +12,8 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
   addEdge,
-  type Connection,
 } from "@xyflow/react";
-import type { FlowNodeData } from "@/types/manual"; // Adjust path if needed
-import { db } from "@/service/dexie";
+import type { FlowNodeData } from "@/types/manual";
 
 type FlowState = {
   nodes: Node<FlowNodeData>[];
@@ -25,6 +21,10 @@ type FlowState = {
 };
 
 type Action =
+  | {
+      type: "REPLACE_NODE";
+      payload: { tempId: string; newNode: Node<FlowNodeData> };
+    }
   | { type: "SET_STATE"; payload: FlowState }
   | { type: "ADD_NODE"; payload: Node<FlowNodeData> }
   | {
@@ -33,7 +33,8 @@ type Action =
     }
   | { type: "ON_NODES_CHANGE"; payload: Parameters<OnNodesChange>[0] }
   | { type: "ON_EDGES_CHANGE"; payload: Parameters<OnEdgesChange>[0] }
-  | { type: "ON_CONNECT"; payload: Connection };
+  | { type: "ON_CONNECT"; payload: Edge }
+  | { type: "UPDATE_EDGE"; payload: { tempId: string; newEdge: Edge } };
 
 const initialState: FlowState = {
   nodes: [],
@@ -67,7 +68,6 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
           if (node.id === action.payload.nodeId) {
             const updatedData = { ...node.data };
             const payloadData = action.payload.data;
-
             switch (updatedData.type) {
               case "league_match":
                 if ("league_match" in payloadData && payloadData.league_match) {
@@ -77,7 +77,6 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
                   };
                 }
                 break;
-
               case "league_category_round":
                 if ("round" in payloadData && payloadData.round) {
                   updatedData.round = {
@@ -86,7 +85,6 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
                   };
                 }
                 break;
-
               case "group":
                 if ("group" in payloadData && payloadData.group) {
                   updatedData.group = {
@@ -95,7 +93,6 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
                   };
                 }
                 break;
-
               case "league_category":
                 if (
                   "league_category" in payloadData &&
@@ -108,13 +105,29 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
                 }
                 break;
             }
-
             return { ...node, data: updatedData };
           }
           return node;
         }),
       };
     }
+
+    case "REPLACE_NODE":
+      return {
+        ...state,
+        nodes: state.nodes.map((node) =>
+          node.id === action.payload.tempId ? action.payload.newNode : node
+        ),
+        edges: state.edges.map((edge) => {
+          if (edge.source === action.payload.tempId) {
+            return { ...edge, source: action.payload.newNode.id };
+          }
+          if (edge.target === action.payload.tempId) {
+            return { ...edge, target: action.payload.newNode.id };
+          }
+          return edge;
+        }),
+      };
 
     case "ON_NODES_CHANGE":
       return {
@@ -138,25 +151,6 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
 
 export const FlowProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(flowReducer, initialState);
-
-  useEffect(() => {
-    const loadState = async () => {
-      const savedState = await db.flowState.get(1);
-      if (savedState) {
-        dispatch({
-          type: "SET_STATE",
-          payload: { nodes: savedState.nodes, edges: savedState.edges },
-        });
-      }
-    };
-    loadState();
-  }, []);
-
-  useEffect(() => {
-    if (state.nodes.length > 0 || state.edges.length > 0) {
-      db.flowState.put({ id: 1, nodes: state.nodes, edges: state.edges });
-    }
-  }, [state]);
 
   return (
     <FlowStateContext.Provider value={state}>

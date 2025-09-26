@@ -36,44 +36,17 @@ import { getErrorMessage } from "@/lib/error";
 import { useCategories } from "@/hooks/useLeagueAdmin";
 import { refetchActiveLeague } from "@/hooks/useActiveLeague";
 import type { League } from "@/types/league";
-
-function validateLeagueForm({
-  leagueTitle,
-  overAllBudget,
-  leagueDescription,
-  rules,
-  registrationDadline,
-  openingDate,
-  dateRange,
-  leagueBanner,
-  categories,
-}: {
-  leagueTitle: string;
-  overAllBudget: number;
-  leagueDescription: string;
-  rules: string[];
-  registrationDadline?: Date;
-  openingDate?: Date;
-  dateRange?: DateRange;
-  leagueBanner: File | string | null;
-  categories: string[];
-}) {
-  if (!leagueTitle.trim()) throw new Error("League title is required.");
-  if (!leagueDescription.trim()) throw new Error("Description is required.");
-  if (isNaN(overAllBudget) || overAllBudget < 0)
-    throw new Error("Budget must be a non-negative number.");
-  if (!rules.length)
-    throw new Error("At least one sportsmanship rule is required.");
-  if (!registrationDadline)
-    throw new Error("Registration deadline is required.");
-  if (!openingDate) throw new Error("Opening date is required.");
-  if (!dateRange?.from || !dateRange?.to)
-    throw new Error("League schedule range is required.");
-  if (!leagueBanner) throw new Error("League banner image is required.");
-  if (!categories || !categories.length)
-    throw new Error("At least one category must be selected.");
-}
-
+type LeagueUpdatePayload = {
+  league_title?: string;
+  league_description?: string;
+  league_address?: string;
+  league_budget?: number;
+  banner_url?: File | string | null;
+  sportsmanship_rules?: string[];
+  registration_deadline?: string;
+  opening_date?: string;
+  league_categories?: string[]; // ✅ force string[]
+};
 export default function UpdateLeagueForm({
   hasActive,
   activeLeague,
@@ -86,47 +59,38 @@ export default function UpdateLeagueForm({
   const leagueAdmin = useQuery(authLeagueAdminQueryOption({ enabled: true }));
   const { categoriesData } = useCategories();
 
-  const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
+  // Local states
   const [leagueTitle, setLeagueTitle] = useState("");
   const [leagueDescription, setLeagueDescription] = useState("");
   const [selectedAddress, setLeagueAddress] = useState("");
   const [selectedCategories, setCategories] = useState<
     BasicMultiSelectOption[]
   >([]);
-
   const [overAllBudget, setOverAllBudget] = useState(0);
   const [registrationDadline, setRegistrationDeadline] = useState<Date>();
   const [openingDate, setOpeningDate] = useState<Date>();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [rules, setRules] = useState<string[]>([]);
   const [isProcessing, setProcessing] = useState(false);
 
   useEffect(() => {
     if (activeLeague && !activeLeagueLoading) {
-      const league = activeLeague as League;
+      setLeagueTitle(activeLeague.league_title || "");
+      setLeagueDescription(activeLeague.league_description || "");
+      setLeagueAddress(activeLeague.league_address || "");
+      setOverAllBudget(activeLeague.league_budget || 0);
+      setLeagueBanner(activeLeague.banner_url || null);
+      setRules(activeLeague.sportsmanship_rules || []);
 
-      setLeagueTitle(league.league_title || "");
-      setLeagueDescription(league.league_description || "");
-      setLeagueAddress(league.league_address || "");
-      setOverAllBudget(league.league_budget || 0);
-      setLeagueBanner(league.banner_url || null);
-      setRules(league.sportsmanship_rules || []);
-
-      if (league.registration_deadline) {
-        setRegistrationDeadline(new Date(league.registration_deadline));
+      if (activeLeague.registration_deadline) {
+        setRegistrationDeadline(new Date(activeLeague.registration_deadline));
       }
-      if (league.opening_date) {
-        setOpeningDate(new Date(league.opening_date));
+      if (activeLeague.opening_date) {
+        setOpeningDate(new Date(activeLeague.opening_date));
       }
-      if (league.league_schedule && league.league_schedule.length === 2) {
-        setDateRange({
-          from: new Date(league.league_schedule[0]),
-          to: new Date(league.league_schedule[1]),
-        });
-      }
-
-      if (league.league_categories && categoriesData) {
-        const selectedCats = league.league_categories.map((cat) => ({
+      if (activeLeague.league_categories && categoriesData) {
+        const selectedCats = activeLeague.league_categories.map((cat) => ({
           value: cat.category_id,
           label: cat.category_name,
         }));
@@ -146,46 +110,46 @@ export default function UpdateLeagueForm({
       try {
         const categoryIds = selectedCategories.map((opt) => opt.value);
 
-        validateLeagueForm({
-          leagueTitle,
-          overAllBudget,
-          leagueDescription,
-          rules,
-          registrationDadline,
-          openingDate,
-          dateRange,
-          leagueBanner,
-          categories: categoryIds,
-        });
-
-        const formData = new FormData();
-        formData.append("league_title", leagueTitle);
-        formData.append("league_budget", String(overAllBudget));
-        formData.append("league_description", leagueDescription);
-        formData.append("league_address", selectedAddress);
-        formData.append("opening_date", openingDate!.toISOString());
-        formData.append("categories", JSON.stringify(categoryIds));
-        formData.append(
-          "registration_deadline",
-          registrationDadline!.toISOString()
-        );
-        formData.append(
-          "league_schedule",
-          JSON.stringify([
-            dateRange?.from?.toISOString(),
-            dateRange?.to?.toISOString(),
-          ])
-        );
-        formData.append("sportsmanship_rules", JSON.stringify(rules));
-
-        if (leagueBanner instanceof File) {
-          formData.append("banner_image", leagueBanner);
-        } else if (typeof leagueBanner === "string") {
-          formData.append("banner_image", leagueBanner);
+        const payload: Partial<LeagueUpdatePayload> = {};
+        if (leagueTitle !== activeLeague.league_title)
+          payload.league_title = leagueTitle;
+        if (leagueDescription !== activeLeague.league_description)
+          payload.league_description = leagueDescription;
+        if (selectedAddress !== activeLeague.league_address)
+          payload.league_address = selectedAddress;
+        if (overAllBudget !== activeLeague.league_budget)
+          payload.league_budget = overAllBudget;
+        if (leagueBanner !== activeLeague.banner_url)
+          payload.banner_url = leagueBanner as any;
+        if (
+          rules.join(",") !== (activeLeague.sportsmanship_rules || []).join(",")
+        ) {
+          payload.sportsmanship_rules = rules;
+        }
+        if (
+          registrationDadline &&
+          registrationDadline.toISOString() !==
+            activeLeague.registration_deadline
+        ) {
+          payload.registration_deadline = registrationDadline.toISOString();
+        }
+        if (
+          openingDate &&
+          openingDate.toISOString() !== activeLeague.opening_date
+        ) {
+          payload.opening_date = openingDate.toISOString();
+        }
+        if (
+          categoryIds.join(",") !==
+          activeLeague.league_categories.map((c) => c.category_id).join(",")
+        ) {
+          payload.league_categories = categoryIds;
         }
 
+        console.log("Payload to send:", payload);
+
         await refetchActiveLeague();
-        return { message: "" };
+        return { message: "League updated successfully!" };
       } finally {
         setProcessing(false);
       }
@@ -193,9 +157,7 @@ export default function UpdateLeagueForm({
 
     toast.promise(updateLeague(), {
       loading: `Updating League ${leagueTitle}...`,
-      success: (res) => {
-        return res.message || "League updated successfully!";
-      },
+      success: (res) => res.message,
       error: (err) => getErrorMessage(err) ?? "Something went wrong!",
     });
   };
@@ -219,191 +181,132 @@ export default function UpdateLeagueForm({
 
   return (
     <section
-      className={cn("space-y-4", hasActive && "pointer-events-none opacity-50")}
+      className={cn("space-y-6", hasActive && "pointer-events-none opacity-50")}
     >
       <div
         className={disableOnLoading({
           condition: isProcessing,
-          baseClass: "grid grid-cols-1 md:grid-cols-2 gap-6 items-start",
+          baseClass:
+            "flex flex-col md:flex-row md:justify-start gap-6 items-start",
         })}
       >
-        <div className="flex flex-col gap-4 h-full md:items-end">
-          <div className="grid w-full max-w-md items-center space-y-2">
-            <Label htmlFor="title">League Title</Label>
+        {/* Left column */}
+        <div className="flex flex-col gap-4 w-full max-w-md">
+          <Label htmlFor="title">League Title</Label>
+          <Input
+            id="title"
+            value={leagueTitle}
+            onChange={(e) => setLeagueTitle(e.target.value)}
+          />
+          <p className="text-helper">e.g. Bogo City Summer League 2025</p>
+
+          <Label htmlFor="budget">League Budget</Label>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">₱</span>
             <Input
-              id="title"
-              value={leagueTitle}
-              onChange={(e) => setLeagueTitle(e.target.value)}
+              id="budget"
+              type="number"
+              value={overAllBudget}
+              onChange={(e) => {
+                const value = Number(e.target.value.trim());
+                setOverAllBudget(isNaN(value) ? 0 : value);
+              }}
             />
-            <p className="text-helper">e.g. Bogo City Summer League 2025</p>
           </div>
 
-          <div className="grid w-full max-w-md items-center space-y-2">
-            <Label htmlFor="budget">League Budget</Label>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">₱</span>
-              <Input
-                id="budget"
-                type="number"
-                value={overAllBudget}
-                onChange={(e) => {
-                  const value = Number(e.target.value.trim());
-                  setOverAllBudget(isNaN(value) ? 0 : value);
-                }}
-              />
-            </div>
-            <p className="text-helper">Overall budget for the league.</p>
-          </div>
+          <Label htmlFor="banner">League Banner</Label>
+          <ImageUploadField
+            value={leagueBanner}
+            onChange={setLeagueBanner}
+            allowUpload
+            allowEmbed
+            aspect={16 / 9}
+          />
 
-          <div className="grid w-full max-w-md items-center space-y-2">
-            <Label htmlFor="banner">League Banner</Label>
-            <ImageUploadField
-              value={leagueBanner}
-              onChange={setLeagueBanner}
-              allowUpload
-              allowEmbed
-              iconOnly={false}
-              aspect={16 / 9}
-            />
-            <p className="text-helper">
-              Upload a square banner to represent the league visually.
-            </p>
-          </div>
-
-          <div className="grid w-full max-w-md items-center space-y-2">
-            <Label htmlFor="address">League Address</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  id="address"
-                  className={cn(
-                    "justify-between",
-                    !selectedAddress && "text-muted-foreground"
-                  )}
-                >
-                  {selectedAddress ||
-                    leagueAdmin.data?.organization_address ||
-                    "Select Address"}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput
-                    placeholder={leagueAdmin.data?.organization_address}
-                  />
-                  <CommandList>
-                    <CommandEmpty>No address found.</CommandEmpty>
-                    <CommandGroup>
-                      {StaticData.Barangays.map((address) => (
-                        <CommandItem
-                          value={address}
-                          key={address}
-                          onSelect={() => {
-                            setLeagueAddress(address);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              address === selectedAddress
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {address}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <p className="text-helper">
-              Default address where this league going to happen.
-            </p>
-          </div>
+          <Label htmlFor="address">League Address</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                id="address"
+                className="justify-between"
+              >
+                {selectedAddress ||
+                  leagueAdmin.data?.organization_address ||
+                  "Select Address"}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput
+                  placeholder={leagueAdmin.data?.organization_address}
+                />
+                <CommandList>
+                  <CommandEmpty>No address found.</CommandEmpty>
+                  <CommandGroup>
+                    {StaticData.Barangays.map((address) => (
+                      <CommandItem
+                        key={address}
+                        onSelect={() => setLeagueAddress(address)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            address === selectedAddress
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {address}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
-        <div className="flex flex-col gap-4 h-full items-start">
-          <div className="grid w-full max-w-md items-center space-y-2">
-            <Label htmlFor="team-reg">Registration Deadline</Label>
-            <DateTimePicker
-              setDateTime={setRegistrationDeadline}
-              dateTime={registrationDadline}
-            />
-            <p className="text-helper">
-              Deadline for participants to register.
-            </p>
-          </div>
+        {/* Right column */}
+        <div className="flex flex-col gap-4 w-full max-w-md">
+          <Label>Registration Deadline</Label>
+          <DateTimePicker
+            setDateTime={setRegistrationDeadline}
+            dateTime={registrationDadline}
+          />
 
-          <div className="grid w-full max-w-md items-center space-y-2">
-            <Label htmlFor="opening-sched">Opening Schedule</Label>
-            <DateTimePicker
-              setDateTime={setOpeningDate}
-              dateTime={openingDate}
-            />
-            <p className="text-helper">
-              Opening day, usually marked by a parade or ceremony.
-            </p>
-          </div>
+          <Label>Opening Schedule</Label>
+          <DateTimePicker setDateTime={setOpeningDate} dateTime={openingDate} />
 
-          <div className="grid w-full max-w-md items-center gap-3">
-            <Label htmlFor="league-sched">League Schedule</Label>
-            <DatePickerWithRange
-              dateRange={dateRange}
-              setDateRange={setDateRange}
-            />
-            <p className="text-helper">
-              Select when all league matches are expected to start and end.
-            </p>
-          </div>
+          <Label>League Schedule</Label>
+          <DatePickerWithRange
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+          />
         </div>
       </div>
 
-      <div
-        className={disableOnLoading({
-          condition: isProcessing,
-          baseClass: "grid space-y-2",
-        })}
-      >
+      <div className="flex flex-col gap-2">
         <Label htmlFor="description">League Description</Label>
         <Textarea
+          id="description"
           value={leagueDescription}
           onChange={(e) => setLeagueDescription(e.target.value)}
-          id="description"
           className="h-24"
         />
-
-        <p className="text-helper">
-          Briefly describe the league's purpose, scope, and any notable
-          information that participants should know. This will be visible on the
-          league's public page.
-        </p>
       </div>
 
-      <div
-        className={disableOnLoading({
-          condition: isProcessing,
-          baseClass: "grid space-y-2",
-        })}
-      >
+      <div className="flex flex-col gap-2">
         <Label>Select Sportsmanship Rules</Label>
         <MultiSelect
           id="rules"
           options={StaticData.SportsmanshipRules}
-          onValueChange={(values) => setRules(values)}
+          onValueChange={setRules}
           defaultValue={rules}
           maxCount={8}
         />
-
-        <p className="text-helper">
-          List the rules that promote fair play, respect, and positive behavior
-          during the league. These will guide how players, coaches, and
-          spectators are expected to conduct themselves.
-        </p>
       </div>
 
       <Separator />

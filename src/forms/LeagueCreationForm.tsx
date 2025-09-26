@@ -37,7 +37,6 @@ import MultipleSelector from "@/components/ui/multiselect";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
 import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 import { getErrorMessage } from "@/lib/error";
-import { useNavigate } from "react-router-dom";
 import { useCategories } from "@/hooks/useLeagueAdmin";
 import type { Category } from "@/types/category";
 
@@ -90,7 +89,6 @@ export default function CreateLeagueForm({ hasActive }: Props) {
     ],
   });
   const { categoriesData } = useCategories();
-  const navigate = useNavigate();
 
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [leagueTitle, setLeagueTitle] = useState("");
@@ -161,7 +159,6 @@ export default function CreateLeagueForm({ hasActive }: Props) {
     toast.promise(createLeague(), {
       loading: `Creating League ${leagueTitle}...`,
       success: (res) => {
-        navigate("/league-administrator/pages/league/categories");
         return res?.message;
       },
       error: (err) => getErrorMessage(err) ?? "Something went wrong!",

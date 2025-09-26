@@ -1,7 +1,10 @@
 import React, { memo, useCallback } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { type LeagueMatchNodeData, type LeagueTeam } from "@/types/manual";
+import type { LeagueMatchNodeData } from "@/types/manual";
 import { useFlowDispatch } from "@/context/FlowContext";
+import type { LeagueTeam } from "@/types/team";
+import { manualLeagueService } from "@/service/manualLeagueManagementService";
+import { toast } from "sonner";
 
 const TeamDropZone = ({
   team,
@@ -35,9 +38,18 @@ const LeagueMatchNode: React.FC<NodeProps<Node<LeagueMatchNodeData>>> = ({
   }, []);
 
   const onDrop = useCallback(
-    (event: React.DragEvent, teamSlot: "home" | "away") => {
+    async (event: React.DragEvent, teamSlot: "home" | "away") => {
       event.preventDefault();
       event.stopPropagation();
+
+      const isPermanentNode = id.startsWith("lmatch-");
+      if (!isPermanentNode) {
+        toast.error(
+          "Cannot assign team. Please connect the match to a group first."
+        );
+        return;
+      }
+
       const teamString = event.dataTransfer.getData(
         "application/reactflow-team"
       );
@@ -45,8 +57,8 @@ const LeagueMatchNode: React.FC<NodeProps<Node<LeagueMatchNodeData>>> = ({
 
       try {
         const team: LeagueTeam = JSON.parse(teamString);
-        const newMatchData = { ...data.league_match };
 
+        const newMatchData = { ...data.league_match };
         if (teamSlot === "home") {
           newMatchData.home_team_id = team.league_team_id;
           newMatchData.home_team = team;
@@ -54,22 +66,35 @@ const LeagueMatchNode: React.FC<NodeProps<Node<LeagueMatchNodeData>>> = ({
           newMatchData.away_team_id = team.league_team_id;
           newMatchData.away_team = team;
         }
-
         dispatch({
           type: "UPDATE_NODE_DATA",
           payload: { nodeId: id, data: { league_match: newMatchData } },
         });
+
+        await manualLeagueService.assignTeamToMatch(id, {
+          team_id: team.league_team_id,
+          slot: teamSlot,
+        });
+        toast.success(`${team.team_name} assigned to ${teamSlot} slot.`);
       } catch (e) {
-        console.error("Failed to parse team data on drop", e);
+        toast.error("Failed to assign team to the match.");
       }
     },
     [id, data.league_match, dispatch]
   );
 
+  const rosolve = () => {
+    if (data.league_match.winner_team_id && data.league_match.loser_team_id) {
+      return `${data.league_match.home_team_score} - ${data.league_match.away_team_score}`;
+    } else {
+      return data.league_match.display_name || `Match ${id.substring(0, 4)}`;
+    }
+  };
+
   return (
     <div className="p-2 border rounded-md bg-card">
       <div className="text-xs text-muted-foreground mb-1 text-center">
-        {data.league_match.display_name || `Match ${id.substring(0, 4)}`}
+        {rosolve()}
       </div>
       <div className="flex gap-2 justify-between">
         <div onDragOver={onDragOver} onDrop={(e) => onDrop(e, "home")}>

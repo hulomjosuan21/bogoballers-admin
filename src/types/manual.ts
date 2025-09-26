@@ -7,8 +7,9 @@ import type {
 import type { LeagueMatch } from "./leagueMatch";
 
 export interface IGroup {
-  group_id: string; // no relation just uuid this
+  group_id: string;
   display_name: string;
+  league_category_id?: string;
   round_id?: string;
 }
 
