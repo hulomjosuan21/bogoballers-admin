@@ -276,11 +276,12 @@ export function useManageManualNodeManagement() {
         return;
       }
 
-      const countMatchesInRound = (roundId: string) =>
+      const countMatchesInRound = (roundId: string, groupId?: string) =>
         nodes.filter(
           (n) =>
             n.data.type === "league_match" &&
-            n.data.league_match.round_id === roundId
+            n.data.league_match.round_id === roundId &&
+            (!groupId || n.data.league_match.group_id === groupId)
         ).length;
 
       const permanentPrefixes = [
@@ -446,10 +447,19 @@ export function useManageManualNodeManagement() {
             ) {
               newDisplayName = matchData.display_name || "Special Match";
             } else {
-              const matchCount = countMatchesInRound(roundIdFromGroup);
+              let matchType = "Match";
+
+              if (matchData.is_elimination) {
+                matchType = "Elimination Match";
+              }
+
+              const matchCount = countMatchesInRound(
+                roundIdFromGroup,
+                sourceNode.data.group.group_id
+              );
               newDisplayName = `${roundNameFromGroup} - ${
                 sourceNode.data.group.display_name
-              } - Match ${matchCount + 1}`;
+              } - ${matchType} ${matchCount + 1}`;
             }
 
             const payload = {
@@ -458,6 +468,7 @@ export function useManageManualNodeManagement() {
               league_category_id: categoryIdFromGroup,
               round_id: roundIdFromGroup,
               display_name: newDisplayName,
+              group_id: sourceNode.data.group.group_id,
               position: targetNode.position,
             };
             const newMatchFromServer =
@@ -503,8 +514,14 @@ export function useManageManualNodeManagement() {
             ) {
               newDisplayName = matchData.display_name || "Special Match";
             } else {
+              let matchType = "Match";
+
+              if (matchData.is_elimination) {
+                matchType = "Elimination Match";
+              }
+
               const matchCount = countMatchesInRound(round_id!);
-              newDisplayName = `${round_name} - Match ${matchCount + 1}`;
+              newDisplayName = `${round_name} - ${matchType} ${matchCount + 1}`;
             }
 
             const payload = {
@@ -564,15 +581,18 @@ export function useManageManualNodeManagement() {
             roundName = parentRoundNode.data.round.round_name;
           }
 
-          let groupName;
+          let parentGroup;
           if (
             parentGroupNode?.data?.type === "group" &&
             parentGroupNode.data.group
           ) {
-            groupName = parentGroupNode.data.group.display_name;
+            parentGroup = parentGroupNode.data.group;
           }
 
-          const matchCount = countMatchesInRound(parentMatchData.round_id);
+          const matchCount = countMatchesInRound(
+            parentMatchData.round_id,
+            parentGroup?.group_id
+          );
           const matchData = targetNode.data.league_match;
 
           let newDisplayName: string;
@@ -583,12 +603,18 @@ export function useManageManualNodeManagement() {
           ) {
             newDisplayName = matchData.display_name || "Special Match";
           } else {
-            if (groupName && parentGroupNode) {
-              newDisplayName = `${roundName} - ${groupName} - Match ${
-                matchCount + 1
-              }`;
+            let matchType = "Match";
+
+            if (matchData.is_elimination) {
+              matchType = "Elimination Match";
+            }
+
+            if (parentGroup?.display_name && parentGroupNode) {
+              newDisplayName = `${roundName} - ${
+                parentGroup.display_name
+              } - Match ${matchCount + 1}`;
             } else {
-              newDisplayName = `${roundName} - Match ${matchCount + 1}`;
+              newDisplayName = `${roundName} - ${matchType} ${matchCount + 1}`;
             }
           }
 

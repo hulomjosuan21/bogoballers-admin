@@ -22,6 +22,7 @@ export class ManualLeagueManagementService {
     league_category_id: string;
     round_id: string;
     display_name: string;
+    group_id?: string;
     position: { x: number; y: number };
     is_final?: boolean;
     is_runner_up?: boolean;

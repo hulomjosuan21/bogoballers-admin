@@ -4,6 +4,7 @@ export interface LeagueMatch {
   league_match_id: string;
   public_league_match_id: string;
   league_id: string;
+  group_id: string;
   league_category_id: string;
   round_id: string;
   home_team_id: string | null;
