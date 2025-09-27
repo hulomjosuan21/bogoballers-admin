@@ -5,6 +5,8 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 
+const DEV = import.meta.env.VITE_DEV === "true";
+
 class AxiosClient {
   private readonly instance: AxiosInstance;
 
@@ -25,28 +27,34 @@ class AxiosClient {
   private setupInterceptors(): void {
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        console.log("[Request]", {
-          url: config.url,
-          method: config.method,
-          data: config.data,
-          headers: config.headers,
-          withCredentials: config.withCredentials,
-        });
+        if (DEV) {
+          console.log("[Request]", {
+            url: config.url,
+            method: config.method,
+            data: config.data,
+            headers: config.headers,
+            withCredentials: config.withCredentials,
+          });
+        }
         return config;
       }
     );
 
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
-        console.log("[Response]", {
-          url: response.config.url,
-          status: response.status,
-          data: response.data,
-        });
+        if (DEV) {
+          console.log("[Response]", {
+            url: response.config.url,
+            status: response.status,
+            data: response.data,
+          });
+        }
         return response;
       },
       (error: unknown) => {
-        console.error("[Error]", error);
+        if (DEV) {
+          console.error("[Error]", error);
+        }
         return Promise.reject(error);
       }
     );

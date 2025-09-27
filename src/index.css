@@ -82,6 +82,14 @@
   @apply text-xs py-1 border;
 }
 
+.react-flow__node-group {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
 @keyframes dash-finish {
   to {
     stroke-dashoffset: -10;
