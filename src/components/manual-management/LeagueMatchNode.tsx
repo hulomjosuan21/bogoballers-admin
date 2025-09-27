@@ -91,6 +91,62 @@ const LeagueMatchNode: React.FC<NodeProps<Node<LeagueMatchNodeData>>> = ({
     }
   };
 
+  const renderWinHandle = () => {
+    if (!data) return null;
+
+    const { is_final, is_runner_up, is_third_place } = data.league_match;
+
+    if (!(is_final || is_runner_up || is_third_place)) {
+      return (
+        <>
+          <div className="absolute right-[-20px] top-[33%] text-xs text-blue-500 transform -translate-y-1/2">
+            W
+          </div>
+          <Handle
+            type="source"
+            position={Position.Right}
+            id={`winner-${id}`}
+            style={{
+              top: "33%",
+              background: "hsl(var(--sky-500, 202 89% 51%))",
+            }}
+          />
+        </>
+      );
+    }
+
+    return null;
+  };
+
+  const renderLossHandle = () => {
+    if (!data) return null;
+
+    const { is_final, is_runner_up, is_third_place, is_elimination } =
+      data.league_match;
+
+    if (is_final || is_runner_up || is_third_place) {
+      return null;
+    }
+
+    if (!is_elimination) {
+      return (
+        <>
+          <div className="absolute right-[-20px] top-[66%] text-xs text-red-500 transform -translate-y-1/2">
+            L
+          </div>
+          <Handle
+            type="source"
+            position={Position.Right}
+            id={`loser-${id}`}
+            style={{ top: "66%", background: "hsl(var(--destructive))" }}
+          />
+        </>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="p-2 border rounded-md bg-card">
       <div className="text-xs text-muted-foreground mb-1 text-center">
@@ -113,25 +169,9 @@ const LeagueMatchNode: React.FC<NodeProps<Node<LeagueMatchNodeData>>> = ({
 
       <Handle type="target" position={Position.Left} id="match-input" />
 
-      <div className="absolute right-[-20px] top-[33%] text-xs text-blue-500 transform -translate-y-1/2">
-        W
-      </div>
-      <Handle
-        type="source"
-        position={Position.Right}
-        id={`winner-${id}`}
-        style={{ top: "33%", background: "hsl(var(--sky-500, 202 89% 51%))" }}
-      />
+      {renderWinHandle()}
 
-      <div className="absolute right-[-20px] top-[66%] text-xs text-red-500 transform -translate-y-1/2">
-        L
-      </div>
-      <Handle
-        type="source"
-        position={Position.Right}
-        id={`loser-${id}`}
-        style={{ top: "66%", background: "hsl(var(--destructive))" }}
-      />
+      {renderLossHandle()}
     </div>
   );
 };

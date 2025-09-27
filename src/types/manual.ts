@@ -11,6 +11,7 @@ export interface IGroup {
   display_name: string;
   league_category_id?: string;
   round_id?: string;
+  round_name?: string;
 }
 
 export type LeagueCategoryNodeData = {

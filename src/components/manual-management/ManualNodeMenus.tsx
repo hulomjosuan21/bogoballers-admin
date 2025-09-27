@@ -302,7 +302,7 @@ const matchTemplates: { label: string; data: Partial<LeagueMatch> }[] = [
   {
     label: "New Elimination Match",
     data: {
-      display_name: "New Elimination Match",
+      display_name: "Elimination Match",
       is_elimination: true,
     },
   },

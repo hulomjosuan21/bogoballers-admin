@@ -51,6 +51,7 @@ export class ManualLeagueManagementService {
   async createGroup(payload: {
     round_id: string;
     display_name: string;
+    round_name: string;
     league_category_id: string;
     position: { x: number; y: number };
   }) {
