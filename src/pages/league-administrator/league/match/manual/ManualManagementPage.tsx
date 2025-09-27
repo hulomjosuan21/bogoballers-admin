@@ -3,7 +3,7 @@ import { FlowProvider, useFlowDispatch } from "@/context/FlowContext";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ContentHeader from "@/components/content-header";
 import {
-  ManualEmptyLeagueMatchNode,
+  ManualMatchNodeMenu,
   ManualLeagueTeamNodeMenu,
   ManualRoundNodeMenu,
 } from "@/components/manual-management/ManualNodeMenus";
@@ -44,7 +44,7 @@ function ManualMatchingPageContent() {
 
   const rightMenu = (
     <div className="w-fit flex flex-col gap-2">
-      <ManualEmptyLeagueMatchNode />
+      <ManualMatchNodeMenu />
       <Tabs defaultValue="round" className="text-xs text-muted-foreground">
         <TabsList size="xs">
           <TabsTrigger value="round">Round</TabsTrigger>

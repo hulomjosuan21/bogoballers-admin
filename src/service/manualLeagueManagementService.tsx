@@ -23,6 +23,10 @@ export class ManualLeagueManagementService {
     round_id: string;
     display_name: string;
     position: { x: number; y: number };
+    is_final?: boolean;
+    is_runner_up?: boolean;
+    is_elimination?: boolean;
+    is_third_place?: boolean;
   }) {
     const response = await axiosClient.post<LeagueMatch>(
       "/manual-league-management/matches",

@@ -26,11 +26,11 @@ export interface LeagueMatch {
   loser_next_match_id: string | null;
   loser_next_match_slot: string | null;
   round_number: number | null;
-  bracket_side: string | null;
-  bracket_position: string | null;
   pairing_method: string;
   is_final: boolean;
+  is_runner_up: boolean;
   is_third_place: boolean;
+  is_elimination: boolean;
   is_exhibition: boolean;
   status: string;
 

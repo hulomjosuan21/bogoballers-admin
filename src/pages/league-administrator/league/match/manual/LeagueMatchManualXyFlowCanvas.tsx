@@ -366,7 +366,8 @@ export function ManualMatchingCanvas() {
             });
             toast.info("Group reconnected.");
           }
-        } else if (
+        } // SCENARIO: Connecting a Group to a new Match
+        else if (
           sourceNode.type === "group" &&
           targetNode.type === "leagueMatch" &&
           sourceNode.data.type === "group"
@@ -375,54 +376,48 @@ export function ManualMatchingCanvas() {
 
           if (isNewNode && targetNode.data.type === "league_match") {
             const roundIdFromGroup = sourceNode.data.group.round_id;
-            if (!roundIdFromGroup) {
+            const categoryIdFromGroup =
+              sourceNode.data.group.league_category_id;
+            if (!roundIdFromGroup || !categoryIdFromGroup) {
               toast.error("Parent group must be connected to a round first.");
               dispatch({
                 type: "ON_EDGES_CHANGE",
-                payload: [
-                  {
-                    id: connection.source + "-" + connection.target,
-                    type: "remove",
-                  },
-                ],
+                payload: [{ id: tempEdgeId, type: "remove" }],
               });
               return;
             }
 
-            const categoryIdFromGroup =
-              sourceNode.data.group.league_category_id;
-            if (!categoryIdFromGroup) {
-              toast.error(
-                "Parent group is not correctly linked to a category."
-              );
-              dispatch({
-                type: "ON_EDGES_CHANGE",
-                payload: [
-                  {
-                    id: connection.source + "-" + connection.target,
-                    type: "remove",
-                  },
-                ],
-              });
-              return;
+            const matchData = targetNode.data.league_match;
+            let newDisplayName: string;
+
+            if (
+              matchData.is_final ||
+              matchData.is_third_place ||
+              matchData.is_elimination ||
+              matchData.is_runner_up
+            ) {
+              newDisplayName = matchData.display_name || "Special Match";
+            } else {
+              const groupName = sourceNode.data.group.display_name;
+              const existingMatchesCount = edges.filter(
+                (edge) => edge.source === sourceNode.id
+              ).length;
+              newDisplayName = `${groupName} - Match ${
+                existingMatchesCount + 1
+              }`;
             }
 
-            const groupName = sourceNode.data.group.display_name;
-            const existingMatchesCount = edges.filter(
-              (edge) => edge.source === sourceNode.id
-            ).length;
-            const newDisplayName = `${groupName} - Match ${
-              existingMatchesCount + 1
-            }`;
+            const payload = {
+              ...matchData,
+              league_id: leagueId,
+              league_category_id: categoryIdFromGroup,
+              round_id: roundIdFromGroup,
+              display_name: newDisplayName,
+              position: targetNode.position,
+            };
 
             const newMatchFromServer =
-              await manualLeagueService.createEmptyMatch({
-                league_id: leagueId,
-                league_category_id: categoryIdFromGroup,
-                round_id: roundIdFromGroup,
-                display_name: newDisplayName,
-                position: targetNode.position,
-              });
+              await manualLeagueService.createEmptyMatch(payload);
 
             const finalNode: FlowNode = {
               ...targetNode,
@@ -442,48 +437,124 @@ export function ManualMatchingCanvas() {
           targetNode.data.type === "league_match" &&
           sourceHandle
         ) {
-          const isSourcePermanent = sourceNode.id.startsWith("lmatch-");
-          const isTargetPermanent = targetNode.id.startsWith("lmatch-");
+          const isNewTargetNode = !targetNode.id.startsWith("lmatch-");
 
-          if (!isSourcePermanent || !isTargetPermanent) {
-            toast.error(
-              "Cannot connect matches. Both matches must be connected to a group first."
+          if (isNewTargetNode) {
+            const parentMatchData = sourceNode.data.league_match;
+
+            // Safety Check: The parent match MUST exist in the database.
+            if (!sourceNode.id.startsWith("lmatch-")) {
+              toast.error(
+                "Cannot connect from a temporary match. Please connect the source match to a group first."
+              );
+              dispatch({
+                type: "ON_EDGES_CHANGE",
+                payload: [{ id: tempEdgeId, type: "remove" }],
+              });
+              return;
+            }
+            if (
+              !parentMatchData.league_id ||
+              !parentMatchData.league_category_id ||
+              !parentMatchData.round_id
+            ) {
+              toast.error(
+                "Cannot create new match: The parent match is missing required ID information."
+              );
+              dispatch({
+                type: "ON_EDGES_CHANGE",
+                payload: [{ id: tempEdgeId, type: "remove" }],
+              });
+              return;
+            }
+
+            const payload = {
+              ...targetNode.data.league_match,
+              league_id: parentMatchData.league_id,
+              league_category_id: parentMatchData.league_category_id,
+              round_id: parentMatchData.round_id,
+              display_name:
+                targetNode.data.league_match.display_name || "New Match",
+              position: targetNode.position,
+            };
+
+            const newMatchFromServer =
+              await manualLeagueService.createEmptyMatch(payload);
+            toast.success(`'${newMatchFromServer.display_name}' created.`);
+
+            const finalNode: FlowNode = {
+              ...targetNode,
+              id: newMatchFromServer.league_match_id,
+              data: { ...targetNode.data, league_match: newMatchFromServer },
+            };
+            dispatch({
+              type: "REPLACE_NODE",
+              payload: { tempId: targetNode.id, newNode: finalNode },
+            });
+
+            // After creating the new node, we save the structural link between them.
+            const isWinnerProgression = sourceHandle.startsWith("winner-");
+            const updatedSourceMatch: Partial<LeagueMatch> = isWinnerProgression
+              ? { next_match_id: finalNode.id }
+              : { loser_next_match_id: finalNode.id };
+            await manualLeagueService.updateMatch(
+              sourceNode.id,
+              updatedSourceMatch
             );
             dispatch({
-              type: "ON_EDGES_CHANGE",
-              payload: [{ id: tempEdgeId, type: "remove" }],
+              type: "UPDATE_NODE_DATA",
+              payload: {
+                nodeId: sourceNode.id,
+                data: { league_match: updatedSourceMatch },
+              },
             });
-            return;
+
+            const updatedTargetMatch: Partial<LeagueMatch> = {
+              depends_on_match_ids: [sourceNode.id],
+            };
+            await manualLeagueService.updateMatch(
+              finalNode.id,
+              updatedTargetMatch
+            );
+            dispatch({
+              type: "UPDATE_NODE_DATA",
+              payload: {
+                nodeId: finalNode.id,
+                data: { league_match: updatedTargetMatch },
+              },
+            });
+          } else {
+            // --- LOGIC B: Connect two EXISTING permanent matches ---
+            // This logic ONLY saves the bracket structure. It does not progress teams.
+            const isWinnerProgression = sourceHandle.startsWith("winner-");
+            const updatedSourceMatch: Partial<LeagueMatch> = isWinnerProgression
+              ? { next_match_id: target }
+              : { loser_next_match_id: target };
+            await manualLeagueService.updateMatch(source, updatedSourceMatch);
+            dispatch({
+              type: "UPDATE_NODE_DATA",
+              payload: {
+                nodeId: source,
+                data: { league_match: updatedSourceMatch },
+              },
+            });
+
+            const updatedTargetMatch: Partial<LeagueMatch> = {
+              depends_on_match_ids: [
+                ...(targetNode.data.league_match.depends_on_match_ids || []),
+                source,
+              ],
+            };
+            await manualLeagueService.updateMatch(target, updatedTargetMatch);
+            dispatch({
+              type: "UPDATE_NODE_DATA",
+              payload: {
+                nodeId: target,
+                data: { league_match: updatedTargetMatch },
+              },
+            });
+            toast.success("Match progression rule saved.");
           }
-
-          const isWinnerProgression = sourceHandle.startsWith("winner-");
-          const updatedSourceMatch: Partial<LeagueMatch> = isWinnerProgression
-            ? { next_match_id: target }
-            : { loser_next_match_id: target };
-          await manualLeagueService.updateMatch(source, updatedSourceMatch);
-          dispatch({
-            type: "UPDATE_NODE_DATA",
-            payload: {
-              nodeId: source,
-              data: { league_match: updatedSourceMatch },
-            },
-          });
-
-          const updatedTargetMatch: Partial<LeagueMatch> = {
-            depends_on_match_ids: [
-              ...(targetNode.data.league_match.depends_on_match_ids || []),
-              source,
-            ],
-          };
-          await manualLeagueService.updateMatch(target, updatedTargetMatch);
-          dispatch({
-            type: "UPDATE_NODE_DATA",
-            payload: {
-              nodeId: target,
-              data: { league_match: updatedTargetMatch },
-            },
-          });
-          toast.success("Match progression saved.");
         }
       } catch (error) {
         toast.error("Failed to process connection.");

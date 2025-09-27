@@ -25,6 +25,7 @@ import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeam } from "@/types/team";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { useFlowState } from "@/context/FlowContext";
+import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 
 export function ManualLeagueCategoryNodeMenu() {
   const { activeLeagueCategories } = useActiveLeague();
@@ -177,19 +178,26 @@ export function ManualRoundNodeMenu() {
 }
 
 export function ManualLeagueTeamNodeMenu() {
-  const { activeLeagueData, activeLeagueError, activeLeagueCategories } =
-    useActiveLeague();
+  const { activeLeagueId } = useActiveLeague();
+
+  const {
+    activeLeagueCategories,
+    activeLeagueCategoriesLoading,
+    activeLeagueCategoriesError,
+  } = useActiveLeagueCategories(activeLeagueId, { condition: "Manual" });
+
   const hasActiveLeague =
-    !activeLeagueError &&
-    activeLeagueData &&
-    activeLeagueCategories &&
+    Array.isArray(activeLeagueCategories) &&
+    !activeLeagueCategoriesLoading &&
+    !activeLeagueCategoriesError &&
     activeLeagueCategories.length > 0;
+
   const [selectedCategory, setSelectedCategory] =
     useState<LeagueCategory | null>(null);
 
   useEffect(() => {
     if (hasActiveLeague && !selectedCategory) {
-      setSelectedCategory(activeLeagueCategories[0]);
+      setSelectedCategory(activeLeagueCategories[0] || null);
     }
   }, [hasActiveLeague, activeLeagueCategories, selectedCategory]);
 
@@ -197,35 +205,44 @@ export function ManualLeagueTeamNodeMenu() {
     useLeagueTeamDynamicQuery(
       [
         "league-teams-manual",
-        selectedCategory?.league_category_id,
+        selectedCategory?.league_category_id ?? "none",
         "NotEliminated",
       ],
       () =>
-        LeagueTeamService.getMany(selectedCategory!.league_category_id, {
-          condition: "NotEliminated",
-        }),
+        selectedCategory
+          ? LeagueTeamService.getMany(selectedCategory.league_category_id, {
+              condition: "NotEliminated",
+            })
+          : Promise.resolve([]),
       { enabled: !!selectedCategory }
     );
 
-  const onDragStart = (event: React.DragEvent, team: LeagueTeam) => {
-    event.dataTransfer.setData(
-      "application/reactflow-team",
-      JSON.stringify(team)
-    );
-    event.dataTransfer.effectAllowed = "move";
+  const onDragStart = (
+    event: React.DragEvent<HTMLDivElement>,
+    team: LeagueTeam
+  ) => {
+    try {
+      event.dataTransfer.setData(
+        "application/reactflow-team",
+        JSON.stringify(team)
+      );
+      event.dataTransfer.effectAllowed = "move";
+    } catch (err) {
+      console.error("Failed to set drag data:", err);
+    }
   };
 
   return (
     <div className="flex flex-col gap-4">
       <Select
-        onValueChange={(catId) =>
-          setSelectedCategory(
-            activeLeagueCategories.find(
-              (c) => c.league_category_id === catId
-            ) || null
-          )
-        }
+        onValueChange={(catId) => {
+          const category = activeLeagueCategories?.find(
+            (c) => c.league_category_id === catId
+          );
+          setSelectedCategory(category || null);
+        }}
         value={selectedCategory?.league_category_id || ""}
+        disabled={!hasActiveLeague}
       >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select League Category" />
@@ -251,71 +268,87 @@ export function ManualLeagueTeamNodeMenu() {
             Loading teams...
           </span>
         )}
-        {dynamicLeagueTeamData?.map((team) => (
-          <div
-            key={team.league_team_id}
-            onDragStart={(event) => onDragStart(event, team)}
-            draggable
-            className="w-48 flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab hover:opacity-80"
-          >
-            <GripVertical className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-card-foreground">
-              {team.team_name}
-            </span>
-          </div>
-        ))}
+        {dynamicLeagueTeamData?.length
+          ? dynamicLeagueTeamData.map((team) => (
+              <div
+                key={team.league_team_id}
+                onDragStart={(event) => onDragStart(event, team)}
+                draggable
+                className="w-48 flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab hover:opacity-80"
+              >
+                <GripVertical className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-card-foreground">
+                  {team.team_name}
+                </span>
+              </div>
+            ))
+          : !dynamicLeagueTeamLoading && (
+              <span className="text-sm text-muted-foreground">
+                No teams available.
+              </span>
+            )}
       </div>
     </div>
   );
 }
 
-export function ManualEmptyLeagueMatchNode() {
+const matchTemplates: { label: string; data: Partial<LeagueMatch> }[] = [
+  {
+    label: "New Match",
+    data: {
+      display_name: "New Match",
+    },
+  },
+  {
+    label: "New Elimination Match",
+    data: {
+      display_name: "New Elimination Match",
+      is_elimination: true,
+    },
+  },
+  {
+    label: "Third Place Match",
+    data: {
+      display_name: "Battle for Third",
+      is_third_place: true,
+    },
+  },
+  {
+    label: "Runner-Up Match",
+    data: {
+      display_name: "Runner-Up Match",
+      is_runner_up: true,
+    },
+  },
+  {
+    label: "Final Match",
+    data: {
+      display_name: "Final Match",
+      is_final: true,
+    },
+  },
+];
+const DraggableMatchItem = ({
+  label,
+  matchData,
+}: {
+  label: string;
+  matchData: Partial<LeagueMatch>;
+}) => {
   const onDragStart = (event: React.DragEvent) => {
     const matchId = uuidv4();
+
     const newMatch: Partial<LeagueMatch> = {
       league_match_id: matchId,
-      league_category_id: "",
-      round_id: "",
-      home_team_id: null,
-      home_team: null,
-      away_team_id: null,
-      away_team: null,
-      home_team_score: null,
-      away_team_score: null,
-      winner_team_id: null,
-      loser_team_id: null,
-      scheduled_date: null,
-      quarters: 4,
-      minutes_per_quarter: 10,
-      minutes_per_overtime: 5,
-      court: "",
-      referees: [],
-      previous_match_ids: [],
-      next_match_id: null,
-      next_match_slot: null,
-      loser_next_match_id: null,
-      loser_next_match_slot: null,
-      round_number: null,
-      bracket_side: null,
-      bracket_position: null,
-      pairing_method: "manual",
-      is_final: false,
-      is_third_place: false,
-      is_exhibition: false,
-      status: "PENDING",
-      stage_number: null,
-      depends_on_match_ids: [],
-      is_placeholder: true,
-      bracket_stage_label: null,
-      league_match_created_at: new Date().toISOString(),
-      display_name: "New Match",
-      league_match_updated_at: new Date().toISOString(),
+      ...matchData,
     };
+
     const nodePayload: Omit<Node, "position"> = {
       id: matchId,
       type: "leagueMatch",
       data: { type: "league_match", league_match: newMatch },
     };
+
     event.dataTransfer.setData(
       "application/reactflow-node",
       JSON.stringify(nodePayload)
@@ -327,18 +360,28 @@ export function ManualEmptyLeagueMatchNode() {
     <div
       onDragStart={onDragStart}
       draggable
-      className="w-fit border rounded-md p-2 bg-card cursor-grab hover:opacity-80"
+      className="w-48 flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab hover:opacity-80"
     >
-      <h3 className="text-xs font-semibold text-muted-foreground mb-2 tracking-wide">
-        Empty Match
+      <GripVertical className="w-4 h-4 text-muted-foreground" />
+      <span className="text-xs font-medium text-card-foreground">{label}</span>
+    </div>
+  );
+};
+
+export function ManualMatchNodeMenu() {
+  return (
+    <div className="border rounded-md p-2 bg-background">
+      <h3 className="text-xs font-semibold text-muted-foreground mb-2 tracking-wide px-1">
+        Match Types
       </h3>
-      <div className="w-48 flex gap-1 justify-between">
-        <div className="border border-dashed h-12 w-22 rounded-sm grid place-content-center font-thin text-xs text-muted-foreground">
-          Home
-        </div>
-        <div className="border border-dashed h-12 w-22 rounded-sm grid place-content-center font-thin text-xs text-muted-foreground">
-          Away
-        </div>
+      <div className="flex flex-col gap-2">
+        {matchTemplates.map((template) => (
+          <DraggableMatchItem
+            key={template.label}
+            label={template.label}
+            matchData={template.data}
+          />
+        ))}
       </div>
     </div>
   );
