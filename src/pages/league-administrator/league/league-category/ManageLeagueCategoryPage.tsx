@@ -1,11 +1,14 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
+import { LeagueCategoriesTable } from "@/tables/LeagueCategoriesTable";
 
 export default function ManageLeagueCategoriesPage() {
   return (
     <ContentShell>
       <ContentHeader title="Manage League Categories" />
-      <ContentBody></ContentBody>
+      <ContentBody>
+        <LeagueCategoriesTable />
+      </ContentBody>
     </ContentShell>
   );
 }

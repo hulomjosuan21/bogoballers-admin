@@ -31,9 +31,14 @@ import { useState } from "react";
 type Props = {
   leagueCategoryId?: string;
   roundId?: string;
+  viewOnly?: boolean;
 };
 
-export function LeagueMatchesTable({ leagueCategoryId, roundId }: Props) {
+export function LeagueMatchesTable({
+  leagueCategoryId,
+  roundId,
+  viewOnly = false,
+}: Props) {
   const {
     leagueMatchData,
     leagueMatchLoading,
@@ -68,7 +73,7 @@ export function LeagueMatchesTable({ leagueCategoryId, roundId }: Props) {
             )}
             <div className="space-y-px">
               <div className="font-medium text-foreground">
-                {team?.team_name ?? "Unknown Team"}{" "}
+                {team?.team_name ?? "TBD"}{" "}
                 {row.original.winner_team_id != null &&
                   (row.original.winner_team_id === team?.league_team_id ? (
                     <Badge className="text-xs">Winner</Badge>
@@ -136,7 +141,7 @@ export function LeagueMatchesTable({ leagueCategoryId, roundId }: Props) {
     },
     {
       accessorKey: "display_name",
-      header: "Group",
+      header: "Info",
     },
     {
       accessorKey: "scheduled_date",
@@ -231,9 +236,11 @@ export function LeagueMatchesTable({ leagueCategoryId, roundId }: Props) {
         <div className="flex-1">
           <DataTablePagination showPageSize={false} table={table} />
         </div>
-        <Button variant={"outline"} size={"sm"} onClick={handleRefresh}>
-          Refresh
-        </Button>
+        {!viewOnly && (
+          <Button variant={"outline"} size={"sm"} onClick={handleRefresh}>
+            Refresh
+          </Button>
+        )}
       </div>
     </div>
   );

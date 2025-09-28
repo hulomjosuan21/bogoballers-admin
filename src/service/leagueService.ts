@@ -106,7 +106,7 @@ export class LeagueService {
     T extends Partial<League> & { condition: string }
   >(publicLeagueId: string, data?: T) {
     const response = await axiosClient.post<League>(
-      `/league/${publicLeagueId}/view`,
+      `/league/${publicLeagueId}/public-view`,
       data ?? undefined
     );
 

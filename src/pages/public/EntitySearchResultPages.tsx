@@ -6,6 +6,7 @@ import type { Player } from "@/types/player";
 import type { Team } from "@/types/team";
 import type { LeagueAdministator } from "@/types/leagueAdmin";
 import type { League } from "@/types/league";
+import { useNavigate } from "react-router-dom";
 
 interface BaseSearchResultScreen<T> {
   permissions: Permission[];
@@ -119,7 +120,11 @@ interface LeagueSearchResultProps extends BaseSearchResultScreen<League> {}
 const LeagueSearchResultListItem: React.FC<LeagueSearchResultProps> = ({
   result,
 }) => {
-  const handleClick = () => {};
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/league/${result.public_league_id}`);
+  };
 
   return (
     <div

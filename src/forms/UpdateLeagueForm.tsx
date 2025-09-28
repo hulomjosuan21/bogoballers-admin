@@ -43,6 +43,7 @@ import { useCategories } from "@/hooks/useLeagueAdmin";
 import { refetchActiveLeague } from "@/hooks/useActiveLeague";
 import type { League } from "@/types/league";
 import { LeagueService } from "@/service/leagueService";
+import { useUpdateEntityImage } from "@/hooks/useUpdateEntityImage";
 
 export type LeagueUpdatePayload = {
   league_title?: string;
@@ -81,10 +82,20 @@ export default function UpdateLeagueForm({
   const [registrationDadline, setRegistrationDeadline] = useState<Date>();
   const [openingDate, setOpeningDate] = useState<Date>();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
   const [rules, setRules] = useState<string[]>([]);
   const [status, setStatus] = useState<string>("");
   const [isProcessing, setProcessing] = useState(false);
+
+  const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
+  const { updateImage, loading } = useUpdateEntityImage();
+  const hasChanges =
+    leagueBanner instanceof File ||
+    (typeof leagueBanner === "string" &&
+      leagueBanner != activeLeague.banner_url);
+  const handleSave = async () => {
+    if (!leagueBanner) return;
+    await updateImage(leagueId, "league", leagueBanner);
+  };
 
   useEffect(() => {
     if (activeLeague && !activeLeagueLoading) {
@@ -232,7 +243,6 @@ export default function UpdateLeagueForm({
             "flex flex-col md:flex-row md:justify-start gap-6 items-start",
         })}
       >
-        {/* Left column */}
         <div className="flex flex-col gap-4 w-full max-w-md">
           <Label htmlFor="title">League Title</Label>
           <Input
@@ -256,14 +266,28 @@ export default function UpdateLeagueForm({
             />
           </div>
 
-          <Label htmlFor="banner">League Banner</Label>
-          <ImageUploadField
-            value={leagueBanner}
-            onChange={setLeagueBanner}
-            allowUpload
-            allowEmbed
-            aspect={16 / 9}
-          />
+          <div className="grid gap-4">
+            <Label htmlFor="banner">League Banner</Label>
+            <div className="flex gap-2 items-center">
+              <ImageUploadField
+                value={leagueBanner}
+                onChange={setLeagueBanner}
+                allowUpload
+                allowEmbed
+                aspect={16 / 9}
+              />
+              {hasChanges && (
+                <Button
+                  onClick={handleSave}
+                  disabled={loading}
+                  variant={"outline"}
+                  size={"sm"}
+                >
+                  {loading ? "Updating..." : "Save Banner"}
+                </Button>
+              )}
+            </div>
+          </div>
 
           <Label htmlFor="address">League Address</Label>
           <Popover>

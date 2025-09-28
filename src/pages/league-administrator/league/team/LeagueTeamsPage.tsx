@@ -26,7 +26,6 @@ export default function LeagueTeamsPage() {
   const { state, data } = useToggleOfficialLeagueTeamSection();
 
   const {
-    activeLeagueId,
     activeLeagueData,
     activeLeagueError,
     activeLeagueCategories,
@@ -73,7 +72,6 @@ export default function LeagueTeamsPage() {
     }
   };
 
-  // league pending approval
   if (activeLeagueData?.status === "Pending") {
     return <LeagueNotApproveYet />;
   }
@@ -136,7 +134,6 @@ export default function LeagueTeamsPage() {
                   <TabsContent key={round.round_id} value={round.round_id}>
                     <LeagueTeamsTable
                       leagueCategoryId={selectedCategory.league_category_id}
-                      leagueId={activeLeagueId}
                       roundId={round.round_id}
                     />
                   </TabsContent>

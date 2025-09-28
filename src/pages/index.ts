@@ -10,5 +10,4 @@ export { default as LeagueOfficialsPage } from "./league-administrator/league/ma
 export { default as LeagueMatchSetUnSchedulePage } from "./league-administrator/league/match/LeagueMatchSetSchedulePage";
 export { default as LeagueMatchScheduledPage } from "./league-administrator/league/match/LeagueMatchScheduledPage";
 export { default as LeagueUpdatePage } from "./league-administrator/league/current/CurrentLeaguePage";
-export { default as BracketStructurePage } from "./league-administrator/league/bracket/StructurePage";
 export { default as ManageLeagueCategoriesPage } from "./league-administrator/league/league-category/ManageLeagueCategoryPage";

@@ -46,7 +46,6 @@ import { LeagueTeamService } from "@/service/leagueTeamService";
 import { Badge } from "@/components/ui/badge";
 
 type Props = {
-  leagueId?: string;
   leagueCategoryId?: string;
   roundId?: string;
   viewOnly?: boolean;

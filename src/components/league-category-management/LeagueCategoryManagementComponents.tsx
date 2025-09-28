@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FolderCog, Settings2, Trash2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Settings2 } from "lucide-react";
 
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { toast } from "sonner";
@@ -16,7 +15,6 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { NoteBox } from "@/components/nodebox";
 import {
   Select,
@@ -27,182 +25,14 @@ import {
 } from "@/components/ui/select";
 import {
   RoundStateEnum,
-  type CategoryNodeData,
-  type LeagueCategoryUpdatableFields,
   type RoundNodeData,
 } from "@/types/leagueCategoryTypes";
-import {
-  LeagueCategoryRoundService,
-  LeagueCategoryService,
-} from "@/service/leagueCategory";
+import { LeagueCategoryRoundService } from "@/service/leagueCategory";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { getErrorMessage } from "@/lib/error";
 import { refetchActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 import { LeagueRoundService } from "@/service/leagueRoundService";
 import { LeagueMatchService } from "@/service/leagueMatchService";
-export function LeagueCategoryNodeSheet({
-  data,
-  disable,
-}: {
-  data: CategoryNodeData;
-  disable: boolean;
-}) {
-  const { category } = data;
-  const { refetchActiveLeague } = useActiveLeague();
-  const [isPending, setPending] = useState(false);
-
-  const [maxTeam, setMaxTeam] = useState<
-    LeagueCategoryUpdatableFields["max_team"]
-  >(category.max_team || 0);
-  const [acceptTeam, setAcceptTeam] = useState<
-    LeagueCategoryUpdatableFields["accept_teams"]
-  >(category.accept_teams || false);
-
-  const originalDataRef = useRef<LeagueCategoryUpdatableFields>({
-    max_team: category.max_team || 0,
-    accept_teams: category.accept_teams || false,
-  });
-
-  useEffect(() => {
-    setMaxTeam(category.max_team || 0);
-    setAcceptTeam(category.accept_teams || false);
-    originalDataRef.current = {
-      max_team: category.max_team || 0,
-      accept_teams: category.accept_teams || false,
-    };
-  }, [category]);
-
-  const hasChanges =
-    maxTeam !== originalDataRef.current.max_team ||
-    acceptTeam !== originalDataRef.current.accept_teams;
-
-  const handleSave = () => {
-    const changes: Partial<LeagueCategoryUpdatableFields> = {};
-
-    if (maxTeam !== originalDataRef.current.max_team) {
-      changes.max_team = maxTeam;
-    }
-    if (acceptTeam !== originalDataRef.current.accept_teams) {
-      changes.accept_teams = acceptTeam;
-    }
-
-    if (Object.keys(changes).length === 0) {
-      toast.info("No changes detected");
-      return;
-    }
-
-    setPending(true);
-
-    const updateCategory = async () => {
-      try {
-        await LeagueCategoryService.updateLeagueCategory({
-          league_category_id: category.league_category_id,
-          changes,
-        });
-        await refetchActiveLeague();
-      } finally {
-        setPending(false);
-      }
-    };
-
-    toast.promise(updateCategory(), {
-      loading: "Updating league category...",
-      success: "League category updated successfully!",
-      error: "Failed to update league category",
-    });
-  };
-
-  const handleDelete = () => {
-    setPending(true);
-
-    const deleteCategory = async () => {
-      try {
-        await LeagueCategoryService.deleteCategory(category.league_category_id);
-        await refetchActiveLeague();
-      } finally {
-        setPending(false);
-      }
-    };
-
-    toast.promise(deleteCategory(), {
-      loading: "Deleting league category...",
-      success: "League category deleted successfully!",
-      error: "Failed to delete league category",
-    });
-  };
-
-  return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button
-          type="button"
-          aria-label="settings"
-          variant="ghost"
-          size="icon"
-          disabled={disable}
-        >
-          <FolderCog className="w-4 h-4" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" aria-describedby={undefined}>
-        <SheetHeader>
-          <SheetTitle>Category: {category.category_name}</SheetTitle>
-        </SheetHeader>
-        <SheetBody className="flex-1">
-          <div className="grid gap-4">
-            <div className="grid gap-1">
-              <Label htmlFor="maxTeam">Max Team</Label>
-              <Input
-                id="maxTeam"
-                type="number"
-                value={maxTeam}
-                onChange={(e) => setMaxTeam(Number(e.target.value))}
-              />
-              <p className="text-helper">
-                Set the maximum number of teams allowed in this category.
-              </p>
-            </div>
-
-            <div className="grid gap-1">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="acceptTeam"
-                  checked={acceptTeam}
-                  onCheckedChange={setAcceptTeam}
-                />
-                <Label htmlFor="acceptTeam">Accept Teams</Label>
-              </div>
-              <p className="text-helper">
-                When enabled, this category will start accepting team
-                registrations.
-              </p>
-            </div>
-          </div>
-        </SheetBody>
-        <SheetFooter className="flex justify-between">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={handleDelete}
-            disabled={isPending}
-            size="sm"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSave}
-            disabled={!hasChanges || isPending}
-            size="sm"
-          >
-            Save Changes
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
-  );
-}
 
 export type LeagueCategoryRoundUpdatableFields = {
   round_status: string;

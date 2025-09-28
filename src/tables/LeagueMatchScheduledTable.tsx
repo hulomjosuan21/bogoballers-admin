@@ -370,7 +370,7 @@ export function ScheduleMatchTable({ leagueCategoryId, roundId }: Props) {
     },
     {
       accessorKey: "display_name",
-      header: "Group",
+      header: "Info",
     },
     {
       accessorKey: "scheduled_date",

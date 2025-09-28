@@ -69,9 +69,7 @@ export function LoginForm({
             <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 md:p-8">
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col items-center text-center">
-                  <p className="text-muted-foreground text-balance">
-                    Login to your League Administrator account
-                  </p>
+                  <p className="text-muted-foreground text-balance">Login</p>
                 </div>
 
                 <FormField
@@ -100,12 +98,6 @@ export function LoginForm({
                     <FormItem>
                       <div className="flex items-center">
                         <FormLabel>Password</FormLabel>
-                        <Link
-                          to="#"
-                          className="ml-auto text-sm underline-offset-2 hover:underline"
-                        >
-                          Forgot your password?
-                        </Link>
                       </div>
                       <FormControl>
                         <Input
@@ -114,6 +106,12 @@ export function LoginForm({
                           {...field}
                         />
                       </FormControl>
+                      <Link
+                        to="#"
+                        className="ml-auto text-sm underline-offset-2 hover:underline"
+                      >
+                        Forgot your password?
+                      </Link>
                       <FormMessage />
                     </FormItem>
                   )}

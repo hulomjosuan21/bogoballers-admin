@@ -13,6 +13,8 @@ export interface LeagueCategory extends Category {
   league_id: string;
   max_team: number;
   accept_teams: boolean;
+  manage_automatic: boolean;
+  league_category_status: string;
   league_category_created_at: string;
   league_category_updated_at: string;
   rounds: LeagueCategoryRound[];

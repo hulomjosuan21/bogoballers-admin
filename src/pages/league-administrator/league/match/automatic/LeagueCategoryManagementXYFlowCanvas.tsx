@@ -13,22 +13,13 @@ import {
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { default as ContentHeader } from "@/components/content-header";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 
 import { useNodeManagement } from "@/hooks/league-category-management/useNodeManagement";
 import { useEdgeStyling } from "@/hooks/league-category-management/useEdgeStyling";
 import { useKeyboardShortcuts } from "@/hooks/league-category-management/useKeyboardShortcuts";
 import { useDragDropActions } from "@/hooks/league-category-management/useDragDropActions";
 import { useSaveOperations } from "@/hooks/league-category-management/useSaveOperations";
-import { NoteBox } from "@/components/nodebox";
 
 type LeagueCategoryCanvasProps = {
   leagueId?: string;
@@ -183,23 +174,6 @@ export default function LeagueCategoryCanvas({
             Save Changes ({getTotalChangesCount})
           </Button>
         )}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant={"outline"} size={"sm"}>
-              <Menu />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side={"top"} aria-describedby={undefined}>
-            <SheetHeader>
-              <SheetTitle />
-            </SheetHeader>
-
-            <div className="mt-4 space-y-2">
-              <NoteBox label="Test">0</NoteBox>
-              <NoteBox label="Test">0</NoteBox>
-            </div>
-          </SheetContent>
-        </Sheet>
       </ContentHeader>
       <ContentBody className="flex-row relative">
         {categoryCanvas}

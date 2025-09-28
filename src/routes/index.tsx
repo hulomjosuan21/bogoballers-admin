@@ -11,7 +11,6 @@ import {
   LeagueMatchSetUnSchedulePage,
   LeagueMatchScheduledPage,
   LeagueUpdatePage,
-  BracketStructurePage,
   ManageLeagueCategoriesPage,
 } from "@/pages";
 import AboutLeaguePage from "@/pages/public/learnings/AboutLeague";
@@ -25,8 +24,6 @@ import { Permission } from "@/enums/permission";
 import {
   LayoutDashboard,
   UsersRound,
-  UserRound,
-  GitFork,
   Settings,
   FolderKanban,
   GitBranchPlus,
@@ -37,6 +34,7 @@ import {
   MessageSquare,
   ChevronsRightLeft,
   Network,
+  ChartNoAxesGantt,
 } from "lucide-react";
 import LeagueMatchCompletedPage from "@/pages/league-administrator/league/match/LeagueMatchUpcoming";
 import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
@@ -51,6 +49,7 @@ import ChatScreen from "@/components/ChatScreen";
 import LeagueMatches from "@/pages/league-administrator/league/match/LeagueMatches";
 import LiveAdminPage from "@/pages/LiveAdminPage";
 import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/ManualManagementPage";
+import PublicLeaguePage from "@/components/public-components/PublicLeaguePage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -60,6 +59,10 @@ export const publicRoutes: RouteObject[] = [
   {
     path: "/auth/register",
     element: <RegisterPage />,
+  },
+  {
+    path: "/league/:publicLeagueId",
+    element: <PublicLeaguePage />,
   },
   {
     path: "/",
@@ -195,7 +198,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     permissions: [Permission.ManagePlayers],
     showInSidebar: true,
     sidebarTitle: "Players",
-    icon: UserRound,
+    icon: ChartNoAxesGantt,
     sidebarParent: "Manage",
     sidebarGroup: "league",
   },
@@ -206,7 +209,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     showInSidebar: true,
     sidebarTitle: "Official Teams",
     sidebarParent: "Team",
-    icon: UsersRound,
+    icon: FolderKanban,
     sidebarGroup: "league",
   },
   {
@@ -234,7 +237,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     showInSidebar: true,
     sidebarTitle: "Officials & Courts",
     sidebarParent: "Manage",
-    icon: FolderKanban,
+    icon: ChartNoAxesGantt,
     sidebarGroup: "league",
   },
   {
@@ -244,15 +247,6 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     showInSidebar: true,
     sidebarTitle: "Sponsors & Partners",
     sidebarParent: "Manage",
-    sidebarGroup: "league",
-  },
-  {
-    path: "pages/league/bracket",
-    element: <BracketStructurePage />,
-    permissions: [Permission.ManageBrackets],
-    showInSidebar: true,
-    sidebarTitle: "Bracket",
-    icon: GitFork,
     sidebarGroup: "league",
   },
   {

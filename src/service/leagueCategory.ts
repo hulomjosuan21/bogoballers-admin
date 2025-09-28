@@ -61,6 +61,14 @@ export class LeagueCategoryService {
     return response.data;
   }
 
+  static async updateMany(changes: Partial<LeagueCategory>[]) {
+    const response = await axiosClient.put<{ message: string }>(
+      `/league-category/edit-many`,
+      changes
+    );
+    return response.data;
+  }
+
   static async fetchActiveCategories(league_id: string) {
     const response = await axiosClient.get<LeagueCategory[]>(
       `/league-category/${league_id}`

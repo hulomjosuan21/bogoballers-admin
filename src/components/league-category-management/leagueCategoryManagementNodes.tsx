@@ -14,10 +14,7 @@ import {
 } from "@/types/leagueCategoryTypes";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import {
-  LeagueCategoryNodeSheet,
-  RoundNodeSheet,
-} from "@/components/league-category-management/LeagueCategoryManagementComponents";
+import { RoundNodeSheet } from "@/components/league-category-management/LeagueCategoryManagementComponents";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +35,7 @@ import {
 } from "../ui/select";
 
 export function CategoryNode({ data }: { data: CategoryNodeData }) {
-  const { category, viewOnly, metadata } = data;
+  const { category, metadata } = data;
 
   return (
     <div className="border-2 rounded-md flex flex-col overflow-hidden w-[1280px] h-[720px]">
@@ -46,7 +43,6 @@ export function CategoryNode({ data }: { data: CategoryNodeData }) {
         <p>
           <strong className="">Category:</strong> {category.category_name}
         </p>
-        <LeagueCategoryNodeSheet data={data} disable={viewOnly} />
       </div>
       <div className="flex-1 p-2 overflow-auto flex flex-col">
         <p className="text-helper italic text-xs mb-4">

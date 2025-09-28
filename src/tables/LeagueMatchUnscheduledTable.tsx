@@ -259,7 +259,7 @@ export function UnscheduleMatchTable({ leagueCategoryId, roundId }: Props) {
     },
     {
       accessorKey: "display_name",
-      header: "Group",
+      header: "Detail",
     },
     {
       accessorKey: "court",

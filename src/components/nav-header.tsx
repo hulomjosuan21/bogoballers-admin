@@ -6,6 +6,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import logoMain from "@/assets/logo-main.png";
 import { useNavigate } from "react-router-dom";
+import { Input } from "./ui/input";
+import { SearchIcon } from "lucide-react";
 
 export function AppSidebarHeader() {
   const navigate = useNavigate();
@@ -27,6 +29,17 @@ export function AppSidebarHeader() {
             <span className="truncate text-xs">League Administrator</span>
           </div>
         </SidebarMenuButton>
+        <div className="relative flex-1 mt-2">
+          <Input
+            className="peer ps-6 pe-2 w-full"
+            placeholder="Search..."
+            type="search"
+            onFocus={() => setTimeout(() => navigate("/find"), 300)}
+          />
+          <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-2 peer-disabled:opacity-50">
+            <SearchIcon size={16} />
+          </div>
+        </div>
       </SidebarMenuItem>
     </SidebarMenu>
   );
