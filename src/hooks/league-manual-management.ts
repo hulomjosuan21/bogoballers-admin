@@ -282,7 +282,7 @@ export function useManageManualNodeManagement() {
             n.data.type === "league_match" &&
             n.data.league_match.round_id === roundId &&
             (!groupId || n.data.league_match.group_id === groupId)
-        ).length;
+        ).length + 1;
 
       const permanentPrefixes = [
         "league-category-",
@@ -592,10 +592,6 @@ export function useManageManualNodeManagement() {
               parentGroup = parentGroupNode.data.group;
             }
 
-            const matchCount = countMatchesInRound(
-              parentMatchData.round_id,
-              parentGroup?.group_id
-            );
             const matchData = targetNode.data.league_match;
 
             let newDisplayName: string;
@@ -610,6 +606,11 @@ export function useManageManualNodeManagement() {
               if (matchData.is_elimination) {
                 matchType = "Elimination Match";
               }
+
+              const matchCount = countMatchesInRound(
+                parentMatchData.round_id,
+                parentGroup?.group_id
+              );
 
               if (parentGroup?.display_name && parentGroupNode) {
                 newDisplayName = `${roundName} - ${
