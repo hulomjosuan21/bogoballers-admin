@@ -154,10 +154,28 @@ export function useManageManualNodeManagement() {
   const onNodesChange: OnNodesChange = useCallback(
     async (changes) => {
       const changesToDispatch: NodeChange[] = [];
+
+      const permanentIdPrefixes = [
+        "league-category-",
+        "lround-",
+        "lgroup-",
+        "lmatch-",
+      ];
+      const isIdPermanent = (id: string) =>
+        permanentIdPrefixes.some((p) => id.startsWith(p));
+
       for (const change of changes) {
         if (change.type === "remove") {
           const nodeToRemove = nodes.find((n) => n.id === change.id);
-          if (nodeToRemove?.type === "leagueCategory") {
+          if (!nodeToRemove) continue;
+
+          if (!isIdPermanent(nodeToRemove.id)) {
+            changesToDispatch.push(change);
+            toast.info("Temporary node removed.");
+            continue;
+          }
+
+          if (nodeToRemove.type === "leagueCategory") {
             const confirm = await openDialog({
               title: "Confirm Deletion",
               description:
@@ -183,7 +201,8 @@ export function useManageManualNodeManagement() {
             } catch (error) {
               toast.error("Failed to delete category.");
             }
-          } else if (nodeToRemove) {
+          } else {
+            // This is a permanent, non-category node
             try {
               await manualLeagueService.deleteSingleNode(
                 nodeToRemove.type!,
@@ -199,6 +218,7 @@ export function useManageManualNodeManagement() {
           changesToDispatch.push(change);
         }
       }
+
       if (changesToDispatch.length > 0) {
         dispatch({ type: "ON_NODES_CHANGE", payload: changesToDispatch });
       }
@@ -655,7 +675,9 @@ export function useManageManualNodeManagement() {
             }
 
             const payload = {
-              ...matchData,
+              is_final: matchData.is_final,
+              is_third_place: matchData.is_third_place,
+              is_runner_up: matchData.is_runner_up,
               league_id: parentMatchData.league_id!,
               league_category_id: parentMatchData.league_category_id!,
               round_id: parentMatchData.round_id,

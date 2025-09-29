@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { LeagueTeamsPublicTable } from "@/tables/LeagueTeamsPublicTable";
 import { LeagueMatchesTable } from "@/tables/LeagueMatches";
-import LeagueTeamsTable from "@/tables/LeagueTeamsTable";
 
 type Props = {
   leagueId: string;
@@ -48,12 +48,9 @@ export default function LeagueInfoComponent({ leagueId }: Props) {
   return (
     <div className="">
       {selectedCategory ? (
-        <Tabs
-          value={activeRoundId || undefined}
-          onValueChange={setActiveRoundId}
-          className="text-sm text-muted-foreground"
-        >
+        <>
           <div className="flex flex-wrap gap-2 items-center mb-2">
+            {/* Toggle between Teams and Match */}
             <Select
               value={viewType}
               onValueChange={(val) => setViewType(val as "Teams" | "Match")}
@@ -66,6 +63,8 @@ export default function LeagueInfoComponent({ leagueId }: Props) {
                 <SelectItem value="Match">Match</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Category Selector */}
             <Select
               onValueChange={handleCategorySelect}
               value={selectedCategory?.league_category_id || ""}
@@ -87,42 +86,47 @@ export default function LeagueInfoComponent({ leagueId }: Props) {
                 </SelectGroup>
               </SelectContent>
             </Select>
-
-            <TabsList className="flex flex-wrap gap-2">
-              {selectedCategory?.rounds.map((round) => (
-                <TabsTrigger
-                  key={round.round_id}
-                  value={round.round_id}
-                  className="w-[175px]"
-                >
-                  {round.round_name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
           </div>
 
-          {selectedCategory?.rounds.length > 0 ? (
-            selectedCategory.rounds.map((round) => (
-              <TabsContent key={round.round_id} value={round.round_id}>
-                {viewType === "Match" ? (
-                  <LeagueMatchesTable
-                    leagueCategoryId={selectedCategory.league_category_id}
-                    roundId={round.round_id}
-                  />
-                ) : (
-                  <LeagueTeamsTable
-                    leagueCategoryId={selectedCategory.league_category_id}
-                    roundId={round.round_id}
-                  />
-                )}
-              </TabsContent>
-            ))
+          {viewType === "Teams" ? (
+            <LeagueTeamsPublicTable
+              leagueCategoryId={selectedCategory.league_category_id}
+            />
           ) : (
-            <p className="text-muted-foreground">
-              No rounds available for this category.
-            </p>
+            <Tabs
+              value={activeRoundId || undefined}
+              onValueChange={setActiveRoundId}
+              className="text-sm text-muted-foreground"
+            >
+              <TabsList className="flex flex-wrap gap-2">
+                {selectedCategory?.rounds.map((round) => (
+                  <TabsTrigger
+                    key={round.round_id}
+                    value={round.round_id}
+                    className="w-[175px]"
+                  >
+                    {round.round_name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {selectedCategory?.rounds.length > 0 ? (
+                selectedCategory.rounds.map((round) => (
+                  <TabsContent key={round.round_id} value={round.round_id}>
+                    <LeagueMatchesTable
+                      leagueCategoryId={selectedCategory.league_category_id}
+                      roundId={round.round_id}
+                    />
+                  </TabsContent>
+                ))
+              ) : (
+                <p className="text-muted-foreground">
+                  No rounds available for this category.
+                </p>
+              )}
+            </Tabs>
           )}
-        </Tabs>
+        </>
       ) : (
         <p className="text-muted-foreground">No category selected.</p>
       )}

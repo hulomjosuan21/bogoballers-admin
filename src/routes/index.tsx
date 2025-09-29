@@ -1,7 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 import {
   DashboardPage,
-  LeaguePlayerPage,
   TeamSubmissionPage,
   SettingsPage,
   LeagueCreationPage,
@@ -190,16 +189,6 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarTitle: "Manual",
     sidebarParent: "Match Management",
     icon: Network,
-    sidebarGroup: "league",
-  },
-  {
-    path: "pages/league/player",
-    element: <LeaguePlayerPage />,
-    permissions: [Permission.ManagePlayers],
-    showInSidebar: true,
-    sidebarTitle: "Players",
-    icon: ChartNoAxesGantt,
-    sidebarParent: "Manage",
     sidebarGroup: "league",
   },
   {

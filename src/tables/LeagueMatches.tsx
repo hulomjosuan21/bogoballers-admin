@@ -26,7 +26,7 @@ import { DataTablePagination } from "@/components/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/error";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 type Props = {
   leagueCategoryId?: string;
@@ -34,11 +34,7 @@ type Props = {
   viewOnly?: boolean;
 };
 
-export function LeagueMatchesTable({
-  leagueCategoryId,
-  roundId,
-  viewOnly = false,
-}: Props) {
+function MatchesTable({ leagueCategoryId, roundId, viewOnly = false }: Props) {
   const {
     leagueMatchData,
     leagueMatchLoading,
@@ -245,3 +241,5 @@ export function LeagueMatchesTable({
     </div>
   );
 }
+
+export const LeagueMatchesTable = memo(MatchesTable);
