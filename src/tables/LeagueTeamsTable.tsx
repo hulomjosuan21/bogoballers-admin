@@ -30,7 +30,7 @@ import {
 import { useState, useMemo, useCallback } from "react";
 import { getErrorMessage } from "@/lib/error";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreVertical } from "lucide-react";
+import { ArrowUpDown, Copy, MoreVertical } from "lucide-react";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { toast } from "sonner";
@@ -74,6 +74,36 @@ export default function LeagueTeamsTable({
 
   const columns: ColumnDef<LeagueTeam>[] = useMemo(
     () => [
+      {
+        accessorKey: "league_team_public_id",
+        header: "ID",
+        cell: ({ row }) => {
+          const id = row.getValue("league_team_public_id") as string;
+
+          const handleCopy = async () => {
+            try {
+              await navigator.clipboard.writeText(id);
+              toast.info("Copied to clipboard!");
+            } catch {
+              toast.error("Failed to copy");
+            }
+          };
+
+          return (
+            <div className="flex items-center gap-2">
+              <span className="truncate max-w-[120px]">{id}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopy}
+                className="h-6 w-6"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          );
+        },
+      },
       {
         accessorKey: "team_name",
         header: ({ column }) => (

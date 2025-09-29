@@ -3,11 +3,11 @@ import type { LeaguePlayer } from "@/types/player";
 import { useQuery } from "@tanstack/react-query";
 
 export const useLeaguePlayerByCondition = (
-  leagueId?: string,
+  leagueCategoryId?: string,
   data?: Partial<LeaguePlayer> & { condition: string }
 ) => {
   const query = useQuery(
-    getLeaguePlayerByConditionsQueryOption(leagueId, data)
+    getLeaguePlayerByConditionsQueryOption(leagueCategoryId, data)
   );
 
   return {

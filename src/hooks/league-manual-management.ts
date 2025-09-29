@@ -457,9 +457,7 @@ export function useManageManualNodeManagement() {
                 roundIdFromGroup,
                 sourceNode.data.group.group_id
               );
-              newDisplayName = `${roundNameFromGroup} - ${
-                sourceNode.data.group.display_name
-              } - ${matchType} ${matchCount + 1}`;
+              newDisplayName = `${roundNameFromGroup} - ${sourceNode.data.group.display_name} - ${matchType} ${matchCount}`;
             }
 
             const payload = {
@@ -521,7 +519,7 @@ export function useManageManualNodeManagement() {
               }
 
               const matchCount = countMatchesInRound(round_id!);
-              newDisplayName = `${round_name} - ${matchType} ${matchCount + 1}`;
+              newDisplayName = `${round_name} - ${matchType} ${matchCount}`;
             }
 
             const payload = {
@@ -613,13 +611,9 @@ export function useManageManualNodeManagement() {
               );
 
               if (parentGroup?.display_name && parentGroupNode) {
-                newDisplayName = `${roundName} - ${
-                  parentGroup.display_name
-                } - ${matchType} ${matchCount + 1}`;
+                newDisplayName = `${roundName} - ${parentGroup.display_name} - ${matchType} ${matchCount}`;
               } else {
-                newDisplayName = `${roundName} - ${matchType} ${
-                  matchCount + 1
-                }`;
+                newDisplayName = `${roundName} - ${matchType} ${matchCount}`;
               }
             }
 

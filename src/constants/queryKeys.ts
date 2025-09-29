@@ -24,9 +24,9 @@ export const QUERY_KEYS = {
   ) => ["league-public-id", publicLeagueId, JSON.stringify(data)] as const,
 
   LEAGUE_PLAYER: (
-    leagueId?: string,
+    leagueCategoryId?: string,
     data?: Partial<LeaguePlayer> & { condition: string }
-  ) => ["league-player", leagueId, JSON.stringify(data)] as const,
+  ) => ["league-player", leagueCategoryId, JSON.stringify(data)] as const,
 
   LEAGUE_TEAM: (
     leagueCategoryId?: string,

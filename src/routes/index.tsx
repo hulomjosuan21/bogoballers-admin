@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 import {
   DashboardPage,
-  PlayerSubmissionPage,
+  LeaguePlayerPage,
   TeamSubmissionPage,
   SettingsPage,
   LeagueCreationPage,
@@ -194,7 +194,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   },
   {
     path: "pages/league/player",
-    element: <PlayerSubmissionPage />,
+    element: <LeaguePlayerPage />,
     permissions: [Permission.ManagePlayers],
     showInSidebar: true,
     sidebarTitle: "Players",
