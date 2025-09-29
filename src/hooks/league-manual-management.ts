@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
   useReactFlow,
   type OnNodesChange,
@@ -99,6 +99,12 @@ export function useManageManualNodeManagement() {
   const dispatch = useFlowDispatch();
   const { openDialog } = useAlertDialog();
   const { onDrop, onDragOver } = useDragAndDrop();
+
+  const nodesRef = useRef(nodes);
+
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
 
   useEffect(() => {
     if (!activeLeagueId) return;
@@ -207,12 +213,16 @@ export function useManageManualNodeManagement() {
       const changesToDispatch: EdgeChange[] = [];
       for (const change of changes) {
         if (change.type === "remove") {
-          try {
-            await manualLeagueService.deleteEdge(change.id);
-            toast.success("Connection deleted.");
+          if (!change.id.startsWith("temp-edge-")) {
+            try {
+              await manualLeagueService.deleteEdge(change.id);
+              toast.success("Connection deleted.");
+              changesToDispatch.push(change);
+            } catch (error) {
+              toast.error("Failed to delete connection.");
+            }
+          } else {
             changesToDispatch.push(change);
-          } catch (error) {
-            toast.error("Failed to delete connection.");
           }
         } else {
           changesToDispatch.push(change);
@@ -227,11 +237,12 @@ export function useManageManualNodeManagement() {
 
   const onConnect: OnConnect = useCallback(
     async (connection: Connection) => {
+      const currentNodes = nodesRef.current;
       const { source, sourceHandle, target, targetHandle } = connection;
       if (!source || !target) return;
 
-      const sourceNode = nodes.find((n) => n.id === source);
-      const targetNode = nodes.find((n) => n.id === target);
+      const sourceNode = currentNodes.find((n) => n.id === source);
+      const targetNode = currentNodes.find((n) => n.id === target);
       if (!sourceNode || !targetNode || !activeLeagueId) {
         toast.error("A required node or the active league could not be found.");
         return;
@@ -276,13 +287,17 @@ export function useManageManualNodeManagement() {
         return;
       }
 
-      const countMatchesInRound = (roundId: string, groupId?: string) =>
-        nodes.filter(
+      const countMatches = (roundId: string, groupId?: string) => {
+        const matches = nodesRef.current.filter(
           (n) =>
             n.data.type === "league_match" &&
             n.data.league_match.round_id === roundId &&
-            (!groupId || n.data.league_match.group_id === groupId)
-        ).length + 1;
+            (groupId
+              ? n.data.league_match.group_id === groupId
+              : !n.data.league_match.group_id)
+        );
+        return matches.length + 1;
+      };
 
       const permanentPrefixes = [
         "league-category-",
@@ -361,8 +376,13 @@ export function useManageManualNodeManagement() {
               type: "REPLACE_NODE",
               payload: { tempId: targetNode.id, newNode: finalNode },
             });
-            toast.success("New Round created.");
 
+            const otherNodes = nodesRef.current.filter(
+              (n) => n.id !== targetNode.id
+            );
+            nodesRef.current = [...otherNodes, finalNode];
+
+            toast.success("New Round created.");
             await createAndReplaceEdge(source, newRoundFromServer.round_id);
           }
         }
@@ -401,8 +421,13 @@ export function useManageManualNodeManagement() {
               type: "REPLACE_NODE",
               payload: { tempId: targetNode.id, newNode: finalNode },
             });
-            toast.success("New Group created.");
 
+            const otherNodes = nodesRef.current.filter(
+              (n) => n.id !== targetNode.id
+            );
+            nodesRef.current = [...otherNodes, finalNode];
+
+            toast.success("New Group created.");
             await createAndReplaceEdge(
               sourceNode.id,
               newGroupFromServer.group_id
@@ -419,7 +444,9 @@ export function useManageManualNodeManagement() {
               await createAndReplaceEdge(sourceNode.id, targetNode.id);
             }
           }
-        } else if (
+        }
+        // Group -> Match
+        else if (
           sourceNode.type === "group" &&
           targetNode.type === "leagueMatch" &&
           sourceNode.data.type === "group" &&
@@ -453,7 +480,7 @@ export function useManageManualNodeManagement() {
                 matchType = "Elimination Match";
               }
 
-              const matchCount = countMatchesInRound(
+              const matchCount = countMatches(
                 roundIdFromGroup,
                 sourceNode.data.group.group_id
               );
@@ -481,6 +508,12 @@ export function useManageManualNodeManagement() {
               type: "REPLACE_NODE",
               payload: { tempId: targetNode.id, newNode: finalNode },
             });
+
+            const otherNodes = nodesRef.current.filter(
+              (n) => n.id !== targetNode.id
+            );
+            nodesRef.current = [...otherNodes, finalNode];
+
             toast.success(`'${newDisplayName}' created.`);
 
             await createAndReplaceEdge(
@@ -492,7 +525,9 @@ export function useManageManualNodeManagement() {
               await createAndReplaceEdge(sourceNode.id, targetNode.id);
             }
           }
-        } else if (
+        }
+        // Round -> Match
+        else if (
           sourceNode.type === "leagueCategoryRound" &&
           targetNode.type === "leagueMatch" &&
           sourceNode.data.type === "league_category_round" &&
@@ -518,7 +553,7 @@ export function useManageManualNodeManagement() {
                 matchType = "Elimination Match";
               }
 
-              const matchCount = countMatchesInRound(round_id!);
+              const matchCount = countMatches(round_id!);
               newDisplayName = `${round_name} - ${matchType} ${matchCount}`;
             }
 
@@ -542,6 +577,12 @@ export function useManageManualNodeManagement() {
               type: "REPLACE_NODE",
               payload: { tempId: targetNode.id, newNode: finalNode },
             });
+
+            const otherNodes = nodesRef.current.filter(
+              (n) => n.id !== targetNode.id
+            );
+            nodesRef.current = [...otherNodes, finalNode];
+
             toast.success(`'${newDisplayName}' created.`);
 
             await createAndReplaceEdge(sourceNode.id, finalNode.id);
@@ -563,15 +604,14 @@ export function useManageManualNodeManagement() {
               throw new Error("Parent match is missing its round_id.");
             }
 
-            const parentRoundNode = nodes.find(
+            const parentGroupNode = parentMatchData.group_id
+              ? currentNodes.find((n) => n.id === parentMatchData.group_id)
+              : undefined;
+
+            const parentRoundNode = currentNodes.find(
               (n) =>
                 n.id === parentMatchData.round_id &&
                 n.data?.type === "league_category_round"
-            );
-            const parentGroupNode = nodes.find(
-              (n) =>
-                n.data?.type === "group" &&
-                n.data?.group?.round_id === parentMatchData.round_id
             );
 
             let roundName;
@@ -605,7 +645,7 @@ export function useManageManualNodeManagement() {
                 matchType = "Elimination Match";
               }
 
-              const matchCount = countMatchesInRound(
+              const matchCount = countMatches(
                 parentMatchData.round_id,
                 parentGroup?.group_id
               );
@@ -624,6 +664,7 @@ export function useManageManualNodeManagement() {
               round_id: parentMatchData.round_id,
               display_name: newDisplayName,
               position: targetNode.position,
+              group_id: parentGroup?.group_id,
             };
 
             const newMatchFromServer =
@@ -638,6 +679,12 @@ export function useManageManualNodeManagement() {
               type: "REPLACE_NODE",
               payload: { tempId: targetNode.id, newNode: finalNode },
             });
+
+            const otherNodes = nodesRef.current.filter(
+              (n) => n.id !== targetNode.id
+            );
+            nodesRef.current = [...otherNodes, finalNode];
+
             toast.success(`'${newDisplayName}' created.`);
 
             await createAndReplaceEdge(sourceNode.id, finalNode.id);
@@ -724,7 +771,7 @@ export function useManageManualNodeManagement() {
         console.error(error);
       }
     },
-    [dispatch, nodes, edges, activeLeagueId]
+    [dispatch, activeLeagueId]
   );
   return {
     nodes,
