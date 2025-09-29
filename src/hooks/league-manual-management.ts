@@ -78,7 +78,6 @@ export function useDragAndDrop() {
         };
         dispatch({ type: "ADD_NODE", payload: newNode });
       } catch (error) {
-        console.error("Invalid node payload dropped on canvas", error);
         toast.error("Could not add node to canvas.");
       }
     },
@@ -121,7 +120,6 @@ export function useManageManualNodeManagement() {
         }
       } catch (error) {
         toast.error("Failed to load league layout from the database.");
-        console.error("Failed to fetch flow state:", error);
       }
     };
 
@@ -340,7 +338,6 @@ export function useManageManualNodeManagement() {
             type: "ON_EDGES_CHANGE",
             payload: [{ id: tempEdgeId, type: "remove" }],
           });
-          console.error("Failed to create edge:", err);
           throw err;
         }
       };
