@@ -83,6 +83,14 @@ class AxiosClient {
     return this.instance.put<T>(url, data, config);
   }
 
+  public patch<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<AxiosResponse<T>> {
+    return this.instance.patch<T>(url, data, config);
+  }
+
   public delete<T = unknown>(
     url: string,
     config?: AxiosRequestConfig

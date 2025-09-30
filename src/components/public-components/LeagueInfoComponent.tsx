@@ -1,7 +1,7 @@
 import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
-import { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { memo, useEffect, useState, Suspense, useTransition } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { LeagueTeamsPublicTable } from "@/tables/LeagueTeamsPublicTable";
 import { LeagueMatchesTable } from "@/tables/LeagueMatches";
 
@@ -18,7 +19,7 @@ type Props = {
   leagueId: string;
 };
 
-export default function LeagueInfoComponent({ leagueId }: Props) {
+function Component({ leagueId }: Props) {
   const { activeLeagueCategories } = useActiveLeagueCategories(leagueId);
 
   const [selectedCategory, setSelectedCategory] =
@@ -27,6 +28,8 @@ export default function LeagueInfoComponent({ leagueId }: Props) {
   const [activeRoundId, setActiveRoundId] = useState<string | null>(null);
 
   const [viewType, setViewType] = useState<"Teams" | "Match">("Teams");
+
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (activeLeagueCategories && activeLeagueCategories.length > 0) {
@@ -41,8 +44,11 @@ export default function LeagueInfoComponent({ leagueId }: Props) {
       activeLeagueCategories?.find(
         (c) => c.league_category_id === categoryId
       ) || null;
-    setSelectedCategory(category);
-    setActiveRoundId(category?.rounds[0]?.round_id || null);
+
+    startTransition(() => {
+      setSelectedCategory(category);
+      setActiveRoundId(category?.rounds[0]?.round_id || null);
+    });
   };
 
   return (
@@ -88,44 +94,58 @@ export default function LeagueInfoComponent({ leagueId }: Props) {
             </Select>
           </div>
 
-          {viewType === "Teams" ? (
-            <LeagueTeamsPublicTable
-              leagueCategoryId={selectedCategory.league_category_id}
-            />
-          ) : (
-            <Tabs
-              value={activeRoundId || undefined}
-              onValueChange={setActiveRoundId}
-              className="text-sm text-muted-foreground"
-            >
-              <TabsList className="flex flex-wrap gap-2">
-                {selectedCategory?.rounds.map((round) => (
-                  <TabsTrigger
-                    key={round.round_id}
-                    value={round.round_id}
-                    className="w-[175px]"
-                  >
-                    {round.round_name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              {selectedCategory?.rounds.length > 0 ? (
-                selectedCategory.rounds.map((round) => (
-                  <TabsContent key={round.round_id} value={round.round_id}>
-                    <LeagueMatchesTable
-                      leagueCategoryId={selectedCategory.league_category_id}
-                      roundId={round.round_id}
-                    />
-                  </TabsContent>
-                ))
-              ) : (
-                <p className="text-muted-foreground">
-                  No rounds available for this category.
-                </p>
-              )}
-            </Tabs>
+          {isPending && (
+            <p className="text-muted-foreground text-sm">Loading category…</p>
           )}
+
+          <Suspense
+            fallback={<p className="text-muted-foreground">Loading…</p>}
+          >
+            {viewType === "Teams" ? (
+              <LeagueTeamsPublicTable
+                key="teams"
+                leagueCategoryId={selectedCategory.league_category_id}
+              />
+            ) : (
+              <>
+                {selectedCategory.rounds.length > 0 ? (
+                  <>
+                    <Tabs
+                      value={activeRoundId || undefined}
+                      onValueChange={setActiveRoundId}
+                      className="text-sm text-muted-foreground"
+                    >
+                      <TabsList className="flex flex-wrap gap-2">
+                        {selectedCategory.rounds.map((round) => (
+                          <TabsTrigger
+                            key={round.round_id}
+                            value={round.round_id}
+                            className="w-[175px]"
+                          >
+                            {round.round_name}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                    </Tabs>
+
+                    {activeRoundId && (
+                      <div className="mt-2">
+                        <LeagueMatchesTable
+                          key="matches"
+                          leagueCategoryId={selectedCategory.league_category_id}
+                          roundId={activeRoundId}
+                        />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">
+                    No rounds available for this category.
+                  </p>
+                )}
+              </>
+            )}
+          </Suspense>
         </>
       ) : (
         <p className="text-muted-foreground">No category selected.</p>
@@ -133,3 +153,5 @@ export default function LeagueInfoComponent({ leagueId }: Props) {
     </div>
   );
 }
+
+export const LeagueInfoComponent = memo(Component);

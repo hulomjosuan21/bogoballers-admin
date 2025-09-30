@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataGrid, DataGridContainer } from "@/components/ui/data-grid";
 import { DataGridPagination } from "@/components/ui/data-grid-pagination";
@@ -18,7 +18,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { getPlayerLeaderboardQueryOption } from "@/queries/player";
 import type { Player } from "@/types/player";
-export default function PlayerLeaderboard() {
+export default function PlayerLeaderboardTable() {
   const { data } = useQuery(getPlayerLeaderboardQueryOption);
 
   const [pagination, setPagination] = useState<PaginationState>({
@@ -35,7 +35,7 @@ export default function PlayerLeaderboard() {
       {
         accessorKey: "name",
         id: "name",
-        header: "Name",
+        header: "Player",
         cell: ({ row }) => {
           const rank = row.index + 1;
           let rankClass = "";
@@ -70,33 +70,72 @@ export default function PlayerLeaderboard() {
       },
       {
         accessorKey: "total_games_played",
-        header: "Total Games Played",
+        header: () => <span className="text-xs">Total Games Played</span>,
         cell: ({ row }) => <span>{row.original.total_games_played}</span>,
-        size: 100,
       },
       {
         accessorKey: "total_points_scored",
-        header: "Total points scored",
+        header: () => <span className="text-xs">Total Points Scored</span>,
         cell: ({ row }) => <span>{row.original.total_points_scored}</span>,
-        size: 100,
       },
       {
         accessorKey: "total_assists",
-        header: () => <span className="text-xs">Total assists</span>,
+        header: () => <span className="text-xs">Total Assists</span>,
         cell: ({ row }) => <span>{row.original.total_assists}</span>,
-        size: 100,
       },
       {
         accessorKey: "total_rebounds",
-        header: () => <span className="text-xs">Total rebounds</span>,
+        header: () => <span className="text-xs">Total Rebounds</span>,
         cell: ({ row }) => <span>{row.original.total_rebounds}</span>,
-        size: 100,
+      },
+      {
+        accessorKey: "total_steals",
+        header: () => <span className="text-xs">Total Steals</span>,
+        cell: ({ row }) => <span>{row.original.total_steals}</span>,
+      },
+      {
+        accessorKey: "total_blocks",
+        header: () => <span className="text-xs">Total Blocks</span>,
+        cell: ({ row }) => <span>{row.original.total_blocks}</span>,
+      },
+      {
+        accessorKey: "total_turnovers",
+        header: () => <span className="text-xs">Total Turnovers</span>,
+        cell: ({ row }) => <span>{row.original.total_turnovers}</span>,
+      },
+      {
+        accessorKey: "fg2_percentage_per_game",
+        header: () => <span className="text-xs">2PT%</span>,
+        cell: ({ row }) => <span>{row.original.fg2_percentage_per_game}%</span>,
+      },
+      {
+        accessorKey: "fg3_percentage_per_game",
+        header: () => <span className="text-xs">3PT%</span>,
+        cell: ({ row }) => <span>{row.original.fg3_percentage_per_game}%</span>,
+      },
+      {
+        accessorKey: "ft_percentage_per_game",
+        header: () => <span className="text-xs">FT%</span>,
+        cell: ({ row }) => <span>{row.original.ft_percentage_per_game}%</span>,
       },
       {
         accessorKey: "total_join_league",
-        header: () => <span className="text-xs">Total joined league</span>,
+        header: () => <span className="text-xs">Total Joined League</span>,
         cell: ({ row }) => <span>{row.original.total_join_league}</span>,
-        size: 100,
+      },
+      {
+        accessorKey: "platform_points",
+        header: () => <span className="text-xs">Platform Points</span>,
+        cell: ({ row }) => (
+          <span>{row.original.platform_points.toFixed(2)}</span>
+        ),
+      },
+      {
+        accessorKey: "platform_points_per_game",
+        header: () => <span className="text-xs">Platform Points per Game</span>,
+        cell: ({ row }) => (
+          <span>{row.original.platform_points_per_game.toFixed(2)}</span>
+        ),
       },
     ],
     []
@@ -119,25 +158,26 @@ export default function PlayerLeaderboard() {
   });
 
   return (
-    <div className="">
-      <ScrollArea>
-        <DataGrid
-          table={table}
-          recordCount={data?.length || 0}
-          tableLayout={{ cellBorder: true }}
-        >
-          <div className="w-full space-y-2">
-            <DataGridContainer>
-              <ScrollArea>
+    <div className="w-full">
+      <DataGrid
+        table={table}
+        recordCount={data?.length || 0}
+        tableLayout={{ cellBorder: true }}
+      >
+        <div className="w-full space-y-2">
+          <DataGridContainer>
+            <ScrollArea className="w-full overflow-x-auto">
+              <div className="min-w-[900px]">
                 <DataGridTable />
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </DataGridContainer>
-            <DataGridPagination />
-          </div>
-        </DataGrid>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </DataGridContainer>
+          <DataGridPagination />
+        </div>
+      </DataGrid>
     </div>
   );
 }
+
+export const PlayerLeaderboard = memo(PlayerLeaderboardTable);

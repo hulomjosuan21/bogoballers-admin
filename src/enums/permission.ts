@@ -16,6 +16,7 @@ export enum Permission {
   ScoreBook,
   ManagementLeagueAdmins,
   ViewChat,
+  ManageLeagueGuest,
 }
 
 export function getUserPermissions(accountType: string): Permission[] {
@@ -25,6 +26,7 @@ export function getUserPermissions(accountType: string): Permission[] {
         Permission.ViewDashboard,
         Permission.CreateLeague,
         Permission.UpdateLeague,
+        Permission.ManageLeagueGuest,
         Permission.ManageCategories,
         Permission.ManagePlayers,
         Permission.MatchManangement,
@@ -46,6 +48,7 @@ export function getUserPermissions(accountType: string): Permission[] {
         Permission.UpdateLeague,
         Permission.ManageCategories,
         Permission.ManagePlayers,
+        Permission.ManageLeagueGuest,
         Permission.MatchManangement,
         Permission.ManageTeams,
         Permission.ViewTeamSubmissions,

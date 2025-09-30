@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
-import LeagueInfoComponent from "./LeagueInfoComponent";
 import { formatDate12h } from "@/lib/app_utils";
+import { LeagueInfoComponent } from "./LeagueInfoComponent";
 
 export default function PublicLeaguePage() {
   const navigate = useNavigate();

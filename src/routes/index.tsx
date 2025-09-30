@@ -49,6 +49,7 @@ import LeagueMatches from "@/pages/league-administrator/league/match/LeagueMatch
 import LiveAdminPage from "@/pages/LiveAdminPage";
 import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/ManualManagementPage";
 import PublicLeaguePage from "@/components/public-components/PublicLeaguePage";
+import LeagueGuestPage from "@/pages/league-administrator/league/guest/LeagueGuestPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -216,6 +217,15 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     permissions: [Permission.ManageCategories],
     showInSidebar: true,
     sidebarTitle: "League Categories",
+    sidebarParent: "Manage",
+    sidebarGroup: "league",
+  },
+  {
+    path: "pages/league-guest/manage",
+    element: <LeagueGuestPage />,
+    permissions: [Permission.ManageLeagueGuest],
+    showInSidebar: true,
+    sidebarTitle: "League Guest",
     sidebarParent: "Manage",
     sidebarGroup: "league",
   },

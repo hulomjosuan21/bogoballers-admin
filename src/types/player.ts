@@ -1,7 +1,23 @@
 import type { LeagueTeam } from "./team";
 import type { User } from "./user";
 
-export interface Player {
+type PlayerStatistics = {
+  total_games_played: number;
+  total_points_scored: number;
+  total_assists: number;
+  total_rebounds: number;
+  total_steals: number;
+  total_blocks: number;
+  total_turnovers: number;
+  fg2_percentage_per_game: number;
+  fg3_percentage_per_game: number;
+  ft_percentage_per_game: number;
+  total_join_league: number;
+  platform_points: number;
+  platform_points_per_game: number;
+};
+
+export interface Player extends PlayerStatistics {
   player_id: string;
   public_player_id: string;
   user_id: string;
@@ -15,22 +31,6 @@ export interface Player {
   position: string[];
   height_in: number;
   weight_kg: number;
-  total_games_played: number;
-  total_points_scored: number;
-  total_assists: number;
-  total_rebounds: number;
-  total_steals: number;
-  total_blocks: number;
-  total_turnovers: number;
-  total_fg2_made: number;
-  total_fg2_attempts: number;
-  total_fg3_made: number;
-  total_fg3_attempts: number;
-  total_ft_made: number;
-  total_ft_attempts: number;
-  total_join_league: number;
-  platform_points: number;
-  platform_points_per_game: number;
   is_ban: boolean;
   is_allowed: boolean;
   valid_documents: string[] | null;

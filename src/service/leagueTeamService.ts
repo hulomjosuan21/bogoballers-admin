@@ -1,5 +1,4 @@
 import axiosClient from "@/lib/axiosClient";
-import type { Refund } from "@/stores/refundStore";
 import type { LeagueTeam } from "@/types/team";
 
 export class LeagueTeamService {
@@ -77,11 +76,53 @@ export class LeagueTeamService {
 
     return response.data;
   }
+}
 
-  static async refund(payload: Refund) {
+export class LeagueTeamSubmissionService {
+  static async updateSubmission(
+    leagueTeamId: string,
+    data: Partial<LeagueTeam>
+  ) {
+    const response = await axiosClient.patch(
+      `/league-team/submission/${leagueTeamId}`,
+      data
+    );
+    return response.data;
+  }
+
+  static async removeSubmission(leagueTeamId: string) {
+    const response = await axiosClient.delete<{ message: string }>(
+      `/league-team/submission/${leagueTeamId}`
+    );
+    return response.data;
+  }
+
+  static async processRefund(payload: {
+    league_team_id: string;
+    amount: number;
+    remove: boolean;
+    reason?: string;
+  }) {
     const response = await axiosClient.post<{ message: string }>(
-      `/league-team/refund?remove=${payload.remove}`,
-      payload.data
+      "/league-team/submission/refund",
+      payload
+    );
+    return response.data;
+  }
+
+  static async validateEntry(
+    leagueId?: string,
+    leagueCategoryId?: string,
+    leagueTeamId?: string
+  ) {
+    if (!leagueId || !leagueCategoryId || !leagueTeamId) {
+      throw new Error(
+        "Please fill out all required fields before validating an entry."
+      );
+    }
+
+    const response = await axiosClient.put<{ message: string }>(
+      `/league-team/validate-entry/${leagueId}/${leagueCategoryId}/${leagueTeamId}`
     );
 
     return response.data;
