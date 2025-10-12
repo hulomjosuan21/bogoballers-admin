@@ -4,7 +4,7 @@ import { type ManualMatchConfigLeagueCategoryNodeData } from "@/types/manualMatc
 
 const handleStyle = {};
 
-const LeagueCategoryNode: React.FC<
+const ManualMatchConfigLeagueCategoryNode: React.FC<
   NodeProps<Node<ManualMatchConfigLeagueCategoryNodeData>>
 > = ({ data }) => {
   return (
@@ -57,4 +57,4 @@ const LeagueCategoryNode: React.FC<
   );
 };
 
-export default memo(LeagueCategoryNode);
+export default memo(ManualMatchConfigLeagueCategoryNode);

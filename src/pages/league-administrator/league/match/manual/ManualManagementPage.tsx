@@ -9,7 +9,7 @@ import {
   ManualMatchNodeMenu,
   ManualLeagueTeamNodeMenu,
   ManualRoundNodeMenu,
-} from "@/components/manual-management/ManualNodeMenus";
+} from "@/components/manual-match-config/ManualNodeMenus";
 import { ManualMatchingCanvas } from "./LeagueMatchManualXyFlowCanvas";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { toast } from "sonner";

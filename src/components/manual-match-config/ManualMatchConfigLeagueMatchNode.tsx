@@ -26,7 +26,7 @@ const TeamDropZone = ({
   </div>
 );
 
-const LeagueMatchNode: React.FC<
+const ManualMatchConfigLeagueMatchNode: React.FC<
   NodeProps<Node<ManualMatchConfigLeagueMatchNodeData>>
 > = ({ id, data }) => {
   const dispatch = useFlowDispatch();
@@ -175,4 +175,4 @@ const LeagueMatchNode: React.FC<
   );
 };
 
-export default memo(LeagueMatchNode);
+export default memo(ManualMatchConfigLeagueMatchNode);

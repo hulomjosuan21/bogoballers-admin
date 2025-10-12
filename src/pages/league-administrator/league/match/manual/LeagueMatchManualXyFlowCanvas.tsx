@@ -1,7 +1,7 @@
 import { ReactFlow, Background, Controls } from "@xyflow/react";
 
 import { useManageManualNodeManagement } from "@/hooks/league-manual-management";
-import { nodeTypes } from "@/components/manual-management";
+import { manualMatchConfigNodeTypes } from "@/components/manual-match-config";
 
 export function ManualMatchingCanvas() {
   const {
@@ -26,7 +26,7 @@ export function ManualMatchingCanvas() {
         onDrop={onDrop}
         onDragOver={onDragOver}
         onNodeDragStop={onNodeDragStop}
-        nodeTypes={nodeTypes}
+        nodeTypes={manualMatchConfigNodeTypes}
         fitView
       >
         <Background />

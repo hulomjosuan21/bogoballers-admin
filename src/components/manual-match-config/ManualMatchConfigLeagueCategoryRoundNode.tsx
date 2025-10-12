@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import { type ManualMatchConfigLeagueCategoryRoundNodeData } from "@/types/manualMatchConfigTypes";
 
-const LeagueCategoryRoundNode: React.FC<
+const ManualMatchConfigLeagueCategoryRoundNode: React.FC<
   NodeProps<Node<ManualMatchConfigLeagueCategoryRoundNodeData>>
 > = ({ data }) => {
   return (
@@ -18,4 +18,4 @@ const LeagueCategoryRoundNode: React.FC<
   );
 };
 
-export default memo(LeagueCategoryRoundNode);
+export default memo(ManualMatchConfigLeagueCategoryRoundNode);
