@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { IGroup } from "@/types/manual";
+import type { IManualMatchConfigGroup } from "@/types/manual";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import {
   RoundTypeEnum,
@@ -24,7 +24,7 @@ import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
 import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeam } from "@/types/team";
 import type { LeagueMatch } from "@/types/leagueMatch";
-import { useFlowState } from "@/context/FlowContext";
+import { useFlowState } from "@/context/ManualMatchConfigFlowContext";
 import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 
 export function ManualLeagueCategoryNodeMenu() {
@@ -75,12 +75,12 @@ export function ManualLeagueCategoryNodeMenu() {
 }
 
 export function ManualGroupNodeMenu() {
-  const [groups, setGroups] = useState<IGroup[]>([]);
+  const [groups, setGroups] = useState<IManualMatchConfigGroup[]>([]);
   const [inputValue, setInputValue] = useState("");
 
   const handleAdd = () => {
     if (!inputValue.trim()) return;
-    const newGroup: IGroup = {
+    const newGroup: IManualMatchConfigGroup = {
       display_name: inputValue.trim(),
       group_id: uuidv4(),
     };
@@ -88,7 +88,10 @@ export function ManualGroupNodeMenu() {
     setInputValue("");
   };
 
-  const onDragStart = (event: React.DragEvent, group: IGroup) => {
+  const onDragStart = (
+    event: React.DragEvent,
+    group: IManualMatchConfigGroup
+  ) => {
     const groupId = uuidv4();
     const nodePayload: Omit<Node, "position"> = {
       id: groupId,
@@ -313,13 +316,13 @@ const matchTemplates: { label: string; data: Partial<LeagueMatch> }[] = [
       is_third_place: true,
     },
   },
-  {
-    label: "Runner-Up Match",
-    data: {
-      display_name: "Runner-Up Match",
-      is_runner_up: true,
-    },
-  },
+  // {
+  //   label: "Runner-Up Match",
+  //   data: {
+  //     display_name: "Runner-Up Match",
+  //     is_runner_up: true,
+  //   },
+  // },
   {
     label: "Final Match",
     data: {
@@ -370,10 +373,7 @@ const DraggableMatchItem = ({
 
 export function ManualMatchNodeMenu() {
   return (
-    <div className="border rounded-md p-2 bg-background">
-      <h3 className="text-xs font-semibold text-muted-foreground mb-2 tracking-wide px-1">
-        Match Types
-      </h3>
+    <div className="">
       <div className="flex flex-col gap-2">
         {matchTemplates.map((template) => (
           <DraggableMatchItem

@@ -50,6 +50,7 @@ import LiveAdminPage from "@/pages/LiveAdminPage";
 import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/ManualManagementPage";
 import PublicLeaguePage from "@/components/public-components/PublicLeaguePage";
 import LeagueGuestPage from "@/pages/league-administrator/league/guest/LeagueGuestPage";
+import AutomaticVersionTwo from "@/pages/league-administrator/league/match/autoTwo";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -171,14 +172,13 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     icon: SquarePen,
     sidebarGroup: "league",
   },
-
   {
     path: "pages/league/automatic/management",
     element: <LeagueCategoryManagementPage />,
     permissions: [Permission.MatchManangement],
     showInSidebar: true,
     sidebarTitle: "Automatic",
-    sidebarParent: "Match Management",
+    sidebarParent: "Match Config",
     icon: GitBranchPlus,
     sidebarGroup: "league",
   },
@@ -188,7 +188,17 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     permissions: [Permission.MatchManangement],
     showInSidebar: true,
     sidebarTitle: "Manual",
-    sidebarParent: "Match Management",
+    sidebarParent: "Match Config",
+    icon: Network,
+    sidebarGroup: "league",
+  },
+  {
+    path: "pages/league/manual/management/v2",
+    element: <AutomaticVersionTwo />,
+    permissions: [Permission.MatchManangement],
+    showInSidebar: true,
+    sidebarTitle: "Automatic v2",
+    sidebarParent: "Match Config",
     icon: Network,
     sidebarGroup: "league",
   },

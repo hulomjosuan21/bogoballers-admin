@@ -13,23 +13,23 @@ import {
   applyEdgeChanges,
   addEdge,
 } from "@xyflow/react";
-import type { FlowNodeData } from "@/types/manual";
+import type { ManualMatchConfigFlowNodeData } from "@/types/manual";
 
 type FlowState = {
-  nodes: Node<FlowNodeData>[];
+  nodes: Node<ManualMatchConfigFlowNodeData>[];
   edges: Edge[];
 };
 
 type Action =
   | {
       type: "REPLACE_NODE";
-      payload: { tempId: string; newNode: Node<FlowNodeData> };
+      payload: { tempId: string; newNode: Node<ManualMatchConfigFlowNodeData> };
     }
   | { type: "SET_STATE"; payload: FlowState }
-  | { type: "ADD_NODE"; payload: Node<FlowNodeData> }
+  | { type: "ADD_NODE"; payload: Node<ManualMatchConfigFlowNodeData> }
   | {
       type: "UPDATE_NODE_DATA";
-      payload: { nodeId: string; data: Partial<FlowNodeData> };
+      payload: { nodeId: string; data: Partial<ManualMatchConfigFlowNodeData> };
     }
   | { type: "ON_NODES_CHANGE"; payload: Parameters<OnNodesChange>[0] }
   | { type: "ON_EDGES_CHANGE"; payload: Parameters<OnEdgesChange>[0] }
@@ -135,7 +135,7 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
         nodes: applyNodeChanges(
           action.payload,
           state.nodes
-        ) as Node<FlowNodeData>[],
+        ) as Node<ManualMatchConfigFlowNodeData>[],
       };
 
     case "ON_EDGES_CHANGE":

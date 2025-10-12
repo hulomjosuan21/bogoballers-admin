@@ -1,9 +1,9 @@
 import React, { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { type LeagueCategoryRoundNodeData } from "@/types/manual";
+import { type ManualMatchConfigLeagueCategoryRoundNodeData } from "@/types/manual";
 
 const LeagueCategoryRoundNode: React.FC<
-  NodeProps<Node<LeagueCategoryRoundNodeData>>
+  NodeProps<Node<ManualMatchConfigLeagueCategoryRoundNodeData>>
 > = ({ data }) => {
   return (
     <div className="p-3 border rounded-md bg-background w-56 text-foreground">

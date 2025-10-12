@@ -1,8 +1,10 @@
 import React, { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { type GroupNodeData } from "@/types/manual";
+import { type ManualMatchConfigGroupNodeData } from "@/types/manual";
 
-const GroupNode: React.FC<NodeProps<Node<GroupNodeData>>> = ({ data }) => {
+const GroupNode: React.FC<NodeProps<Node<ManualMatchConfigGroupNodeData>>> = ({
+  data,
+}) => {
   return (
     <div className="relative p-3 border rounded-md bg-secondary w-24">
       <div className="font-semibold text-xs text-secondary-foreground">

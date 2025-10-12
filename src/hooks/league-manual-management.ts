@@ -10,15 +10,20 @@ import {
   type NodeChange,
   type EdgeChange,
 } from "@xyflow/react";
-import { useFlowDispatch, useFlowState } from "@/context/FlowContext";
-import type { FlowNode } from "@/types/manual";
+import {
+  useFlowDispatch,
+  useFlowState,
+} from "@/context/ManualMatchConfigFlowContext";
+import type { ManualMatchConfigFlowNode } from "@/types/manual";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { toast } from "sonner";
 import { manualLeagueService } from "@/service/manualLeagueManagementService";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 
-export const getCategoryIdFromNode = (node: FlowNode): string | null => {
+export const getCategoryIdFromNode = (
+  node: ManualMatchConfigFlowNode
+): string | null => {
   if (node.type === "leagueCategory") {
     return node.id;
   }
@@ -68,8 +73,9 @@ export function useDragAndDrop() {
       if (!payloadString) return;
 
       try {
-        const payload: Omit<FlowNode, "position"> = JSON.parse(payloadString);
-        const newNode: FlowNode = {
+        const payload: Omit<ManualMatchConfigFlowNode, "position"> =
+          JSON.parse(payloadString);
+        const newNode: ManualMatchConfigFlowNode = {
           ...payload,
           position: screenToFlowPosition({
             x: event.clientX,
@@ -384,7 +390,7 @@ export function useManageManualNodeManagement() {
               round_order,
               position: targetNode.position,
             });
-            const finalNode: FlowNode = {
+            const finalNode: ManualMatchConfigFlowNode = {
               ...targetNode,
               id: newRoundFromServer.round_id,
               data: { ...targetNode.data, round: newRoundFromServer },
@@ -429,7 +435,7 @@ export function useManageManualNodeManagement() {
             const newGroupFromServer = await manualLeagueService.createGroup(
               dataForGroup
             );
-            const finalNode: FlowNode = {
+            const finalNode: ManualMatchConfigFlowNode = {
               ...targetNode,
               id: newGroupFromServer.group_id,
               data: { ...targetNode.data, group: newGroupFromServer },
@@ -516,7 +522,7 @@ export function useManageManualNodeManagement() {
             const newMatchFromServer =
               await manualLeagueService.createEmptyMatch(payload);
 
-            const finalNode: FlowNode = {
+            const finalNode: ManualMatchConfigFlowNode = {
               ...targetNode,
               id: newMatchFromServer.league_match_id,
               data: { ...targetNode.data, league_match: newMatchFromServer },
@@ -585,7 +591,7 @@ export function useManageManualNodeManagement() {
             const newMatchFromServer =
               await manualLeagueService.createEmptyMatch(payload);
 
-            const finalNode: FlowNode = {
+            const finalNode: ManualMatchConfigFlowNode = {
               ...targetNode,
               id: newMatchFromServer.league_match_id,
               data: { ...targetNode.data, league_match: newMatchFromServer },
@@ -689,7 +695,7 @@ export function useManageManualNodeManagement() {
             const newMatchFromServer =
               await manualLeagueService.createEmptyMatch(payload);
 
-            const finalNode: FlowNode = {
+            const finalNode: ManualMatchConfigFlowNode = {
               ...targetNode,
               id: newMatchFromServer.league_match_id,
               data: { ...targetNode.data, league_match: newMatchFromServer },

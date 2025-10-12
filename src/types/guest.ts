@@ -1,3 +1,4 @@
+import type { LeagueCategory } from "./leagueCategoryTypes";
 import type { Player } from "./player";
 import type { Team } from "./team";
 
@@ -13,6 +14,7 @@ export type PaymentStatus =
 
 export interface GuestRegistrationRequest {
   guest_request_id: string;
+  league_id: string;
   league_category_id: string;
   request_type: GuestRequestType;
   status: GuestRequestStatus;
@@ -21,6 +23,6 @@ export interface GuestRegistrationRequest {
   payment_record: Record<string, unknown>;
   request_created_at: string;
   request_processed_at: string | null;
-  league_category_name: string | null;
+  league_category: LeagueCategory;
   details: Player | Team;
 }

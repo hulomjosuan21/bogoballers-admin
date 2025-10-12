@@ -1,12 +1,12 @@
 import React, { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { type LeagueCategoryNodeData } from "@/types/manual";
+import { type ManualMatchConfigLeagueCategoryNodeData } from "@/types/manual";
 
 const handleStyle = {};
 
-const LeagueCategoryNode: React.FC<NodeProps<Node<LeagueCategoryNodeData>>> = ({
-  data,
-}) => {
+const LeagueCategoryNode: React.FC<
+  NodeProps<Node<ManualMatchConfigLeagueCategoryNodeData>>
+> = ({ data }) => {
   return (
     <div className="p-4 border rounded-md bg-background w-64 text-foreground">
       <div className="font-bold text-lg text-primary">

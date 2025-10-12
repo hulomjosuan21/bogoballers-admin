@@ -24,19 +24,44 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/error";
 import { memo, useState } from "react";
 import type { GuestRegistrationRequest } from "@/types/guest";
+import { useLeagueGuestRequest } from "@/hooks/league-guest";
 
 type Props = {
-  leagueCategoryId?: string;
+  leagueId?: string;
 };
 
-function Component({ leagueCategoryId }: Props) {
+function Component({ leagueId }: Props) {
+  const { leagueGuestRequestData } = useLeagueGuestRequest(leagueId);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
-  const columns: ColumnDef<GuestRegistrationRequest>[] = [];
+  const columns: ColumnDef<GuestRegistrationRequest>[] = [
+    {
+      accessorKey: "details",
+      header: "Request",
+      cell: ({ row }) => {
+        const request = row.original;
+        const details = request.details as any;
+        if (request.request_type === "Team") {
+          return <span>{details.team_name}</span>;
+        }
+        if (request.request_type === "Player") {
+          return <span>{details.full_name}</span>;
+        }
+        return <span>-</span>;
+      },
+    },
+    {
+      accessorKey: "league_category",
+      header: "Category",
+      cell: ({ row }) => {
+        return <span>{row.original.league_category.category_name}</span>;
+      },
+    },
+  ];
 
   const table = useReactTable({
-    data: [],
+    data: leagueGuestRequestData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

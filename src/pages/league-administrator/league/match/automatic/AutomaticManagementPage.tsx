@@ -50,7 +50,7 @@ export default function LeagueCategoryManagementPage() {
   if (!activeLeagueCategories || activeLeagueCategories.length === 0) {
     return (
       <ContentShell>
-        <ContentHeader title="Automatic Management" />
+        <ContentHeader title="Automatic Configuration" />
         <ContentBody>
           <Alert variant="secondary">
             <AlertIcon>

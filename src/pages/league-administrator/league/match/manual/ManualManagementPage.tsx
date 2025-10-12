@@ -1,5 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FlowProvider, useFlowDispatch } from "@/context/FlowContext";
+import {
+  FlowProvider,
+  useFlowDispatch,
+} from "@/context/ManualMatchConfigFlowContext";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ContentHeader from "@/components/content-header";
 import {
@@ -44,12 +47,18 @@ function ManualMatchingPageContent() {
 
   const rightMenu = (
     <div className="w-fit flex flex-col gap-2">
-      <ManualMatchNodeMenu />
-      <Tabs defaultValue="round" className="text-xs text-muted-foreground">
+      <Tabs
+        defaultValue="match-types"
+        className="text-xs text-muted-foreground"
+      >
         <TabsList size="xs">
+          <TabsTrigger value="match-types">Match types</TabsTrigger>
           <TabsTrigger value="round">Round</TabsTrigger>
           <TabsTrigger value="teams">Teams</TabsTrigger>
         </TabsList>
+        <TabsContent value="match-types">
+          <ManualMatchNodeMenu />
+        </TabsContent>
         <TabsContent value="round">
           <ManualRoundNodeMenu />
         </TabsContent>
@@ -62,13 +71,13 @@ function ManualMatchingPageContent() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Manual Management">
+      <ContentHeader title="Manual Configuration">
         <Button onClick={handleSyncBracket} size="sm" className="">
           <ArrowRightLeft className="w-4 h-4" />
           Sync Bracket
         </Button>
       </ContentHeader>
-      <ContentBody className="flex-row ">
+      <ContentBody className="flex-row flex">
         <ManualMatchingCanvas />
         {rightMenu}
       </ContentBody>

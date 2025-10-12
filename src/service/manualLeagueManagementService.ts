@@ -1,11 +1,14 @@
 import axiosClient from "@/lib/axiosClient";
 import type { LeagueCategoryRound } from "@/types/leagueCategoryTypes";
 import type { LeagueMatch } from "@/types/leagueMatch";
-import type { FlowNode, IGroup } from "@/types/manual";
+import type {
+  ManualMatchConfigFlowNode,
+  IManualMatchConfigGroup,
+} from "@/types/manual";
 import type { Edge } from "@xyflow/react";
 
 interface FlowStateResponse {
-  nodes: FlowNode[];
+  nodes: ManualMatchConfigFlowNode[];
   edges: Edge[];
 }
 
@@ -56,7 +59,7 @@ export class ManualLeagueManagementService {
     league_category_id: string;
     position: { x: number; y: number };
   }) {
-    const response = await axiosClient.post<IGroup>(
+    const response = await axiosClient.post<IManualMatchConfigGroup>(
       "/manual-league-management/groups",
       payload
     );
@@ -113,8 +116,11 @@ export class ManualLeagueManagementService {
     );
     return response.data;
   }
-  async updateGroup(groupId: string, payload: Partial<IGroup>) {
-    const response = await axiosClient.put<IGroup>(
+  async updateGroup(
+    groupId: string,
+    payload: Partial<IManualMatchConfigGroup>
+  ) {
+    const response = await axiosClient.put<IManualMatchConfigGroup>(
       `/manual-league-management/groups/${groupId}`,
       payload
     );

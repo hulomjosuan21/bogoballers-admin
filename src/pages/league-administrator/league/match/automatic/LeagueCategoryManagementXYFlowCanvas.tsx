@@ -168,7 +168,7 @@ export default function LeagueCategoryCanvas({
 
   return (
     <ContentShell>
-      <ContentHeader title="Automatic Management">
+      <ContentHeader title="Automatic Configuration">
         {!viewOnly && hasUnsavedChanges && (
           <Button variant={"outline"} size={"sm"} onClick={handleSaveChanges}>
             Save Changes ({getTotalChangesCount})
