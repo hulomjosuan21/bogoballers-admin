@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FlowProvider,
-  useFlowDispatch,
+  ManualMatchConfigFlowProvider,
+  useManualMatchConfigFlowDispatch,
 } from "@/context/ManualMatchConfigFlowContext";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ContentHeader from "@/components/content-header";
@@ -9,7 +9,7 @@ import {
   ManualMatchNodeMenu,
   ManualLeagueTeamNodeMenu,
   ManualRoundNodeMenu,
-} from "@/components/manual-match-config/ManualNodeMenus";
+} from "@/components/manual-match-config/ManualMatchConfigNodeMenus";
 import { ManualMatchingCanvas } from "./LeagueMatchManualXyFlowCanvas";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ import { ArrowRightLeft } from "lucide-react";
 
 function ManualMatchingPageContent() {
   const { activeLeagueId } = useActiveLeague();
-  const dispatch = useFlowDispatch();
+  const dispatch = useManualMatchConfigFlowDispatch();
 
   const handleSyncBracket = async () => {
     if (!activeLeagueId) {
@@ -87,8 +87,8 @@ function ManualMatchingPageContent() {
 
 export default function ManualMatchingPage() {
   return (
-    <FlowProvider>
+    <ManualMatchConfigFlowProvider>
       <ManualMatchingPageContent />
-    </FlowProvider>
+    </ManualMatchConfigFlowProvider>
   );
 }

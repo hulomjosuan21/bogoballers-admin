@@ -11,7 +11,7 @@ import {
   type EdgeChange,
 } from "@xyflow/react";
 import {
-  useFlowDispatch,
+  useManualMatchConfigFlowDispatch,
   useFlowState,
 } from "@/context/ManualMatchConfigFlowContext";
 import type { ManualMatchConfigFlowNode } from "@/types/manualMatchConfigTypes";
@@ -60,9 +60,9 @@ const getCascadeDeleteChanges = (rootNodeId: string, edges: Edge[]) => {
   return { nodesToDelete, edgesToDelete };
 };
 
-export function useDragAndDrop() {
+export function useManualMatchConfigDragAndDrop() {
   const { screenToFlowPosition } = useReactFlow();
-  const dispatch = useFlowDispatch();
+  const dispatch = useManualMatchConfigFlowDispatch();
 
   const onDrop = useCallback(
     (event: React.DragEvent) => {
@@ -98,12 +98,12 @@ export function useDragAndDrop() {
   return { onDrop, onDragOver };
 }
 
-export function useManageManualNodeManagement() {
+export function useManageManualMatchConfigNode() {
   const { activeLeagueId } = useActiveLeague();
   const { nodes, edges } = useFlowState();
-  const dispatch = useFlowDispatch();
+  const dispatch = useManualMatchConfigFlowDispatch();
   const { openDialog } = useAlertDialog();
-  const { onDrop, onDragOver } = useDragAndDrop();
+  const { onDrop, onDragOver } = useManualMatchConfigDragAndDrop();
 
   const nodesRef = useRef(nodes);
 

@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import type { ManualMatchConfigLeagueMatchNodeData } from "@/types/manualMatchConfigTypes";
-import { useFlowDispatch } from "@/context/ManualMatchConfigFlowContext";
+import { useManualMatchConfigFlowDispatch } from "@/context/ManualMatchConfigFlowContext";
 import type { LeagueTeam } from "@/types/team";
 import { manualLeagueService } from "@/service/manualLeagueManagementService";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ const TeamDropZone = ({
 const ManualMatchConfigLeagueMatchNode: React.FC<
   NodeProps<Node<ManualMatchConfigLeagueMatchNodeData>>
 > = ({ id, data }) => {
-  const dispatch = useFlowDispatch();
+  const dispatch = useManualMatchConfigFlowDispatch();
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();

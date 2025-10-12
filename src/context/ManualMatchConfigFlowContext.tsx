@@ -149,7 +149,11 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
   }
 };
 
-export const FlowProvider = ({ children }: { children: ReactNode }) => {
+export const ManualMatchConfigFlowProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
   const [state, dispatch] = useReducer(flowReducer, initialState);
 
   return (
@@ -169,7 +173,7 @@ export const useFlowState = () => {
   return context;
 };
 
-export const useFlowDispatch = () => {
+export const useManualMatchConfigFlowDispatch = () => {
   const context = useContext(FlowDispatchContext);
   if (context === undefined) {
     throw new Error("useFlowDispatch must be used within a FlowProvider");

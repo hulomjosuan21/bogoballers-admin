@@ -50,7 +50,7 @@ import LiveAdminPage from "@/pages/LiveAdminPage";
 import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/ManualManagementPage";
 import PublicLeaguePage from "@/components/public-components/PublicLeaguePage";
 import LeagueGuestPage from "@/pages/league-administrator/league/guest/LeagueGuestPage";
-import AutomaticVersionTwo from "@/pages/league-administrator/league/match/autoTwo";
+import AutomaticVersionTwo from "@/pages/league-administrator/league/match/automaticV2/AutomaticMatchConfigPageVersion";
 
 export const publicRoutes: RouteObject[] = [
   {

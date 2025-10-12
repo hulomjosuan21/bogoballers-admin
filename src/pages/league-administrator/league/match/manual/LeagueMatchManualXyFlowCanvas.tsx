@@ -1,6 +1,6 @@
 import { ReactFlow, Background, Controls } from "@xyflow/react";
 
-import { useManageManualNodeManagement } from "@/hooks/league-manual-management";
+import { useManageManualMatchConfigNode } from "@/hooks/useManualMatchConfigHook";
 import { manualMatchConfigNodeTypes } from "@/components/manual-match-config";
 
 export function ManualMatchingCanvas() {
@@ -13,7 +13,7 @@ export function ManualMatchingCanvas() {
     onDrop,
     onDragOver,
     onNodeDragStop,
-  } = useManageManualNodeManagement();
+  } = useManageManualMatchConfigNode();
 
   return (
     <div className="h-full border rounded-md w-full bg-background">
