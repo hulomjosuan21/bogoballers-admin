@@ -4,7 +4,7 @@ import type { LeagueMatch } from "@/types/leagueMatch";
 import type {
   ManualMatchConfigFlowNode,
   IManualMatchConfigGroup,
-} from "@/types/manual";
+} from "@/types/manualMatchConfigTypes";
 import type { Edge } from "@xyflow/react";
 
 interface FlowStateResponse {

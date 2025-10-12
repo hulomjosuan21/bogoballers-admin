@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { type ManualMatchConfigLeagueCategoryNodeData } from "@/types/manual";
+import { type ManualMatchConfigLeagueCategoryNodeData } from "@/types/manualMatchConfigTypes";
 
 const handleStyle = {};
 

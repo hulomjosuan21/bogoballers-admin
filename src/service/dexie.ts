@@ -1,6 +1,6 @@
 import Dexie, { type Table } from "dexie";
 import { type Node, type Edge } from "@xyflow/react";
-import type { FlowNodeData } from "@/types/manual";
+import type { FlowNodeData } from "@/types/manualMatchConfigTypes";
 
 export interface FlowStateStore {
   id: number;

@@ -14,7 +14,7 @@ import {
   useFlowDispatch,
   useFlowState,
 } from "@/context/ManualMatchConfigFlowContext";
-import type { ManualMatchConfigFlowNode } from "@/types/manual";
+import type { ManualMatchConfigFlowNode } from "@/types/manualMatchConfigTypes";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { toast } from "sonner";

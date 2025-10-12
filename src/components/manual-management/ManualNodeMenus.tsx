@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { IManualMatchConfigGroup } from "@/types/manual";
+import type { IManualMatchConfigGroup } from "@/types/manualMatchConfigTypes";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import {
   RoundTypeEnum,

@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { type ManualMatchConfigGroupNodeData } from "@/types/manual";
+import { type ManualMatchConfigGroupNodeData } from "@/types/manualMatchConfigTypes";
 
 const GroupNode: React.FC<NodeProps<Node<ManualMatchConfigGroupNodeData>>> = ({
   data,

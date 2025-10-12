@@ -13,7 +13,7 @@ import {
   applyEdgeChanges,
   addEdge,
 } from "@xyflow/react";
-import type { ManualMatchConfigFlowNodeData } from "@/types/manual";
+import type { ManualMatchConfigFlowNodeData } from "@/types/manualMatchConfigTypes";
 
 type FlowState = {
   nodes: Node<ManualMatchConfigFlowNodeData>[];
