@@ -15,10 +15,12 @@ type FlowState = {
   edges: Edge[];
 };
 
-type Action = {
-  type: "ADD_NODE";
-  payload: XyFlowNode<AutomaticMatchConfigFlowNodeData>;
-};
+type Action =
+  | {
+      type: "ADD_NODE";
+      payload: XyFlowNode<AutomaticMatchConfigFlowNodeData>;
+    }
+  | { type: "ON_NODES_CHANGE"; payload: Parameters<OnNodesChange>[0] };
 
 const FlowStateContext = createContext<FlowState | undefined>(undefined);
 const FlowDispatchContext = createContext<React.Dispatch<Action> | undefined>(
@@ -36,6 +38,15 @@ const flowReducer = (state: FlowState, action: Action): FlowState => {
       }
       return { ...state, nodes: [...state.nodes, action.payload] };
     }
+
+    case "ON_NODES_CHANGE":
+      return {
+        ...state,
+        nodes: applyNodeChanges(
+          action.payload,
+          state.nodes
+        ) as XyFlowNode<AutomaticMatchConfigFlowNodeData>[],
+      };
   }
 };
 
@@ -58,6 +69,14 @@ export const AutomaticMatchConfigFlowProvider = ({
       </FlowDispatchContext.Provider>
     </FlowStateContext.Provider>
   );
+};
+
+export const useAutomaticMatchConfigFlowState = () => {
+  const context = useContext(FlowStateContext);
+  if (context === undefined) {
+    throw new Error("useFlowState must be used within a FlowProvider");
+  }
+  return context;
 };
 
 export const useAutomaticMatchConfigFlowDispatch = () => {

@@ -12,7 +12,7 @@ const AutomaticMatchConfigLeagueCategoryNode: React.FC<
       </div>
       <div className="text-xs text-muted-foreground">Category</div>
 
-      <Handle type="source" position={Position.Right} id="match-source" />
+      <Handle type="source" position={Position.Right} />
     </div>
   );
 };

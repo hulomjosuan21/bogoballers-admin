@@ -12,7 +12,7 @@ import {
 } from "@xyflow/react";
 import {
   useManualMatchConfigFlowDispatch,
-  useFlowState,
+  useManualMatchConfigFlowState,
 } from "@/context/ManualMatchConfigFlowContext";
 import type { ManualMatchConfigFlowNode } from "@/types/manualMatchConfigTypes";
 import type { LeagueMatch } from "@/types/leagueMatch";
@@ -100,7 +100,7 @@ export function useManualMatchConfigDragAndDrop() {
 
 export function useManageManualMatchConfigNode() {
   const { activeLeagueId } = useActiveLeague();
-  const { nodes, edges } = useFlowState();
+  const { nodes, edges } = useManualMatchConfigFlowState();
   const dispatch = useManualMatchConfigFlowDispatch();
   const { openDialog } = useAlertDialog();
   const { onDrop, onDragOver } = useManualMatchConfigDragAndDrop();
@@ -798,6 +798,7 @@ export function useManageManualMatchConfigNode() {
     },
     [dispatch, activeLeagueId]
   );
+
   return {
     nodes,
     edges,

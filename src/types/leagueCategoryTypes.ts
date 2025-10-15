@@ -38,17 +38,11 @@ export interface LeagueCategoryRound {
   round_order: number;
   round_status: string;
   matches_generated: boolean;
-  format_type: string | null;
-  round_format: LeagueRoundFormat | null;
-  format_config: Record<string, any> | null;
-  format_options: Record<string, any> | null;
   position: {
     x: number;
     y: number;
   };
   next_round_id: string | null;
-  league_category_round_created_at: string;
-  league_category_round_updated_at: string;
 }
 
 export type CategoryOperation =

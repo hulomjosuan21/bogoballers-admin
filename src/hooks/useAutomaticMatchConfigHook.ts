@@ -1,7 +1,14 @@
-import { useAutomaticMatchConfigFlowDispatch } from "@/context/AutomaticMatchConfigFlowContext";
+import {
+  useAutomaticMatchConfigFlowDispatch,
+  useAutomaticMatchConfigFlowState,
+} from "@/context/AutomaticMatchConfigFlowContext";
 import type { AutomaticMatchConfigFlowNode } from "@/types/automaticMatchConfigTypes";
-import { useReactFlow } from "@xyflow/react";
-import { useCallback } from "react";
+import {
+  useReactFlow,
+  type NodeChange,
+  type OnNodesChange,
+} from "@xyflow/react";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 export function useAutomaticMatchConfigDragAndDrop() {
@@ -40,4 +47,24 @@ export function useAutomaticMatchConfigDragAndDrop() {
   }, []);
 
   return { onDrop, onDragOver };
+}
+
+export function useManageAutomaticMatchConfigNode() {
+  const { nodes, edges } = useAutomaticMatchConfigFlowState();
+  const dispatch = useAutomaticMatchConfigFlowDispatch();
+  const { onDrop, onDragOver } = useAutomaticMatchConfigDragAndDrop();
+  const nodesRef = useRef(nodes);
+
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes) => {
+      dispatch({ type: "ON_NODES_CHANGE", payload: changes });
+    },
+    [dispatch]
+  );
+
+  return { onNodesChange, onDrop, onDragOver, edges, nodes };
 }

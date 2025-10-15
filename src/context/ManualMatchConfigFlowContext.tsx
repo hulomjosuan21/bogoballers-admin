@@ -165,7 +165,7 @@ export const ManualMatchConfigFlowProvider = ({
   );
 };
 
-export const useFlowState = () => {
+export const useManualMatchConfigFlowState = () => {
   const context = useContext(FlowStateContext);
   if (context === undefined) {
     throw new Error("useFlowState must be used within a FlowProvider");

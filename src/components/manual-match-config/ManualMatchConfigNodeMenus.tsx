@@ -24,13 +24,13 @@ import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
 import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeam } from "@/types/team";
 import type { LeagueMatch } from "@/types/leagueMatch";
-import { useFlowState } from "@/context/ManualMatchConfigFlowContext";
+import { useManualMatchConfigFlowState } from "@/context/ManualMatchConfigFlowContext";
 import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 
 export function ManualLeagueCategoryNodeMenu() {
   const { activeLeagueCategories } = useActiveLeague();
 
-  const { nodes } = useFlowState();
+  const { nodes } = useManualMatchConfigFlowState();
 
   const categoryNodeIdsOnCanvas = new Set(
     nodes

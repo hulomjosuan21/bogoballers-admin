@@ -4,7 +4,6 @@ import {
   TeamSubmissionPage,
   SettingsPage,
   LeagueCreationPage,
-  LeagueCategoryManagementPage,
   LeagueAffiliatePage,
   LeagueOfficialsPage,
   LeagueMatchSetUnSchedulePage,
@@ -25,7 +24,6 @@ import {
   UsersRound,
   Settings,
   FolderKanban,
-  GitBranchPlus,
   Trophy,
   SquarePen,
   FileQuestionMark,
@@ -50,7 +48,7 @@ import LiveAdminPage from "@/pages/LiveAdminPage";
 import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/ManualManagementPage";
 import PublicLeaguePage from "@/components/public-components/PublicLeaguePage";
 import LeagueGuestPage from "@/pages/league-administrator/league/guest/LeagueGuestPage";
-import AutomaticVersionTwo from "@/pages/league-administrator/league/match/automaticV2/AutomaticMatchConfigPageVersion";
+import AutomaticMatchConfigPage from "@/pages/league-administrator/league/match/automatic/AutomaticMatchConfigXyFlowPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -173,16 +171,6 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
   },
   {
-    path: "pages/league/automatic/management",
-    element: <LeagueCategoryManagementPage />,
-    permissions: [Permission.MatchManangement],
-    showInSidebar: true,
-    sidebarTitle: "Automatic",
-    sidebarParent: "Match Config",
-    icon: GitBranchPlus,
-    sidebarGroup: "league",
-  },
-  {
     path: "pages/league/manual/management",
     element: <ManualMatchingPage />,
     permissions: [Permission.MatchManangement],
@@ -194,7 +182,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   },
   {
     path: "pages/league/manual/management/v2",
-    element: <AutomaticVersionTwo />,
+    element: <AutomaticMatchConfigPage />,
     permissions: [Permission.MatchManangement],
     showInSidebar: true,
     sidebarTitle: "Automatic v2",
