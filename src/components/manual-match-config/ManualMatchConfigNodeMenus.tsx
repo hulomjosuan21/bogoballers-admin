@@ -24,55 +24,7 @@ import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
 import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeam } from "@/types/team";
 import type { LeagueMatch } from "@/types/leagueMatch";
-import { useManualMatchConfigFlowState } from "@/context/ManualMatchConfigFlowContext";
 import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
-
-export function ManualLeagueCategoryNodeMenu() {
-  const { activeLeagueCategories } = useActiveLeague();
-
-  const { nodes } = useManualMatchConfigFlowState();
-
-  const categoryNodeIdsOnCanvas = new Set(
-    nodes
-      .filter((node) => node.type === "leagueCategory")
-      .map((node) => node.id)
-  );
-
-  const availableCategories = activeLeagueCategories.filter(
-    (category) => !categoryNodeIdsOnCanvas.has(category.league_category_id)
-  );
-
-  const onDragStart = (event: React.DragEvent, category: LeagueCategory) => {
-    const nodePayload: Omit<Node, "position"> = {
-      id: category.league_category_id,
-      type: "leagueCategory",
-      data: { type: "league_category", league_category: category },
-    };
-    event.dataTransfer.setData(
-      "application/reactflow-node",
-      JSON.stringify(nodePayload)
-    );
-    event.dataTransfer.effectAllowed = "move";
-  };
-
-  return (
-    <div className="flex flex-col gap-2 justify-center">
-      {availableCategories.map((value) => (
-        <div
-          key={value.league_category_id}
-          onDragStart={(event) => onDragStart(event, value)}
-          draggable
-          className="w-48 flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab hover:opacity-80"
-        >
-          <GripVertical className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-card-foreground">
-            {value.category_name}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export function ManualGroupNodeMenu() {
   const [groups, setGroups] = useState<IManualMatchConfigGroup[]>([]);
@@ -160,7 +112,7 @@ export function ManualRoundNodeMenu() {
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-col gap-2 justify-center">
+      <div className="flex flex-col gap-2 items-center">
         {menuItems.map((value) => (
           <div
             key={value}
@@ -236,7 +188,7 @@ export function ManualLeagueTeamNodeMenu() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col items-center gap-4">
       <Select
         onValueChange={(catId) => {
           const category = activeLeagueCategories?.find(
@@ -265,7 +217,7 @@ export function ManualLeagueTeamNodeMenu() {
         </SelectContent>
       </Select>
 
-      <div className="flex flex-col gap-2 justify-center max-h-96 overflow-y-auto">
+      <div className="flex flex-col gap-2 items-center max-h-96 overflow-y-auto">
         {dynamicLeagueTeamLoading && (
           <span className="text-sm text-muted-foreground">
             Loading teams...
@@ -374,7 +326,7 @@ const DraggableMatchItem = ({
 export function ManualMatchNodeMenu() {
   return (
     <div className="">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col items-center gap-2">
         {matchTemplates.map((template) => (
           <DraggableMatchItem
             key={template.label}

@@ -185,7 +185,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     element: <AutomaticMatchConfigPage />,
     permissions: [Permission.MatchManangement],
     showInSidebar: true,
-    sidebarTitle: "Automatic v2",
+    sidebarTitle: "Automatic",
     sidebarParent: "Match Config",
     icon: Network,
     sidebarGroup: "league",

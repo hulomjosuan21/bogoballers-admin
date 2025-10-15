@@ -7,6 +7,8 @@ import {
 } from "@/components/automatic-match-config/AutomaticMatchConfigNodeMenu";
 import AutomaticMatchConfigXyFlowCanvas from "./AutomaticMatchConfigXyFlowCanvas";
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
+import { Button } from "@/components/ui/button";
+import { ArrowRightLeft } from "lucide-react";
 
 function AutomaticMatchConfigPage() {
   const menu = (
@@ -28,7 +30,12 @@ function AutomaticMatchConfigPage() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Automatic Configuration" />
+      <ContentHeader title="Automatic Configuration">
+        <Button size="sm" className="">
+          <ArrowRightLeft className="w-4 h-4" />
+          Sync
+        </Button>
+      </ContentHeader>
       <ContentBody className="flex flex-row">
         <AutomaticMatchConfigXyFlowCanvas />
         {menu}

@@ -61,7 +61,7 @@ export function AutomaticFormatNodeMenu() {
         type: "league_category_round_format",
         format_name: formatType,
         format_type: formatType,
-        format: { format_id: formatId, format_name: formatType },
+        format_obj: { format_id: formatId, format_name: formatType },
       },
     };
     event.dataTransfer.setData(

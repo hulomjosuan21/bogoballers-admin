@@ -52,7 +52,9 @@ function ManualMatchingPageContent() {
         className="text-xs text-muted-foreground"
       >
         <TabsList size="xs">
-          <TabsTrigger value="match-types">Match types</TabsTrigger>
+          <TabsTrigger value="match-types" className="text-xs">
+            Match templates
+          </TabsTrigger>
           <TabsTrigger value="round">Round</TabsTrigger>
           <TabsTrigger value="teams">Teams</TabsTrigger>
         </TabsList>
@@ -74,7 +76,7 @@ function ManualMatchingPageContent() {
       <ContentHeader title="Manual Configuration">
         <Button onClick={handleSyncBracket} size="sm" className="">
           <ArrowRightLeft className="w-4 h-4" />
-          Sync Bracket
+          Sync
         </Button>
       </ContentHeader>
       <ContentBody className="flex-row flex">

@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import type { AutomaticMatchConfigLeagueCategoryRoundNodeData } from "@/types/automaticMatchConfigTypes";
 import { RoundTypeEnum } from "@/types/leagueCategoryTypes";
-import { Settings } from "lucide-react";
+import { Info, Settings } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -13,13 +13,18 @@ import {
 } from "@/components/ui/sheet";
 
 const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
-  NodeProps<Node<AutomaticMatchConfigLeagueCategoryRoundNodeData>>
+  NodeProps<Node<AutomaticMatchConfigLeagueCategoryRoundNodeData>> & {
+    viewOnly?: boolean;
+  }
 > = ({ data }) => {
   return (
-    <div className="relative p-3 border rounded-md bg-secondary w-fit">
+    <div className="relative p-3 border rounded-md bg-background w-fit">
       <div className="flex gap-2 items-center">
-        <div className="font-semibold text-xs text-secondary-foreground">
-          {data.round.round_name}
+        <div className="flex gap-1 items-center">
+          <Info className="w-3 h-3 cursor-pointer text-muted-foreground" />
+          <div className="font-semibold text-xs text-primary">
+            {data.round.round_name}
+          </div>
         </div>
 
         <Sheet>
@@ -39,7 +44,7 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
           </SheetContent>
         </Sheet>
       </div>
-      <div className="text-xs text-muted-foreground">Round</div>
+      <div className="text-xs text-center text-muted-foreground">Round</div>
       <Handle type="source" position={Position.Top} id="" />
       <Handle type="source" position={Position.Left} id="" />
       {data.round.round_name != RoundTypeEnum.Final && (

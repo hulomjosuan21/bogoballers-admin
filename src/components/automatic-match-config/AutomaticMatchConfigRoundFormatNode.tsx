@@ -15,12 +15,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "../ui/switch";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Badge } from "../ui/badge";
 
 const AutomaticMatchConfigRoundFormatNode: React.FC<
   NodeProps<Node<AutomaticMatchConfigRoundFormatData>>
 > = ({ data }) => {
   const [formatName, setFormatName] = useState(data.format_name);
-  const [config, setConfig] = useState<Record<string, any>>(data.format);
+  const [config, setConfig] = useState<Record<string, any>>(data.format_obj);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -84,13 +92,27 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
               placeholder="Number of groups"
             />
             <Label>Seeding Method</Label>
-            <Input
-              value={config.seeding ?? ""}
-              onChange={(e) =>
-                setConfig({ ...config, seeding: e.target.value })
+            <Select
+              value={config.seeding ?? "random"}
+              onValueChange={(value) =>
+                setConfig({ ...config, seeding: value })
               }
-              placeholder="Random / Ranked"
-            />
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select seeding method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="random">Random</SelectItem>
+                <SelectItem value="ranked" disabled>
+                  <div className="flex items-center justify-between w-full">
+                    <span>Ranked</span>
+                    <Badge variant="secondary" className="ml-2 text-[10px]">
+                      Coming soon
+                    </Badge>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </>
         );
 
@@ -217,7 +239,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
         </Sheet>
       </div>
 
-      <div className="text-xs text-muted-foreground">Format</div>
+      <div className="text-xs text-center text-muted-foreground">Format</div>
 
       <Handle type="source" position={Position.Bottom} />
     </div>

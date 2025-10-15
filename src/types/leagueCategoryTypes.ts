@@ -1,4 +1,3 @@
-import type { LeagueCategoryMetaData } from "@/service/leagueCategory";
 import type { Category } from "./category";
 
 export interface CreateLeagueCategory {
@@ -20,16 +19,6 @@ export interface LeagueCategory extends Category {
   rounds: LeagueCategoryRound[];
 }
 
-export interface LeagueCategoryModel extends Category {
-  league_category_id: string;
-  league_id: string;
-}
-
-export type LeagueCategoryUpdatableFields = {
-  max_team: number;
-  accept_teams: boolean;
-};
-
 export interface LeagueCategoryRound {
   round_id: string;
   public_round_id: string;
@@ -45,85 +34,15 @@ export interface LeagueCategoryRound {
   next_round_id: string | null;
 }
 
-export type CategoryOperation =
-  | CreateRoundOperation
-  | UpdatePositionOperation
-  | UpdateFormatOperation
-  | UpdateNextRoundOperation
-  | DeleteRoundOperation;
-
-interface UpdateNextRoundOperation {
-  type: "update_next_round";
-  data: {
-    round_id: string;
-    next_round_id: string | null;
-  };
-}
-
-interface CreateRoundOperation {
-  type: "create_round";
-  data: {
-    round_id: string;
-    round_name: string;
-    round_status: RoundStateEnum;
-    round_order: number;
-    position: { x: number; y: number };
-    next_round_id?: string | null;
-  };
-}
-
-interface UpdatePositionOperation {
-  type: "update_position";
-  data: {
-    round_id: string;
-    position: { x: number; y: number };
-  };
-}
-
-interface UpdateFormatOperation {
-  type: "update_format";
-  data: {
-    round_id: string;
-    round_format: LeagueRoundFormat | null;
-  };
-}
-
-interface DeleteRoundOperation {
-  type: "delete_round";
-  data: {
-    round_id: string;
-  };
-}
-
-interface UpdateNextRoundOperation {
-  type: "update_next_round";
-  data: {
-    round_id: string;
-    next_round_id: string | null;
-  };
-}
-
-export interface SaveChangesPayload {
-  leagueCategoryId: string;
-  operations: CategoryOperation[];
-}
-
-export interface LeagueRoundFormat {
-  format_type: RoundFormatTypesEnum;
-  pairing_method: string;
-  format_config: Record<string, any> | null;
-  round_id: string;
+export interface RoundFormat {
+  format_id: string;
+  round_id: string | null;
+  format_name: string;
+  format: Record<string, any>;
   position: {
     x: number;
     y: number;
   };
-}
-
-export interface RoundNodeData {
-  round: LeagueCategoryRound;
-  _isNew?: boolean;
-  viewOnly: boolean;
-  [key: string]: unknown;
 }
 
 export enum RoundTypeEnum {
@@ -139,13 +58,6 @@ export enum RoundStateEnum {
   Finished = "Finished",
 }
 
-const roundOrderMap: Record<RoundTypeEnum, number> = {
-  [RoundTypeEnum.Elimination]: 0,
-  [RoundTypeEnum.QuarterFinal]: 1,
-  [RoundTypeEnum.SemiFinal]: 2,
-  [RoundTypeEnum.Final]: 3,
-};
-
 export enum RoundFormatTypesEnum {
   RoundRobin = "RoundRobin",
   Knockout = "Knockout",
@@ -153,56 +65,3 @@ export enum RoundFormatTypesEnum {
   BestOf = "BestOf",
   TwiceToBeat = "TwiceToBeat",
 }
-
-export function getRoundOrder(round: RoundTypeEnum): number {
-  return roundOrderMap[round];
-}
-
-export function getRoundTypeByOrder(order: number): RoundTypeEnum {
-  switch (order) {
-    case 0:
-      return RoundTypeEnum.Elimination;
-    case 1:
-      return RoundTypeEnum.QuarterFinal;
-    case 2:
-      return RoundTypeEnum.SemiFinal;
-    case 3:
-      return RoundTypeEnum.Final;
-    default:
-      return RoundTypeEnum.Elimination;
-  }
-}
-
-export function isValidOrderTransition(
-  fromOrder: number,
-  toOrder: number,
-  _opts: { categoryHasQuarterFinal: boolean }
-): boolean {
-  if (fromOrder === 0 && toOrder === 1) return true;
-  if (fromOrder === 0 && toOrder === 2) return true;
-  if (fromOrder === 1 && toOrder === 2) return true;
-  if (fromOrder === 2 && toOrder === 3) return true;
-
-  return false;
-}
-
-export type StatusMap = Record<RoundTypeEnum, RoundStateEnum>;
-
-export interface CategoryNodeData {
-  category: LeagueCategory;
-  metadata: LeagueCategoryMetaData;
-  viewOnly: boolean;
-  [key: string]: unknown;
-}
-
-export interface FormatNodeData {
-  label: string;
-  round_format?: LeagueRoundFormat;
-  round_id?: string;
-  variant?: string;
-  round?: LeagueCategoryRound;
-  _isNew?: boolean;
-  [key: string]: unknown;
-}
-
-export type NodeData = CategoryNodeData | RoundNodeData | FormatNodeData;
