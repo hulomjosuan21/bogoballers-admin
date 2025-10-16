@@ -29,26 +29,32 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
 
         <Sheet>
           <SheetTrigger asChild>
-            <div className="">
+            <div>
               <Settings className="w-3 h-3 cursor-pointer text-muted-foreground" />
             </div>
           </SheetTrigger>
           <SheetContent>
             <SheetHeader>
-              <SheetTitle>Are you absolutely sure?</SheetTitle>
+              <SheetTitle>Round Settings</SheetTitle>
               <SheetDescription>
-                This action cannot be undone. This will permanently delete your
-                account and remove your data from our servers.
+                You can configure round options here.
               </SheetDescription>
             </SheetHeader>
           </SheetContent>
         </Sheet>
       </div>
+
       <div className="text-xs text-center text-muted-foreground">Round</div>
-      <Handle type="source" position={Position.Top} id="" />
-      <Handle type="source" position={Position.Left} id="" />
-      {data.round.round_name != RoundTypeEnum.Final && (
-        <Handle type="source" position={Position.Right} id="" />
+
+      {/* Category → Round */}
+      <Handle type="target" position={Position.Left} id="round-in" />
+
+      {/* Format → Round */}
+      <Handle type="target" position={Position.Top} id="round-format-in" />
+
+      {/* Round → Next Round (disabled for Final) */}
+      {data.round.round_name !== RoundTypeEnum.Final && (
+        <Handle type="source" position={Position.Right} id="round-out" />
       )}
     </div>
   );

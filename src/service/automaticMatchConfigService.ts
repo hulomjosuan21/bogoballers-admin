@@ -1,9 +1,9 @@
 import axiosClient from "@/lib/axiosClient";
+import type { AutomaticMatchConfigFlowNode } from "@/types/automaticMatchConfigTypes";
 import type {
   LeagueCategoryRound,
   RoundFormat,
 } from "@/types/leagueCategoryTypes";
-import type { AutomaticMatchConfigFlowNode } from "@/types/automaticMatchConfigTypes";
 import type { Edge } from "@xyflow/react";
 
 interface FlowStateResponse {
@@ -13,10 +13,10 @@ interface FlowStateResponse {
 
 export class AutoMatchConfigService {
   async getFlowState(leagueId: string) {
-    const response = await axiosClient.get<FlowStateResponse>(
+    const { data } = await axiosClient.get<FlowStateResponse>(
       `/auto-match-config/flow-state/${leagueId}`
     );
-    return response.data;
+    return data;
   }
 
   async createRound(payload: {
@@ -25,53 +25,60 @@ export class AutoMatchConfigService {
     round_order: number;
     position: { x: number; y: number };
   }) {
-    const response = await axiosClient.post<LeagueCategoryRound>(
+    const { data } = await axiosClient.post<LeagueCategoryRound>(
       "/auto-match-config/rounds",
       payload
     );
-    return response.data;
+    return data;
   }
 
   async createOrAttachFormat(payload: {
     format_name: string;
-    round_id: string;
+    round_id: string | null; // can be null to create unattached
     format: Record<string, any>;
     position: { x: number; y: number };
   }) {
-    const response = await axiosClient.post<RoundFormat>(
+    const { data } = await axiosClient.post<RoundFormat>(
       "/auto-match-config/formats",
       payload
     );
-    return response.data;
+    return data;
   }
 
   async attachFormatToRound(formatId: string, roundId: string) {
-    const response = await axiosClient.put<RoundFormat>(
+    const { data } = await axiosClient.put<RoundFormat>(
       `/auto-match-config/formats/${formatId}/attach/${roundId}`
     );
-    return response.data;
+    return data;
   }
 
   async createEdge(payload: {
     league_id: string;
-    league_category_id: string;
+    league_category_id?: string;
     source: string;
     target: string;
     sourceHandle?: string | null;
     targetHandle?: string | null;
   }) {
-    const response = await axiosClient.post<Edge>(
+    const { data } = await axiosClient.post<any>(
       "/auto-match-config/edges",
       payload
     );
-    return response.data;
+
+    return {
+      id: data.edge_id,
+      source: data.source_node_id,
+      target: data.target_node_id,
+      sourceHandle: data.source_handle,
+      targetHandle: data.target_handle,
+    };
   }
 
   async deleteEdge(edgeId: string) {
-    const response = await axiosClient.delete(
+    const { data } = await axiosClient.delete(
       `/auto-match-config/edges/${edgeId}`
     );
-    return response.data;
+    return data;
   }
 
   async updateNodePosition(
@@ -79,9 +86,16 @@ export class AutoMatchConfigService {
     nodeId: string,
     position: { x: number; y: number }
   ) {
-    const response = await axiosClient.put(
+    const { data } = await axiosClient.put(
       `/auto-match-config/nodes/${nodeType}/${nodeId}/position`,
       { position }
+    );
+    return data;
+  }
+
+  async deleteNode(nodeType: string, nodeId: string) {
+    const response = await axiosClient.delete(
+      `/auto-match-config/nodes/${nodeType}/${nodeId}`
     );
     return response.data;
   }

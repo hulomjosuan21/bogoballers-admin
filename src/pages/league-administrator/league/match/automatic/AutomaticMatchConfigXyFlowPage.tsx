@@ -5,10 +5,10 @@ import {
   AutomaticFormatNodeMenu,
   AutomaticRoundNodeMenu,
 } from "@/components/automatic-match-config/AutomaticMatchConfigNodeMenu";
-import AutomaticMatchConfigXyFlowCanvas from "./AutomaticMatchConfigXyFlowCanvas";
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft } from "lucide-react";
+import { AutomaticMatchConfigXyFlowCanvas } from "./AutomaticMatchConfigXyFlowCanvas";
 
 function AutomaticMatchConfigPage() {
   const menu = (

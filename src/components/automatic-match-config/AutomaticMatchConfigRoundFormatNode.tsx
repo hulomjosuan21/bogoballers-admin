@@ -200,7 +200,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
 
         <Sheet>
           <SheetTrigger asChild>
-            <div className="">
+            <div>
               <Settings className="w-3 h-3 cursor-pointer text-muted-foreground" />
             </div>
           </SheetTrigger>
@@ -215,7 +215,6 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             </SheetHeader>
 
             <div className="space-y-3 mt-4">
-              {/* Format name input */}
               <Label>Format Name</Label>
               <Input
                 max={20}
@@ -224,7 +223,6 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
                 placeholder="Enter format name"
               />
 
-              {/* Format-specific config */}
               {renderFormatInputs()}
 
               <Button
@@ -241,7 +239,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
 
       <div className="text-xs text-center text-muted-foreground">Format</div>
 
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="source" position={Position.Bottom} id="format-out" />
     </div>
   );
 };
