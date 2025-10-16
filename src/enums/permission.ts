@@ -17,6 +17,7 @@ export enum Permission {
   ManagementLeagueAdmins,
   ViewChat,
   ManageLeagueGuest,
+  SetupMatch,
 }
 
 export function getUserPermissions(accountType: string): Permission[] {
@@ -40,6 +41,7 @@ export function getUserPermissions(accountType: string): Permission[] {
         Permission.ManageSettings,
         Permission.ScoreBook,
         Permission.ViewChat,
+        Permission.SetupMatch,
       ];
     case "League_Administrator_LGU":
       return [
@@ -61,6 +63,7 @@ export function getUserPermissions(accountType: string): Permission[] {
         Permission.ManagementLeagueAdmins,
         Permission.ScoreBook,
         Permission.ViewChat,
+        Permission.SetupMatch,
       ];
     default:
       return [];

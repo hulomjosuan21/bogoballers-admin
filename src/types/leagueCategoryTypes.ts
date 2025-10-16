@@ -38,7 +38,7 @@ export interface RoundFormat {
   format_id: string;
   round_id: string | null;
   format_name: string;
-  format: Record<string, any>;
+  format_obj: Record<string, any>;
   position: {
     x: number;
     y: number;

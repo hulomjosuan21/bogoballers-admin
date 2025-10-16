@@ -80,23 +80,12 @@ export default function LeagueMatches() {
                 </SelectContent>
               </Select>
             )}
-
-            {groups.length > 0 && (
-              <Select value={selectedGroup} onValueChange={setSelectedGroup}>
-                <SelectTrigger className="h-6 px-2 py-1 text-xs">
-                  <SelectValue placeholder="Group" />
-                </SelectTrigger>
-                <SelectContent className="text-xs">
-                  {groups.map((g) => (
-                    <SelectItem key={g.group_id} value={g.group_id}>
-                      {g.group_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
           </div>
         )}
+
+        <div className="">
+          <span>{groups.map((g) => g.group_id).join(",")}</span>
+        </div>
       </ContentBody>
     </ContentShell>
   );

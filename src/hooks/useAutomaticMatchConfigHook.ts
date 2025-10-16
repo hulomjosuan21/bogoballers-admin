@@ -282,6 +282,7 @@ export function useManageAutomaticMatchConfigNode() {
             const newFormat = await autoMatchConfigService.createOrAttachFormat(
               {
                 format_name: src.data.format_name,
+                format_type: src.data.format_type,
                 round_id: dst.id,
                 position: src.position!,
               }

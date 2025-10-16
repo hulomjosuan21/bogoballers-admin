@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useState, useTransition } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import type { AutomaticMatchConfigRoundFormatData } from "@/types/automaticMatchConfigTypes";
 import { RoundFormatTypesEnum } from "@/types/leagueCategoryTypes";
@@ -23,24 +23,37 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Badge } from "../ui/badge";
+import { autoMatchConfigService } from "@/service/automaticMatchConfigService";
+import { toast } from "sonner";
 
 const AutomaticMatchConfigRoundFormatNode: React.FC<
   NodeProps<Node<AutomaticMatchConfigRoundFormatData>>
 > = ({ data }) => {
   const [formatName, setFormatName] = useState(data.format_name);
-  const [config, setConfig] = useState<Record<string, any>>(data.format_obj);
-  const [saving, setSaving] = useState(false);
+  const [config, setConfig] = useState<Record<string, any>>(
+    data.format_obj.format_obj ?? {}
+  );
 
-  const handleSave = async () => {
-    setSaving(true);
-    // simulate backend delay
-    await new Promise((res) => setTimeout(res, 1200));
-    console.log("✅ Saved config:", {
-      ...data,
-      format_name: formatName,
-      format: config,
+  const [isPending, startTransition] = useTransition();
+
+  const handleSave = () => {
+    startTransition(async () => {
+      try {
+        if (!data.format_obj.format_id) return;
+
+        const response = await autoMatchConfigService.updateFormat(
+          data.format_obj.format_id,
+          {
+            format_name: formatName,
+            format_obj: config,
+          }
+        );
+
+        toast.success(response.message);
+      } catch (e) {
+        toast.error("Error updating format.");
+      }
     });
-    setSaving(false);
   };
 
   const renderFormatInputs = () => {
@@ -51,6 +64,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             <Label>Group Count</Label>
             <Input
               value={config.group_count ?? ""}
+              type="number"
               onChange={(e) =>
                 setConfig({ ...config, group_count: e.target.value })
               }
@@ -59,6 +73,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             <Label>Advances per Group</Label>
             <Input
               value={config.advances_per_group ?? ""}
+              type="number"
               onChange={(e) =>
                 setConfig({ ...config, advances_per_group: e.target.value })
               }
@@ -86,6 +101,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             <Label>Group Count</Label>
             <Input
               value={config.group_count ?? ""}
+              type="number"
               onChange={(e) =>
                 setConfig({ ...config, group_count: e.target.value })
               }
@@ -122,6 +138,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             <Label>Group Count</Label>
             <Input
               value={config.group_count ?? ""}
+              type="number"
               onChange={(e) =>
                 setConfig({ ...config, group_count: e.target.value })
               }
@@ -130,6 +147,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             <Label>Max Losses</Label>
             <Input
               value={config.max_loss ?? ""}
+              type="number"
               onChange={(e) =>
                 setConfig({ ...config, max_loss: e.target.value })
               }
@@ -138,6 +156,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             <Label>Starting Stage</Label>
             <Input
               value={config.progress_group ?? ""}
+              type="number"
               onChange={(e) =>
                 setConfig({ ...config, progress_group: e.target.value })
               }
@@ -146,6 +165,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             <Label>Max Stages</Label>
             <Input
               value={config.max_progress_group ?? ""}
+              type="number"
               onChange={(e) =>
                 setConfig({ ...config, max_progress_group: e.target.value })
               }
@@ -160,6 +180,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             <Label>Group Count</Label>
             <Input
               value={config.group_count ?? ""}
+              type="number"
               onChange={(e) =>
                 setConfig({ ...config, group_count: e.target.value })
               }
@@ -168,12 +189,14 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             <Label>Number of Games</Label>
             <Input
               value={config.games ?? ""}
+              type="number"
               onChange={(e) => setConfig({ ...config, games: e.target.value })}
               placeholder="e.g. 3"
             />
             <Label>Advances per Group</Label>
             <Input
               value={config.advances_per_group ?? ""}
+              type="number"
               onChange={(e) =>
                 setConfig({ ...config, advances_per_group: e.target.value })
               }
@@ -198,43 +221,45 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
           {formatName}
         </div>
 
-        <Sheet>
-          <SheetTrigger asChild>
-            <div>
-              <Settings className="w-3 h-3 cursor-pointer text-muted-foreground" />
-            </div>
-          </SheetTrigger>
+        {data.format_obj.round_id && (
+          <Sheet>
+            <SheetTrigger asChild>
+              <div>
+                <Settings className="w-3 h-3 cursor-pointer text-muted-foreground" />
+              </div>
+            </SheetTrigger>
 
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Edit Format</SheetTitle>
-              <SheetDescription>
-                Update configuration for{" "}
-                <span className="font-semibold">{data.format_type}</span>
-              </SheetDescription>
-            </SheetHeader>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Edit Format</SheetTitle>
+                <SheetDescription>
+                  Update configuration for{" "}
+                  <span className="font-semibold">{data.format_type}</span>
+                </SheetDescription>
+              </SheetHeader>
 
-            <div className="space-y-3 mt-4">
-              <Label>Format Name</Label>
-              <Input
-                max={20}
-                value={formatName}
-                onChange={(e) => setFormatName(e.target.value)}
-                placeholder="Enter format name"
-              />
+              <div className="space-y-3 mt-4">
+                <Label>Format Name</Label>
+                <Input
+                  max={20}
+                  value={formatName}
+                  onChange={(e) => setFormatName(e.target.value)}
+                  placeholder="Enter format name"
+                />
 
-              {renderFormatInputs()}
+                {renderFormatInputs()}
 
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="mt-4 w-full"
-              >
-                {saving ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
+                <Button
+                  onClick={handleSave}
+                  disabled={isPending}
+                  className="mt-4 w-full"
+                >
+                  {isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
       </div>
 
       <div className="text-xs text-center text-muted-foreground">Format</div>

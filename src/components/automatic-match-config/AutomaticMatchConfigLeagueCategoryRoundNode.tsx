@@ -21,30 +21,36 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
 
   return (
     <div className="relative p-3 border rounded-md bg-background w-fit">
-      <div className="flex gap-2 items-center">
-        <div className="flex gap-1 items-center">
-          <Info className="w-3 h-3 cursor-pointer text-muted-foreground" />
-          <div className="font-semibold text-xs text-primary">
-            {round.round_name}
-          </div>
-        </div>
-
-        <Sheet>
-          <SheetTrigger asChild>
-            <div>
-              <Settings className="w-3 h-3 cursor-pointer text-muted-foreground" />
+      {round.league_category_id ? (
+        <div className="flex gap-2 items-center">
+          <div className="flex gap-1 items-center">
+            <Info className="w-3 h-3 cursor-pointer text-muted-foreground" />
+            <div className="font-semibold text-xs text-primary">
+              {round.round_name}
             </div>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Round Settings</SheetTitle>
-              <SheetDescription>
-                You can configure round options here.
-              </SheetDescription>
-            </SheetHeader>
-          </SheetContent>
-        </Sheet>
-      </div>
+          </div>
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <div>
+                <Settings className="w-3 h-3 cursor-pointer text-muted-foreground" />
+              </div>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Round Settings</SheetTitle>
+                <SheetDescription>
+                  You can configure round options here.
+                </SheetDescription>
+              </SheetHeader>
+            </SheetContent>
+          </Sheet>
+        </div>
+      ) : (
+        <div className="font-semibold text-xs text-center text-primary">
+          {round.round_name}
+        </div>
+      )}
 
       <div className="text-xs text-center text-muted-foreground">Round</div>
 

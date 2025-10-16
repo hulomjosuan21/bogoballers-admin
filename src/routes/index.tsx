@@ -49,6 +49,7 @@ import ManualMatchingPage from "@/pages/league-administrator/league/match/manual
 import PublicLeaguePage from "@/components/public-components/PublicLeaguePage";
 import LeagueGuestPage from "@/pages/league-administrator/league/guest/LeagueGuestPage";
 import AutomaticMatchConfigPage from "@/pages/league-administrator/league/match/automatic/AutomaticMatchConfigXyFlowPage";
+import MatchSetupPage from "@/pages/league-administrator/league/match/MatchSetupPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -180,6 +181,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     icon: Network,
     sidebarGroup: "league",
   },
+
   {
     path: "pages/league/automatic/configuration",
     element: <AutomaticMatchConfigPage />,
@@ -306,6 +308,12 @@ export const protectedRoutesWithoutSidebar: AppRouteObject[] = [
     element: <span>test</span>,
     permissions: [Permission.ScoreBook],
     showInSidebar: false,
+  },
+  {
+    path: "/match/setup/:match_id?",
+    element: <MatchSetupPage />,
+    showInSidebar: false,
+    permissions: [Permission.SetupMatch],
   },
 ];
 

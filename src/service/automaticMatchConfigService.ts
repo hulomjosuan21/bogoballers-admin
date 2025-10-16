@@ -35,18 +35,12 @@ export class AutoMatchConfigService {
   async createOrAttachFormat(payload: {
     format_name: string;
     round_id: string | null;
+    format_type: string;
     position: { x: number; y: number };
   }) {
     const { data } = await axiosClient.post<RoundFormat>(
       "/auto-match-config/formats",
       payload
-    );
-    return data;
-  }
-
-  async attachFormatToRound(formatId: string, roundId: string) {
-    const { data } = await axiosClient.put<RoundFormat>(
-      `/auto-match-config/formats/${formatId}/attach/${roundId}`
     );
     return data;
   }
@@ -88,6 +82,14 @@ export class AutoMatchConfigService {
   async deleteNode(nodeType: string, nodeId: string) {
     const response = await axiosClient.delete(
       `/auto-match-config/nodes/${nodeType}/${nodeId}`
+    );
+    return response.data;
+  }
+
+  async updateFormat(formatId: string, formatObj: Partial<RoundFormat>) {
+    const response = await axiosClient.patch<{ message: string }>(
+      `/auto-match-config/nodes/format/${formatId}`,
+      formatObj
     );
     return response.data;
   }

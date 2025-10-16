@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axiosClient from "@/lib/axiosClient";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
@@ -22,8 +22,12 @@ export interface LeagueCategoryWithRounds {
 }
 
 export function useLeagueCategoriesRoundsGroups() {
-  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
-    useActiveLeague();
+  const {
+    activeLeagueId,
+    activeLeagueData,
+    activeLeagueLoading,
+    activeLeagueError,
+  } = useActiveLeague();
 
   const {
     selectedCategory,
@@ -50,16 +54,23 @@ export function useLeagueCategoriesRoundsGroups() {
     enabled: !!activeLeagueId,
   });
 
-  const rounds =
-    categories.find((c) => c.league_category_id === selectedCategory)?.rounds ??
-    [];
-  const groups = rounds.find((r) => r.round_id === selectedRound)?.groups ?? [];
-
   const isLoading = activeLeagueLoading || queryLoading;
   const error = activeLeagueError || queryError;
 
+  const rounds = useMemo(() => {
+    return (
+      categories.find((c) => c.league_category_id === selectedCategory)
+        ?.rounds ?? []
+    );
+  }, [categories, selectedCategory]);
+
+  const groups = useMemo(() => {
+    return rounds.find((r) => r.round_id === selectedRound)?.groups ?? [];
+  }, [rounds, selectedRound]);
+
+  // ✅ Validation & auto-reset of invalid selections
   useEffect(() => {
-    if (categories.length === 0) {
+    if (!categories.length) {
       if (selectedCategory || selectedRound || selectedGroup) {
         setSelectedCategory("");
         setSelectedRound("");
@@ -68,34 +79,40 @@ export function useLeagueCategoriesRoundsGroups() {
       return;
     }
 
-    const validCategory = categories.find(
+    const category = categories.find(
       (c) => c.league_category_id === selectedCategory
     );
-    if (!validCategory) {
+    if (!category) {
       if (selectedCategory) setSelectedCategory("");
       if (selectedRound) setSelectedRound("");
       if (selectedGroup) setSelectedGroup("");
       return;
     }
 
-    const validRound = validCategory.rounds.find(
-      (r) => r.round_id === selectedRound
-    );
-    if (!validRound) {
+    const round = category.rounds.find((r) => r.round_id === selectedRound);
+    if (!round) {
       if (selectedRound) setSelectedRound("");
       if (selectedGroup) setSelectedGroup("");
       return;
     }
 
-    const validGroup = validRound.groups.find(
-      (g) => g.group_id === selectedGroup
-    );
-    if (!validGroup && selectedGroup) {
+    const group = round.groups.find((g) => g.group_id === selectedGroup);
+    if (!group && selectedGroup) {
       setSelectedGroup("");
     }
-  }, [categories, selectedCategory, selectedRound, selectedGroup]);
+  }, [
+    categories,
+    selectedCategory,
+    selectedRound,
+    selectedGroup,
+    setSelectedCategory,
+    setSelectedRound,
+    setSelectedGroup,
+  ]);
 
   return {
+    activeLeagueId,
+    activeLeagueData,
     categories,
     rounds,
     groups,
