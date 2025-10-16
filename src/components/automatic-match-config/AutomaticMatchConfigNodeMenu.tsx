@@ -5,6 +5,12 @@ import {
 import { GripVertical } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { type Node as XyFlowNode } from "@xyflow/react";
+const ROUND_ORDER_MAP: Record<RoundTypeEnum, number> = {
+  [RoundTypeEnum.Elimination]: 0,
+  [RoundTypeEnum.QuarterFinal]: 1,
+  [RoundTypeEnum.SemiFinal]: 2,
+  [RoundTypeEnum.Final]: 3,
+};
 
 export function AutomaticRoundNodeMenu() {
   const menuItems = Object.values(RoundTypeEnum);
@@ -17,7 +23,11 @@ export function AutomaticRoundNodeMenu() {
       data: {
         type: "league_category_round",
         league_category_round: roundType,
-        round: { round_id: roundId, round_name: roundType },
+        round: {
+          round_id: roundId,
+          round_name: roundType,
+          round_order: ROUND_ORDER_MAP[roundType],
+        },
       },
     };
     event.dataTransfer.setData(

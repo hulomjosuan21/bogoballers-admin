@@ -11,6 +11,7 @@ export function AutomaticMatchConfigXyFlowCanvas() {
     onConnect,
     onDrop,
     onDragOver,
+    onNodeDragStop,
   } = useManageAutomaticMatchConfigNode();
 
   return (
@@ -18,6 +19,7 @@ export function AutomaticMatchConfigXyFlowCanvas() {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        onNodeDragStop={onNodeDragStop}
         nodeTypes={automaticMatchConfigNodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}

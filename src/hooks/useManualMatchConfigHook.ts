@@ -5,7 +5,6 @@ import {
   type OnEdgesChange,
   type OnConnect,
   type Connection,
-  type Edge,
   type Node,
   type NodeChange,
   type EdgeChange,
@@ -37,27 +36,6 @@ export const getCategoryIdFromNode = (
     return node.data.league_match.league_category_id || null;
   }
   return null;
-};
-
-const getCascadeDeleteChanges = (rootNodeId: string, edges: Edge[]) => {
-  const nodesToDelete = new Set<string>([rootNodeId]);
-  const edgesToDelete = new Set<string>();
-  const queue = [rootNodeId];
-
-  while (queue.length > 0) {
-    const currentNodeId = queue.shift()!;
-    const outgoingEdges = edges.filter((edge) => edge.source === currentNodeId);
-
-    for (const edge of outgoingEdges) {
-      edgesToDelete.add(edge.id);
-      const targetNodeId = edge.target;
-      if (!nodesToDelete.has(targetNodeId)) {
-        nodesToDelete.add(targetNodeId);
-        queue.push(targetNodeId);
-      }
-    }
-  }
-  return { nodesToDelete, edgesToDelete };
 };
 
 export function useManualMatchConfigDragAndDrop() {
@@ -175,51 +153,21 @@ export function useManageManualMatchConfigNode() {
           const nodeToRemove = nodes.find((n) => n.id === change.id);
           if (!nodeToRemove) continue;
 
-          if (!isIdPermanent(nodeToRemove.id)) {
-            changesToDispatch.push(change);
-            toast.info("Temporary node removed.");
-            continue;
+          if (nodeToRemove.type === "leagueCategory") {
+            toast.error("League Category nodes cannot be deleted.");
+            return;
           }
 
-          if (nodeToRemove.type === "leagueCategory") {
-            const confirm = await openDialog({
-              title: "Confirm Deletion",
-              description:
-                "Are you sure? This will delete all connected children from the database.",
-            });
-            if (!confirm) {
-              toast.info("Deletion cancelled.");
-              return;
-            }
-            try {
-              await manualLeagueService.resetCategoryLayout(change.id);
-              const { nodesToDelete, edgesToDelete } = getCascadeDeleteChanges(
-                change.id,
-                edges
-              );
-              const newNodes = nodes.filter((n) => !nodesToDelete.has(n.id));
-              const newEdges = edges.filter((e) => !edgesToDelete.has(e.id));
-              dispatch({
-                type: "SET_STATE",
-                payload: { nodes: newNodes, edges: newEdges },
-              });
-              toast.success("Category and all children deleted.");
-            } catch (error) {
-              toast.error("Failed to delete category.");
-            }
-          } else {
-            // This is a permanent, non-category node
+          if (isIdPermanent(nodeToRemove.id)) {
             try {
               await manualLeagueService.deleteSingleNode(
                 nodeToRemove.type!,
                 nodeToRemove.id
               );
-              changesToDispatch.push(change);
-              toast.success("Node deleted.");
-            } catch (error) {
-              toast.error("Failed to delete node.");
-            }
+            } catch {}
           }
+
+          changesToDispatch.push(change);
         } else {
           changesToDispatch.push(change);
         }

@@ -5,14 +5,14 @@ import type { AutomaticMatchConfigLeagueCategoryNodeData } from "@/types/automat
 const AutomaticMatchConfigLeagueCategoryNode: React.FC<
   NodeProps<Node<AutomaticMatchConfigLeagueCategoryNodeData>>
 > = ({ data }) => {
+  const { league_category } = data;
   return (
-    <div className="p-3 border rounded-md bg-background w-28 text-center">
+    <div className="p-3 border rounded-md bg-background w-fit text-center">
       <div className="font-semibold text-xs">
-        {data.league_category.category_name}
+        {league_category.category_name}
       </div>
       <div className="text-xs text-muted-foreground">Category</div>
 
-      {/* Category → Round */}
       <Handle type="source" position={Position.Right} id="category-out" />
     </div>
   );

@@ -171,7 +171,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
   },
   {
-    path: "pages/league/manual/management",
+    path: "pages/league/manual/configuration",
     element: <ManualMatchingPage />,
     permissions: [Permission.MatchManangement],
     showInSidebar: true,
@@ -181,7 +181,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
   },
   {
-    path: "pages/league/manual/management/v2",
+    path: "pages/league/automatic/configuration",
     element: <AutomaticMatchConfigPage />,
     permissions: [Permission.MatchManangement],
     showInSidebar: true,

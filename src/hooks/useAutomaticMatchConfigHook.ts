@@ -71,7 +71,6 @@ export function useManageAutomaticMatchConfigNode() {
     nodesRef.current = nodes;
   }, [nodes]);
 
-  // Load initial state
   useEffect(() => {
     if (!activeLeagueId) return;
     (async () => {
@@ -90,7 +89,6 @@ export function useManageAutomaticMatchConfigNode() {
     })();
   }, [activeLeagueId, dispatch]);
 
-  // Save node position
   const onNodeDragStop = useCallback(
     async (_event: React.MouseEvent, node: Node) => {
       if (!isPermanentId(node.id)) return;
@@ -107,14 +105,19 @@ export function useManageAutomaticMatchConfigNode() {
     []
   );
 
-  // Handle node deletions
   const onNodesChange: OnNodesChange = useCallback(
     async (changes) => {
       const toDispatch: NodeChange[] = [];
+
       for (const change of changes) {
         if (change.type === "remove") {
           const node = nodes.find((n) => n.id === change.id);
           if (!node) continue;
+
+          if (node.type === "leagueCategory") {
+            toast.error("League Category nodes cannot be deleted.");
+            return;
+          }
 
           if (!isPermanentId(node.id)) {
             toDispatch.push(change);
@@ -123,15 +126,15 @@ export function useManageAutomaticMatchConfigNode() {
 
           try {
             await autoMatchConfigService.deleteNode(node.type!, node.id);
-            toast.success("Node deleted.");
             toDispatch.push(change);
           } catch {
-            toast.error("Failed to delete node.");
+            toDispatch.push(change);
           }
         } else {
           toDispatch.push(change);
         }
       }
+
       if (toDispatch.length > 0) {
         dispatch({ type: "ON_NODES_CHANGE", payload: toDispatch });
       }
@@ -139,7 +142,6 @@ export function useManageAutomaticMatchConfigNode() {
     [dispatch, nodes]
   );
 
-  // Handle edge deletions
   const onEdgesChange: OnEdgesChange = useCallback(
     async (changes) => {
       const toDispatch: EdgeChange[] = [];
@@ -163,7 +165,6 @@ export function useManageAutomaticMatchConfigNode() {
     [dispatch]
   );
 
-  // Handle new connections
   const onConnect: OnConnect = useCallback(
     async (conn: Connection) => {
       if (!activeLeagueId) return;
@@ -198,12 +199,22 @@ export function useManageAutomaticMatchConfigNode() {
       dispatch({ type: "ON_CONNECT", payload: { ...conn, id: tempEdgeId } });
 
       try {
-        // Category → Round
         if (
           src.type === "leagueCategory" &&
           dst.type === "leagueCategoryRound" &&
           dst.data.type === "league_category_round"
         ) {
+          if (dst.data.round?.round_order !== 0) {
+            toast.error(
+              "The first round of a category must be Elimination (order 0)."
+            );
+            dispatch({
+              type: "ON_EDGES_CHANGE",
+              payload: [{ id: tempEdgeId, type: "remove" }],
+            });
+            return;
+          }
+
           if (!isPermanentId(dst.id)) {
             const newRound = await autoMatchConfigService.createRound({
               league_category_id: src.id,
@@ -240,14 +251,38 @@ export function useManageAutomaticMatchConfigNode() {
           dst.data.type === "league_category_round" &&
           dst.data.round
         ) {
+          if (src.data.format_obj?.round_id) {
+            toast.error("This format is already attached to a round.");
+            dispatch({
+              type: "ON_EDGES_CHANGE",
+              payload: [{ id: tempEdgeId, type: "remove" }],
+            });
+            return;
+          }
+
+          const existingFormat = nodesRef.current.find(
+            (n) =>
+              n.type === "roundFormat" &&
+              n.data.type === "league_category_round_format" &&
+              n.data.format_obj?.round_id === dst.id
+          );
+
+          if (existingFormat) {
+            toast.error("This round already has a format.");
+            dispatch({
+              type: "ON_EDGES_CHANGE",
+              payload: [{ id: tempEdgeId, type: "remove" }],
+            });
+            return;
+          }
+
           let formatId = src.id;
 
           if (!isPermanentId(src.id)) {
             const newFormat = await autoMatchConfigService.createOrAttachFormat(
               {
                 format_name: src.data.format_name,
-                round_id: dst.id, // ✅ attach directly to the round!
-                format: src.data.format_obj ?? {},
+                round_id: dst.id,
                 position: src.position!,
               }
             );
@@ -283,34 +318,70 @@ export function useManageAutomaticMatchConfigNode() {
           src.type === "leagueCategoryRound" &&
           dst.type === "leagueCategoryRound" &&
           src.data.type === "league_category_round" &&
-          dst.data.type === "league_category_round" &&
-          src.data.round &&
-          dst.data.round
+          dst.data.type === "league_category_round"
         ) {
-          const savedEdge = await autoMatchConfigService.createEdge({
+          const srcOrder = src.data.round.round_order ?? 0;
+          const dstOrder = dst.data.round.round_order ?? 0;
+
+          if (dstOrder <= srcOrder) {
+            toast.error("Invalid: Cannot connect to a previous or same round.");
+            dispatch({
+              type: "ON_EDGES_CHANGE",
+              payload: [{ id: tempEdgeId, type: "remove" }],
+            });
+            return;
+          }
+
+          if (
+            !(dstOrder === srcOrder + 1 || (srcOrder === 0 && dstOrder === 2))
+          ) {
+            toast.error(
+              "Invalid: Rounds must follow order (0→1→2→3) or skip 1."
+            );
+            dispatch({
+              type: "ON_EDGES_CHANGE",
+              payload: [{ id: tempEdgeId, type: "remove" }],
+            });
+            return;
+          }
+          let targetRoundId = dst.id;
+
+          if (!isPermanentId(dst.id)) {
+            const newRound = await autoMatchConfigService.createRound({
+              league_category_id: src.data.round?.league_category_id!,
+              round_name: dst.data.league_category_round,
+              round_order: dst.data.round?.round_order ?? 0,
+              position: dst.position!,
+            });
+
+            const finalNode: AutomaticMatchConfigFlowNode = {
+              ...dst,
+              id: newRound.round_id,
+              data: { ...dst.data, round: newRound },
+            };
+
+            dispatch({
+              type: "REPLACE_NODE",
+              payload: { tempId: dst.id, newNode: finalNode },
+            });
+
+            nodesRef.current = [
+              ...nodesRef.current.filter((n) => n.id !== dst.id),
+              finalNode,
+            ];
+
+            targetRoundId = newRound.round_id;
+          }
+
+          await autoMatchConfigService.createEdge({
             league_id: activeLeagueId,
             league_category_id:
-              src.data.round.league_category_id ??
-              dst.data.round.league_category_id,
+              src.data.round?.league_category_id ??
+              dst.data.round?.league_category_id,
             source: src.id,
-            target: dst.id,
+            target: targetRoundId,
             sourceHandle,
             targetHandle,
-          });
-
-          // ✅ Map backend edge → ReactFlow edge
-          const rfEdge = {
-            id: savedEdge.edge_id, // backend gives "edge_id"
-            source: savedEdge.source_node_id, // backend field names
-            target: savedEdge.target_node_id,
-            sourceHandle: savedEdge.source_handle,
-            targetHandle: savedEdge.target_handle,
-          };
-
-          // ✅ Replace temp edge with permanent
-          dispatch({
-            type: "UPDATE_EDGE",
-            payload: { tempId: tempEdgeId, newEdge: rfEdge },
           });
         }
       } catch (err) {

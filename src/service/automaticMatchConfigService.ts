@@ -34,8 +34,7 @@ export class AutoMatchConfigService {
 
   async createOrAttachFormat(payload: {
     format_name: string;
-    round_id: string | null; // can be null to create unattached
-    format: Record<string, any>;
+    round_id: string | null;
     position: { x: number; y: number };
   }) {
     const { data } = await axiosClient.post<RoundFormat>(
@@ -60,18 +59,11 @@ export class AutoMatchConfigService {
     sourceHandle?: string | null;
     targetHandle?: string | null;
   }) {
-    const { data } = await axiosClient.post<any>(
+    const { data } = await axiosClient.post<Record<string, any>>(
       "/auto-match-config/edges",
       payload
     );
-
-    return {
-      id: data.edge_id,
-      source: data.source_node_id,
-      target: data.target_node_id,
-      sourceHandle: data.source_handle,
-      targetHandle: data.target_handle,
-    };
+    return data;
   }
 
   async deleteEdge(edgeId: string) {

@@ -110,12 +110,6 @@ export class ManualLeagueManagementService {
     return response.data;
   }
 
-  async resetCategoryLayout(categoryId: string) {
-    const response = await axiosClient.put(
-      `/manual-league-management/categories/${categoryId}/reset-layout`
-    );
-    return response.data;
-  }
   async updateGroup(
     groupId: string,
     payload: Partial<IManualMatchConfigGroup>
