@@ -51,7 +51,7 @@ function ManualMatchingPageContent() {
         defaultValue="match-types"
         className="text-xs text-muted-foreground"
       >
-        <TabsList size="xs">
+        <TabsList size="xs" className="">
           <TabsTrigger value="match-types" className="text-xs">
             Match templates
           </TabsTrigger>

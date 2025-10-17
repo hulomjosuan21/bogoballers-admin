@@ -6,8 +6,10 @@ import { Settings } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   Sheet,
+  SheetBody,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -25,6 +27,7 @@ import {
 import { Badge } from "../ui/badge";
 import { autoMatchConfigService } from "@/service/automaticMatchConfigService";
 import { toast } from "sonner";
+import { ScrollArea } from "../ui/scroll-area";
 
 const AutomaticMatchConfigRoundFormatNode: React.FC<
   NodeProps<Node<AutomaticMatchConfigRoundFormatData>>
@@ -33,10 +36,13 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
   const [config, setConfig] = useState<Record<string, any>>(
     data.format_obj.format_obj ?? {}
   );
+  const [isConfigured, setIsConfigured] = useState(
+    data.format_obj.is_configured ?? false
+  );
 
   const [isPending, startTransition] = useTransition();
 
-  const handleSave = () => {
+  const handleSave = (isConfigured: boolean) => {
     startTransition(async () => {
       try {
         if (!data.format_obj.format_id) return;
@@ -46,10 +52,12 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
           {
             format_name: formatName,
             format_obj: config,
+            is_configured: isConfigured,
           }
         );
 
         toast.success(response.message);
+        setIsConfigured(isConfigured);
       } catch (e) {
         toast.error("Error updating format.");
       }
@@ -129,6 +137,60 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
                 </SelectItem>
               </SelectContent>
             </Select>
+
+            <div className="mt-3 pt-3 space-y-2">
+              <Label htmlFor="use-series">Enable Series (Twice-to-Beat)</Label>
+              <Switch
+                id="use-series"
+                checked={!!config.series_config}
+                onCheckedChange={(checked) =>
+                  setConfig({
+                    ...config,
+                    series_config: checked
+                      ? {
+                          type: "TwiceToBeat",
+                          advantaged_team: "",
+                          challenger_team: "",
+                          max_games: 2,
+                        }
+                      : null,
+                  })
+                }
+              />
+            </div>
+
+            {config.series_config?.type === "TwiceToBeat" && (
+              <div className="space-y-2 mt-2">
+                <Label>Advantaged Team</Label>
+                <Input
+                  value={config.series_config.advantaged_team ?? ""}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      series_config: {
+                        ...config.series_config,
+                        advantaged_team: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="Team ID or name"
+                />
+                <Label>Challenger Team</Label>
+                <Input
+                  value={config.series_config.challenger_team ?? ""}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      series_config: {
+                        ...config.series_config,
+                        challenger_team: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="Team ID or name"
+                />
+              </div>
+            )}
           </>
         );
 
@@ -171,6 +233,15 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
               }
               placeholder="e.g. 6"
             />
+            <Label>Advances per Group</Label>
+            <Input
+              value={config.advances_per_group ?? ""}
+              type="number"
+              onChange={(e) =>
+                setConfig({ ...config, advances_per_group: e.target.value })
+              }
+              placeholder="Teams advancing per group"
+            />
           </>
         );
 
@@ -202,6 +273,57 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
               }
               placeholder="e.g. 2"
             />
+            <div className="mt-3 pt-3 space-y-2">
+              <Label>Enable Twice-to-Beat</Label>
+              <Switch
+                checked={!!config.series_config}
+                onCheckedChange={(checked) =>
+                  setConfig({
+                    ...config,
+                    series_config: checked
+                      ? {
+                          type: "TwiceToBeat",
+                          advantaged_team: "",
+                          challenger_team: "",
+                          max_games: 2,
+                        }
+                      : null,
+                  })
+                }
+              />
+            </div>
+
+            {config.series_config && (
+              <div className="space-y-2 mt-2">
+                <Label>Advantaged Team</Label>
+                <Input
+                  value={config.series_config.advantaged_team ?? ""}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      series_config: {
+                        ...config.series_config,
+                        advantaged_team: e.target.value,
+                      },
+                    })
+                  }
+                />
+
+                <Label>Challenger Team</Label>
+                <Input
+                  value={config.series_config.challenger_team ?? ""}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      series_config: {
+                        ...config.series_config,
+                        challenger_team: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+            )}
           </>
         );
 
@@ -229,8 +351,8 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
               </div>
             </SheetTrigger>
 
-            <SheetContent>
-              <SheetHeader>
+            <SheetContent className="p-0">
+              <SheetHeader className="py-4 px-5 border-b border-border">
                 <SheetTitle>Edit Format</SheetTitle>
                 <SheetDescription>
                   Update configuration for{" "}
@@ -238,25 +360,43 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
                 </SheetDescription>
               </SheetHeader>
 
-              <div className="space-y-3 mt-4">
-                <Label>Format Name</Label>
-                <Input
-                  max={20}
-                  value={formatName}
-                  onChange={(e) => setFormatName(e.target.value)}
-                  placeholder="Enter format name"
-                />
+              <SheetBody className="py-0 px-5 grow">
+                <ScrollArea className="h-[calc(100dvh-190px)] pe-3 -me-3">
+                  <div className="space-y-4 mt-4">
+                    <div className="space-y-3 px-1">
+                      <Label>Format Name</Label>
+                      <Input
+                        max={20}
+                        value={formatName}
+                        onChange={(e) => setFormatName(e.target.value)}
+                        placeholder="Enter format name"
+                      />
 
-                {renderFormatInputs()}
+                      {renderFormatInputs()}
+                    </div>
+                  </div>
+                </ScrollArea>
+              </SheetBody>
 
+              <SheetFooter className="py-4 px-5 border-t border-border">
                 <Button
-                  onClick={handleSave}
+                  onClick={() => handleSave(false)}
                   disabled={isPending}
-                  className="mt-4 w-full"
+                  variant={"secondary"}
                 >
                   {isPending ? "Saving..." : "Save Changes"}
                 </Button>
-              </div>
+                <Button
+                  onClick={() => handleSave(true)}
+                  disabled={isPending || isConfigured}
+                >
+                  {isPending
+                    ? "Saving..."
+                    : isConfigured
+                    ? "Configured"
+                    : "Configure"}
+                </Button>
+              </SheetFooter>
             </SheetContent>
           </Sheet>
         )}

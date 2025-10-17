@@ -6,15 +6,13 @@ import {
   AutomaticRoundNodeMenu,
 } from "@/components/automatic-match-config/AutomaticMatchConfigNodeMenu";
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
-import { Button } from "@/components/ui/button";
-import { ArrowRightLeft } from "lucide-react";
 import { AutomaticMatchConfigXyFlowCanvas } from "./AutomaticMatchConfigXyFlowCanvas";
 
 function AutomaticMatchConfigPage() {
   const menu = (
     <div className="w-48 flex flex-col gap-2">
       <Tabs defaultValue="rounds" className="text-xs text-muted-foreground">
-        <TabsList size="xs">
+        <TabsList size="xs" className="grid w-full grid-cols-2">
           <TabsTrigger value="rounds">Rounds</TabsTrigger>
           <TabsTrigger value="formats">Formats</TabsTrigger>
         </TabsList>
@@ -30,12 +28,7 @@ function AutomaticMatchConfigPage() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Automatic Configuration">
-        <Button size="sm" className="">
-          <ArrowRightLeft className="w-4 h-4" />
-          Sync
-        </Button>
-      </ContentHeader>
+      <ContentHeader title="Automatic Configuration" />
       <ContentBody className="flex flex-row">
         <AutomaticMatchConfigXyFlowCanvas />
         {menu}

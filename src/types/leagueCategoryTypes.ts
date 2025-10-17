@@ -26,6 +26,8 @@ export interface LeagueCategoryRound {
   round_name: string;
   round_order: number;
   round_status: string;
+  total_stages: number;
+  current_stage: number;
   matches_generated: boolean;
   position: {
     x: number;
@@ -39,6 +41,7 @@ export interface RoundFormat {
   round_id: string | null;
   format_name: string;
   format_obj: Record<string, any>;
+  is_configured: boolean;
   position: {
     x: number;
     y: number;
@@ -63,5 +66,4 @@ export enum RoundFormatTypesEnum {
   Knockout = "Knockout",
   DoubleElimination = "DoubleElimination",
   BestOf = "BestOf",
-  TwiceToBeat = "TwiceToBeat",
 }
