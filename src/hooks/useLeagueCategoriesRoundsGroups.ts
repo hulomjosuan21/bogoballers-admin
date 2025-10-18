@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axiosClient from "@/lib/axiosClient";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
@@ -68,36 +68,43 @@ export function useLeagueCategoriesRoundsGroups() {
     return rounds.find((r) => r.round_id === selectedRound)?.groups ?? [];
   }, [rounds, selectedRound]);
 
-  // ✅ Validation & auto-reset of invalid selections
+  const initialized = useRef(false);
+
   useEffect(() => {
-    if (!categories.length) {
-      if (selectedCategory || selectedRound || selectedGroup) {
-        setSelectedCategory("");
-        setSelectedRound("");
-        setSelectedGroup("");
-      }
-      return;
-    }
+    if (initialized.current) return;
+    if (!categories.length) return;
+
+    const firstCategory = categories[0];
+    const firstRound = firstCategory.rounds?.[0];
+
+    setSelectedCategory(firstCategory.league_category_id);
+    if (firstRound) setSelectedRound(firstRound.round_id);
+
+    initialized.current = true;
+  }, [categories, setSelectedCategory, setSelectedRound]);
+
+  useEffect(() => {
+    if (!categories.length) return;
 
     const category = categories.find(
       (c) => c.league_category_id === selectedCategory
     );
     if (!category) {
-      if (selectedCategory) setSelectedCategory("");
-      if (selectedRound) setSelectedRound("");
-      if (selectedGroup) setSelectedGroup("");
+      setSelectedCategory("");
+      setSelectedRound("");
+      setSelectedGroup("");
       return;
     }
 
     const round = category.rounds.find((r) => r.round_id === selectedRound);
     if (!round) {
-      if (selectedRound) setSelectedRound("");
-      if (selectedGroup) setSelectedGroup("");
+      setSelectedRound("");
+      setSelectedGroup("");
       return;
     }
 
     const group = round.groups.find((g) => g.group_id === selectedGroup);
-    if (!group && selectedGroup) {
+    if (!group) {
       setSelectedGroup("");
     }
   }, [

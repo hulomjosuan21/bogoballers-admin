@@ -2,7 +2,11 @@ import { ReactFlow, Background, Controls } from "@xyflow/react";
 import { automaticMatchConfigNodeTypes } from "@/components/automatic-match-config";
 import { useManageAutomaticMatchConfigNode } from "@/hooks/useAutomaticMatchConfigHook";
 
-export function AutomaticMatchConfigXyFlowCanvas() {
+export function AutomaticMatchConfigXyFlowCanvas({
+  activeLeagueId,
+}: {
+  activeLeagueId?: string;
+}) {
   const {
     nodes,
     edges,
@@ -12,7 +16,7 @@ export function AutomaticMatchConfigXyFlowCanvas() {
     onDrop,
     onDragOver,
     onNodeDragStop,
-  } = useManageAutomaticMatchConfigNode();
+  } = useManageAutomaticMatchConfigNode(activeLeagueId);
 
   return (
     <div className="h-full w-full border rounded-md bg-background">

@@ -7,7 +7,7 @@ import type {
 import type { LeagueMatch } from "@/types/leagueMatch";
 import type { Edge } from "@xyflow/react";
 
-interface FlowStateResponse {
+export interface FlowStateResponse {
   nodes: AutomaticMatchConfigFlowNode[];
   edges: Edge[];
 }

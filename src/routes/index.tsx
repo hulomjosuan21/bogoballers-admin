@@ -28,7 +28,6 @@ import {
   SquarePen,
   FileQuestionMark,
   type LucideIcon,
-  MessageSquare,
   ChevronsRightLeft,
   Network,
   ChartNoAxesGantt,
@@ -40,9 +39,6 @@ import LandingPage from "@/pages/public/landing-page/LandingPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import StartScorebookPage from "@/pages/scorebook/StartNewBook";
 import LeagueAdminPagesLGU from "@/pages/LeagueAdminPagesLGU";
-import ConversationListPage from "@/pages/ConversationListPage";
-import ChatLoader from "@/components/ChatLoader";
-import ChatScreen from "@/components/ChatScreen";
 import LeagueMatches from "@/pages/league-administrator/league/match/LeagueMatches";
 import LiveAdminPage from "@/pages/LiveAdminPage";
 import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/ManualManagementPage";
@@ -120,28 +116,6 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarTitle: "Dashboard",
     icon: LayoutDashboard,
     sidebarGroup: "platform",
-  },
-
-  {
-    path: "chat",
-    element: <ConversationListPage />,
-    permissions: [Permission.ViewChat],
-    showInSidebar: true,
-    sidebarTitle: "Chats",
-    icon: MessageSquare,
-    sidebarGroup: "platform",
-  },
-  {
-    path: "start-chat/:partnerId/:partnerName",
-    element: <ChatLoader />,
-    permissions: [Permission.ViewChat],
-    showInSidebar: false,
-  },
-  {
-    path: "chat/:partnerId",
-    element: <ChatScreen />,
-    permissions: [Permission.ViewChat],
-    showInSidebar: false,
   },
 
   {

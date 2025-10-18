@@ -16,9 +16,11 @@ import { toast } from "sonner";
 import { manualLeagueService } from "@/service/manualLeagueManagementService";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 function ManualMatchingPageContent() {
-  const { activeLeagueId } = useActiveLeague();
+  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
+    useActiveLeague();
   const dispatch = useManualMatchConfigFlowDispatch();
 
   const handleSyncBracket = async () => {
@@ -71,6 +73,24 @@ function ManualMatchingPageContent() {
     </div>
   );
 
+  if (activeLeagueLoading) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (activeLeagueError) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <p className="text-sm text-red-500">
+          {activeLeagueError.message || "Error loading league config"}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <ContentShell>
       <ContentHeader title="Manual Configuration">
@@ -80,7 +100,7 @@ function ManualMatchingPageContent() {
         </Button>
       </ContentHeader>
       <ContentBody className="flex-row flex">
-        <ManualMatchingCanvas />
+        <ManualMatchingCanvas activeLeagueId={activeLeagueId} />
         {rightMenu}
       </ContentBody>
     </ContentShell>

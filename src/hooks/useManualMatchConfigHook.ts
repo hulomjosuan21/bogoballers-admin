@@ -17,8 +17,11 @@ import type { ManualMatchConfigFlowNode } from "@/types/manualMatchConfigTypes";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { toast } from "sonner";
-import { manualLeagueService } from "@/service/manualLeagueManagementService";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
+import {
+  manualLeagueService,
+  type FlowStateResponse,
+} from "@/service/manualLeagueManagementService";
+import { useQuery } from "@tanstack/react-query";
 
 export const getCategoryIdFromNode = (
   node: ManualMatchConfigFlowNode
@@ -76,8 +79,7 @@ export function useManualMatchConfigDragAndDrop() {
   return { onDrop, onDragOver };
 }
 
-export function useManageManualMatchConfigNode() {
-  const { activeLeagueId } = useActiveLeague();
+export function useManageManualMatchConfigNode(activeLeagueId?: string) {
   const { nodes, edges } = useManualMatchConfigFlowState();
   const dispatch = useManualMatchConfigFlowDispatch();
   const { openDialog } = useAlertDialog();
@@ -89,26 +91,42 @@ export function useManageManualMatchConfigNode() {
     nodesRef.current = nodes;
   }, [nodes]);
 
+  const TOAST_ID = "manual-layout-toast";
+
+  const { data, error, isSuccess, isError, isLoading } =
+    useQuery<FlowStateResponse | null>({
+      queryKey: ["manual-match-config-flow", activeLeagueId],
+      queryFn: async () => {
+        if (!activeLeagueId) return null;
+        return manualLeagueService.getFlowState(activeLeagueId);
+      },
+      enabled: !!activeLeagueId,
+      staleTime: Infinity,
+      gcTime: Infinity,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+    });
+
   useEffect(() => {
-    if (!activeLeagueId) return;
+    if (isLoading) {
+      toast.loading("Loading league layout...", { id: TOAST_ID });
+    }
 
-    const loadInitialState = async () => {
-      try {
-        toast.info("Loading league layout...");
-        const initialState = await manualLeagueService.getFlowState(
-          activeLeagueId
-        );
-        if (initialState.nodes && initialState.edges) {
-          dispatch({ type: "SET_STATE", payload: initialState });
-          toast.success("League layout loaded successfully!");
+    if (isSuccess && data?.nodes && data?.edges) {
+      dispatch({ type: "SET_STATE", payload: data });
+      toast.success("League layout loaded successfully!", { id: TOAST_ID });
+    }
+
+    if (isError) {
+      toast.error(
+        error.message || "Failed to load league layout from the database.",
+        {
+          id: TOAST_ID,
         }
-      } catch (error) {
-        toast.error("Failed to load league layout from the database.");
-      }
-    };
-
-    loadInitialState();
-  }, [activeLeagueId, dispatch]);
+      );
+    }
+  }, [isLoading, isSuccess, isError, data, dispatch]);
 
   const onNodeDragStop: (event: React.MouseEvent, node: Node) => void =
     useCallback(async (_event, node) => {

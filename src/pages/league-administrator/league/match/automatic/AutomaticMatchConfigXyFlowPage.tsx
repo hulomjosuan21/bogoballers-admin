@@ -7,8 +7,13 @@ import {
 } from "@/components/automatic-match-config/AutomaticMatchConfigNodeMenu";
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
 import { AutomaticMatchConfigXyFlowCanvas } from "./AutomaticMatchConfigXyFlowCanvas";
+import { useActiveLeague } from "@/hooks/useActiveLeague";
+import { Spinner } from "@/components/ui/spinner";
 
 function AutomaticMatchConfigPage() {
+  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
+    useActiveLeague();
+
   const menu = (
     <div className="w-48 flex flex-col gap-2">
       <Tabs defaultValue="rounds" className="text-xs text-muted-foreground">
@@ -26,11 +31,29 @@ function AutomaticMatchConfigPage() {
     </div>
   );
 
+  if (activeLeagueLoading) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (activeLeagueError) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <p className="text-sm text-red-500">
+          {activeLeagueError.message || "Error loading config"}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <ContentShell>
       <ContentHeader title="Automatic Configuration" />
       <ContentBody className="flex flex-row">
-        <AutomaticMatchConfigXyFlowCanvas />
+        <AutomaticMatchConfigXyFlowCanvas activeLeagueId={activeLeagueId} />
         {menu}
       </ContentBody>
     </ContentShell>

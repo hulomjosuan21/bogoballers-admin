@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { getErrorMessage } from "@/lib/error";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Copy, MoreVertical } from "lucide-react";
@@ -51,7 +51,7 @@ type Props = {
   viewOnly?: boolean;
 };
 
-export default function LeagueTeamsTable({
+export function LeagueTeamsTable({
   leagueCategoryId,
   roundId,
   viewOnly = false,
@@ -286,6 +286,8 @@ export default function LeagueTeamsTable({
     </div>
   );
 }
+
+export default memo(LeagueTeamsTable);
 
 function ActionCell({ row }: { row: any }) {
   const team = row.original;

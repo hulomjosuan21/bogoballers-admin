@@ -9,43 +9,48 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
+import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 
 export default function LeagueMatches() {
   const {
     categories,
     rounds,
-    groups,
     isLoading,
+    activeLeagueData,
     error,
     selectedCategory,
     selectedRound,
-    selectedGroup,
     setSelectedCategory,
     setSelectedRound,
-    setSelectedGroup,
   } = useLeagueCategoriesRoundsGroups();
+
+  if (activeLeagueData?.status == "Pending") {
+    return <LeagueNotApproveYet />;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <p className="text-sm text-red-500">
+          {error.message || "Error loading match"}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <ContentShell>
       <ContentHeader title="League Matches" />
       <ContentBody>
-        {isLoading && (
-          <div className="h-screen grid place-content-center">
-            <Spinner />
-          </div>
-        )}
-
-        {error && (
-          <p className="text-sm text-red-500">
-            {(error as any)?.message || "Error loading league data"}
-          </p>
-        )}
-
-        {!isLoading && !error && categories.length === 0 && (
-          <p className="text-sm text-gray-500">No categories available.</p>
-        )}
-
-        {!isLoading && !error && categories.length > 0 && (
+        {categories.length > 0 && (
           <div className="flex items-center gap-2">
             <Select
               value={selectedCategory}
@@ -82,10 +87,6 @@ export default function LeagueMatches() {
             )}
           </div>
         )}
-
-        <div className="">
-          <span>{groups.map((g) => g.group_id).join(",")}</span>
-        </div>
       </ContentBody>
     </ContentShell>
   );

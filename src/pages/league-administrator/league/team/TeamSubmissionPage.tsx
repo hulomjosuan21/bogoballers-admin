@@ -1,12 +1,10 @@
-import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -15,75 +13,81 @@ import {
   LeagueTeamSheetSheetSubmissionSheet,
   RefundDialog,
 } from "@/components/league-team/LeagueTeamManagementComponents";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
-import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
+import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function TeamSubmissionPage() {
-  const { activeLeagueId, activeLeagueData, activeLeagueCategories } =
-    useActiveLeague();
-
-  const hasActiveLeague =
-    activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
-
-  const [activeCategoryId, setActiveCategoryId] = useState<string>("");
-
-  useEffect(() => {
-    if (hasActiveLeague && activeLeagueCategories?.length) {
-      setActiveCategoryId(activeLeagueCategories[0].league_category_id);
-    }
-  }, [hasActiveLeague, activeLeagueCategories]);
-
-  const activeCategory = activeLeagueCategories?.find(
-    (cat) => cat.league_category_id === activeCategoryId
-  );
+  const {
+    activeLeagueId,
+    categories,
+    isLoading,
+    activeLeagueData,
+    error,
+    selectedCategory,
+    setSelectedCategory,
+  } = useLeagueCategoriesRoundsGroups();
 
   if (activeLeagueData?.status === "Pending") {
     return <LeagueNotApproveYet />;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <p className="text-sm text-red-500">
+          {error.message || "Error loading league category"}
+        </p>
+      </div>
+    );
   }
 
   return (
     <ContentShell>
       <ContentHeader title="Team Submission" />
       <ContentBody>
-        {!hasActiveLeague || !activeLeagueCategories?.length ? (
-          <NoActiveLeagueAlert />
-        ) : (
-          <>
-            <div className="flex items-center mb-2">
-              <Select
-                value={activeCategoryId}
-                onValueChange={setActiveCategoryId}
-              >
-                <SelectTrigger className="w-[250px]">
-                  <SelectValue placeholder="Select League Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Active League Categories</SelectLabel>
-                    {activeLeagueCategories.map((cat) => (
-                      <SelectItem
-                        key={cat.league_category_id}
-                        value={cat.league_category_id}
-                      >
-                        {cat.category_name ?? "Unnamed Category"}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="flex items-center">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="h-6 px-2 py-1 text-xs">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent className="text-xs">
+              {categories.map((c) => (
+                <SelectItem
+                  key={c.league_category_id}
+                  value={c.league_category_id}
+                >
+                  {c.category_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-            {activeCategory && (
-              <>
-                <LeagueTeamSheetSheetSubmissionSheet />
-                <RefundDialog />
-                <TeamSubmissionTable
-                  leagueCategoryId={activeCategory.league_category_id}
-                  leagueId={activeLeagueId}
-                />
-              </>
-            )}
+        {categories.length > 0 && (
+          <>
+            <LeagueTeamSheetSheetSubmissionSheet />
+            <RefundDialog />
+            <Suspense
+              fallback={
+                <div className="h-40 grid place-content-center">
+                  <Spinner />
+                </div>
+              }
+            >
+              <TeamSubmissionTable
+                leagueCategoryId={selectedCategory}
+                leagueId={activeLeagueId}
+              />
+            </Suspense>
           </>
         )}
       </ContentBody>

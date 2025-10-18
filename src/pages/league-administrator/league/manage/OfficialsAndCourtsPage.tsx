@@ -3,22 +3,24 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageOfficials from "@/tables/ManageOfficialsTable";
 import ManangeReferees from "@/tables/ManageRefereesTable";
 import ManageCourts from "@/tables/ManageCourtsTable";
-import { useMemo } from "react";
-import ErrorLoading from "@/components/error-loading";
-import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
+import { Spinner } from "@/components/ui/spinner";
+import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 
 export default function LeagueOfficialsPage() {
-  const { activeLeagueData, activeLeagueLoading, activeLeagueError } =
-    useActiveLeague();
-
-  const hasActiveLeague = useMemo(() => {
-    return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
-  }, [activeLeagueData]);
+  const { activeLeagueData, activeLeagueLoading } = useActiveLeague();
 
   if (activeLeagueData?.status == "Pending") {
     return <LeagueNotApproveYet />;
+  }
+
+  if (activeLeagueLoading) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <Spinner />
+      </div>
+    );
   }
 
   return (
@@ -26,28 +28,21 @@ export default function LeagueOfficialsPage() {
       <ContentHeader title="League Officials" />
 
       <ContentBody className="">
-        {activeLeagueLoading || activeLeagueError ? (
-          <ErrorLoading
-            isLoading={activeLeagueLoading}
-            error={activeLeagueError}
+        <>
+          {!activeLeagueData && <NoActiveLeagueAlert />}
+          <ManageOfficials
+            data={activeLeagueData?.league_officials ?? []}
+            hasActiveLeague={!activeLeagueData}
           />
-        ) : (
-          <>
-            {!hasActiveLeague && <NoActiveLeagueAlert />}
-            <ManageOfficials
-              data={activeLeagueData?.league_officials ?? []}
-              hasActiveLeague={!hasActiveLeague}
-            />
-            <ManangeReferees
-              data={activeLeagueData?.league_referees ?? []}
-              hasActiveLeague={!hasActiveLeague}
-            />
-            <ManageCourts
-              data={activeLeagueData?.league_courts ?? []}
-              hasActiveLeague={!hasActiveLeague}
-            />
-          </>
-        )}
+          <ManangeReferees
+            data={activeLeagueData?.league_referees ?? []}
+            hasActiveLeague={!activeLeagueData}
+          />
+          <ManageCourts
+            data={activeLeagueData?.league_courts ?? []}
+            hasActiveLeague={!activeLeagueData}
+          />
+        </>
       </ContentBody>
     </ContentShell>
   );

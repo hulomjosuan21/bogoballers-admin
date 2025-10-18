@@ -7,7 +7,7 @@ import type {
 } from "@/types/manualMatchConfigTypes";
 import type { Edge } from "@xyflow/react";
 
-interface FlowStateResponse {
+export interface FlowStateResponse {
   nodes: ManualMatchConfigFlowNode[];
   edges: Edge[];
 }

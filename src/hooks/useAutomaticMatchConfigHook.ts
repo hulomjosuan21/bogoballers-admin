@@ -15,8 +15,11 @@ import {
 } from "@xyflow/react";
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
-import { autoMatchConfigService } from "@/service/automaticMatchConfigService";
+import {
+  autoMatchConfigService,
+  type FlowStateResponse,
+} from "@/service/automaticMatchConfigService";
+import { useQuery } from "@tanstack/react-query";
 
 const PERM_PREFIXES = ["league-category-", "lround-", "lformat-"];
 const isPermanentId = (id: string) =>
@@ -60,34 +63,41 @@ export function useAutomaticMatchConfigDragAndDrop() {
   return { onDrop, onDragOver };
 }
 
-export function useManageAutomaticMatchConfigNode() {
-  const { activeLeagueId } = useActiveLeague();
+export function useManageAutomaticMatchConfigNode(activeLeagueId?: string) {
   const { nodes, edges } = useAutomaticMatchConfigFlowState();
   const dispatch = useAutomaticMatchConfigFlowDispatch();
   const { onDrop, onDragOver } = useAutomaticMatchConfigDragAndDrop();
   const nodesRef = useRef(nodes);
 
-  useEffect(() => {
-    nodesRef.current = nodes;
-  }, [nodes]);
+  const TOAST_ID = "auto-layout-toast";
+
+  const { data, isLoading, isSuccess, isError } =
+    useQuery<FlowStateResponse | null>({
+      queryKey: ["auto-match-config-flow", activeLeagueId],
+      queryFn: async () => {
+        if (!activeLeagueId) return null;
+        return autoMatchConfigService.getFlowState(activeLeagueId);
+      },
+      enabled: !!activeLeagueId,
+      staleTime: Infinity,
+      gcTime: Infinity,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+    });
 
   useEffect(() => {
-    if (!activeLeagueId) return;
-    (async () => {
-      try {
-        toast.info("Loading automatic layout...");
-        const initialState = await autoMatchConfigService.getFlowState(
-          activeLeagueId
-        );
-        if (initialState.nodes && initialState.edges) {
-          dispatch({ type: "SET_STATE", payload: initialState });
-          toast.success("Automatic layout loaded!");
-        }
-      } catch {
-        toast.error("Failed to load automatic layout.");
-      }
-    })();
-  }, [activeLeagueId, dispatch]);
+    if (isLoading) {
+      toast.loading("Loading automatic layout...", { id: TOAST_ID });
+    }
+    if (isSuccess && data?.nodes && data?.edges) {
+      dispatch({ type: "SET_STATE", payload: data });
+      toast.success("Automatic layout loaded!", { id: TOAST_ID });
+    }
+    if (isError) {
+      toast.error("Failed to load automatic layout.", { id: TOAST_ID });
+    }
+  }, [isLoading, isSuccess, isError, data, dispatch]);
 
   const onNodeDragStop = useCallback(
     async (_event: React.MouseEvent, node: Node) => {
