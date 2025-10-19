@@ -9,6 +9,7 @@ import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfig
 import { AutomaticMatchConfigXyFlowCanvas } from "./AutomaticMatchConfigXyFlowCanvas";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { Spinner } from "@/components/ui/spinner";
+import { Suspense } from "react";
 
 function AutomaticMatchConfigPage() {
   const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
@@ -63,7 +64,15 @@ function AutomaticMatchConfigPage() {
 export default function AutomaticMatchConfigContent() {
   return (
     <AutomaticMatchConfigFlowProvider>
-      <AutomaticMatchConfigPage />
+      <Suspense
+        fallback={
+          <div className="h-screen grid place-content-center">
+            <Spinner />
+          </div>
+        }
+      >
+        <AutomaticMatchConfigPage />
+      </Suspense>
     </AutomaticMatchConfigFlowProvider>
   );
 }

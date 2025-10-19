@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { type Node } from "@xyflow/react";
 import { v4 as uuidv4 } from "uuid";
-import { GripVertical } from "lucide-react";
+import { GripVertical, List, Shuffle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,14 +59,14 @@ export function ManualGroupNodeMenu() {
 
   return (
     <div className="p-2 bg-card rounded-md">
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2">
         <Input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Enter group name"
-          className="w-34 h-8"
+          className="h-8"
         />
-        <Button onClick={handleAdd} size="sm" variant="outline" className="h-8">
+        <Button onClick={handleAdd} size="sm" className="h-8">
           Add
         </Button>
       </div>
@@ -150,6 +150,10 @@ export function ManualLeagueTeamNodeMenu() {
   const [selectedCategory, setSelectedCategory] =
     useState<LeagueCategory | null>(null);
 
+  const [teamPool, setTeamPool] = useState<LeagueTeam[]>([]);
+  const [currentRoll, setCurrentRoll] = useState<LeagueTeam[]>([]);
+  const [showAll, setShowAll] = useState(false);
+
   useEffect(() => {
     if (hasActiveLeague && !selectedCategory) {
       setSelectedCategory(activeLeagueCategories[0] || null);
@@ -187,8 +191,41 @@ export function ManualLeagueTeamNodeMenu() {
     }
   };
 
+  useEffect(() => {
+    if (dynamicLeagueTeamData?.length) {
+      setTeamPool(dynamicLeagueTeamData);
+      setCurrentRoll([]);
+      setShowAll(false);
+    } else {
+      setTeamPool([]);
+      setCurrentRoll([]);
+      setShowAll(false);
+    }
+  }, [dynamicLeagueTeamData, selectedCategory]);
+
+  const rollTwo = () => {
+    if (teamPool.length === 0) {
+      // reset once all are rolled
+      setTeamPool(dynamicLeagueTeamData || []);
+      setCurrentRoll([]);
+      return;
+    }
+
+    const shuffled = [...teamPool].sort(() => Math.random() - 0.5);
+
+    const picked = shuffled.slice(0, 2);
+    const remaining = teamPool.filter(
+      (t) => !picked.find((p) => p.league_team_id === t.league_team_id)
+    );
+
+    setCurrentRoll(picked);
+    setTeamPool(remaining);
+    setShowAll(false);
+  };
+
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* Category Selector */}
       <Select
         onValueChange={(catId) => {
           const category = activeLeagueCategories?.find(
@@ -217,14 +254,52 @@ export function ManualLeagueTeamNodeMenu() {
         </SelectContent>
       </Select>
 
+      <div className="flex gap-2">
+        <Button
+          onClick={rollTwo}
+          size={"sm"}
+          disabled={dynamicLeagueTeamLoading || !dynamicLeagueTeamData?.length}
+          className="flex items-center gap-2"
+        >
+          <Shuffle className="w-4 h-4" />
+          {teamPool.length === 0 ? "Reset" : "Roll"}
+        </Button>
+
+        <Button
+          variant="secondary"
+          size={"sm"}
+          onClick={() => setShowAll((prev) => !prev)}
+          disabled={dynamicLeagueTeamLoading || !dynamicLeagueTeamData?.length}
+          className="flex items-center gap-2"
+        >
+          <List className="w-4 h-4" />
+          {showAll ? "Hide All" : "Show All"}
+        </Button>
+      </div>
+
       <div className="flex flex-col gap-2 items-center max-h-96 overflow-y-auto">
         {dynamicLeagueTeamLoading && (
           <span className="text-sm text-muted-foreground">
             Loading teams...
           </span>
         )}
-        {dynamicLeagueTeamData?.length
-          ? dynamicLeagueTeamData.map((team) => (
+
+        {showAll
+          ? dynamicLeagueTeamData?.map((team) => (
+              <div
+                key={team.league_team_id}
+                onDragStart={(event) => onDragStart(event, team)}
+                draggable
+                className="w-48 flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab hover:opacity-80"
+              >
+                <GripVertical className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-card-foreground">
+                  {team.team_name}
+                </span>
+              </div>
+            ))
+          : currentRoll.length > 0
+          ? currentRoll.map((team) => (
               <div
                 key={team.league_team_id}
                 onDragStart={(event) => onDragStart(event, team)}
@@ -239,7 +314,9 @@ export function ManualLeagueTeamNodeMenu() {
             ))
           : !dynamicLeagueTeamLoading && (
               <span className="text-sm text-muted-foreground">
-                No teams available.
+                {teamPool.length === 0
+                  ? "All teams rolled. Press Reset."
+                  : "Click Roll to pick teams."}
               </span>
             )}
       </div>

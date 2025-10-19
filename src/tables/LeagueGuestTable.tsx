@@ -25,12 +25,19 @@ import { getErrorMessage } from "@/lib/error";
 import { memo, useState } from "react";
 import type { GuestRegistrationRequest } from "@/types/guest";
 import { useLeagueGuestRequest } from "@/hooks/league-guest";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
 
 type Props = {
   leagueId?: string;
 };
 
-function Component({ leagueId }: Props) {
+function LeagueGuestTable({ leagueId }: Props) {
   const { leagueGuestRequestData } = useLeagueGuestRequest(leagueId);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -56,6 +63,27 @@ function Component({ leagueId }: Props) {
       header: "Category",
       cell: ({ row }) => {
         return <span>{row.original.league_category.category_name}</span>;
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: () => {
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="text-right">
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreVertical />
+                </Button>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
       },
     },
   ];
@@ -144,4 +172,4 @@ function Component({ leagueId }: Props) {
   );
 }
 
-export const LeagueGuestTable = memo(Component);
+export default memo(LeagueGuestTable);

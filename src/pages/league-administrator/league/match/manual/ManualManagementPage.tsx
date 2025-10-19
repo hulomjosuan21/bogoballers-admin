@@ -17,6 +17,7 @@ import { manualLeagueService } from "@/service/manualLeagueManagementService";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+import { Suspense } from "react";
 
 function ManualMatchingPageContent() {
   const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
@@ -110,7 +111,15 @@ function ManualMatchingPageContent() {
 export default function ManualMatchingPage() {
   return (
     <ManualMatchConfigFlowProvider>
-      <ManualMatchingPageContent />
+      <Suspense
+        fallback={
+          <div className="h-screen grid place-content-center">
+            <Spinner />
+          </div>
+        }
+      >
+        <ManualMatchingPageContent />
+      </Suspense>
     </ManualMatchConfigFlowProvider>
   );
 }
