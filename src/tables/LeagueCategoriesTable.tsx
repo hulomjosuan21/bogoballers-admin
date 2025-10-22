@@ -27,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 import type { LeagueCategory } from "@/types/leagueCategoryTypes";
 import { toast } from "sonner";
@@ -37,9 +36,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { LeagueCategoryService } from "@/service/leagueCategory";
 
-export function LeagueCategoriesTable() {
-  const { activeLeagueId } = useActiveLeague();
-
+export function LeagueCategoriesTable({
+  activeLeagueId,
+}: {
+  activeLeagueId?: string;
+}) {
   const {
     activeLeagueCategories,
     activeLeagueCategoriesLoading,
@@ -217,6 +218,15 @@ export function LeagueCategoriesTable() {
     },
   });
 
+  if (activeLeagueCategoriesError) {
+    <div className="h-screen grid place-content-center">
+      <p className="text-sm text-red-500">
+        {activeLeagueCategoriesError.message ||
+          "Error loading league categories"}
+      </p>
+    </div>;
+  }
+
   return (
     <div className="space-y-2">
       <div className="overflow-hidden rounded-md border">
@@ -262,8 +272,6 @@ export function LeagueCategoriesTable() {
                 >
                   {activeLeagueCategoriesLoading
                     ? "Loading data..."
-                    : activeLeagueCategoriesError
-                    ? activeLeagueCategoriesError.message
                     : "No data"}
                 </TableCell>
               </TableRow>

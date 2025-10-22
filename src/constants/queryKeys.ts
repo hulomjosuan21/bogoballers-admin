@@ -17,7 +17,8 @@ export const QUERY_KEYS = {
   PLAYERS_ALL: ["players-all"] as const,
   TEAMS_ALL: ["teams-all"] as const,
   LEAGUE_ADMINS: ["league-admins-all"] as const,
-  LEAGUE_GUEST: (leagueId?: string) => ["league-guest", leagueId] as const,
+  LEAGUE_GUEST: (leagueCategoryId?: string) =>
+    ["league-guest", leagueCategoryId] as const,
 
   LEAGUE_PUBLIC_ID: (
     publicLeagueId?: string,

@@ -1,20 +1,21 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import type { AutomaticMatchConfigLeagueCategoryNodeData } from "@/types/automaticMatchConfigTypes";
 
-const GroupNode: React.FC<
+const AutomaticMatchConfigLeagueCategoryNode: React.FC<
   NodeProps<Node<AutomaticMatchConfigLeagueCategoryNodeData>>
 > = ({ data }) => {
+  const { league_category } = data;
   return (
-    <div className="relative p-3 border rounded-md bg-secondary w-24">
-      <div className="font-semibold text-xs text-secondary-foreground">
-        {data.league_category.category_name}
+    <div className="p-3 border rounded-md bg-background w-fit text-center">
+      <div className="font-semibold text-xs">
+        {league_category.category_name}
       </div>
       <div className="text-xs text-muted-foreground">Category</div>
 
-      <Handle type="source" position={Position.Right} id="match-source" />
+      <Handle type="source" position={Position.Right} id="category-out" />
     </div>
   );
 };
 
-export default memo(GroupNode);
+export default memo(AutomaticMatchConfigLeagueCategoryNode);

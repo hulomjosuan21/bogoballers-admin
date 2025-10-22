@@ -1,9 +1,8 @@
 import { ReactFlow, Background, Controls } from "@xyflow/react";
+import { automaticMatchConfigNodeTypes } from "@/components/automatic-match-config";
+import { useManageAutomaticMatchConfigNode } from "@/hooks/useAutomaticMatchConfigHook";
 
-import { useManageManualMatchConfigNode } from "@/hooks/useManualMatchConfigHook";
-import { manualMatchConfigNodeTypes } from "@/components/manual-match-config";
-
-export function ManualMatchingCanvas({
+export function AutomaticMatchConfigXyFlowCanvas({
   activeLeagueId,
 }: {
   activeLeagueId?: string;
@@ -17,20 +16,20 @@ export function ManualMatchingCanvas({
     onDrop,
     onDragOver,
     onNodeDragStop,
-  } = useManageManualMatchConfigNode(activeLeagueId);
+  } = useManageAutomaticMatchConfigNode(activeLeagueId);
 
   return (
-    <div className="h-full border rounded-md w-full bg-background">
+    <div className="h-full w-full border rounded-md bg-background">
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        onNodeDragStop={onNodeDragStop}
+        nodeTypes={automaticMatchConfigNodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onDrop={onDrop}
         onDragOver={onDragOver}
-        onNodeDragStop={onNodeDragStop}
-        nodeTypes={manualMatchConfigNodeTypes}
         fitView
       >
         <Background />

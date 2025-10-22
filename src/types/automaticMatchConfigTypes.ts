@@ -2,6 +2,8 @@ import { type Node } from "@xyflow/react";
 import type {
   LeagueCategory,
   LeagueCategoryRound,
+  RoundFormat,
+  RoundFormatTypesEnum,
   RoundTypeEnum,
 } from "./leagueCategoryTypes";
 
@@ -14,10 +16,17 @@ export type AutomaticMatchConfigLeagueCategoryRoundNodeData = {
   league_category_round: RoundTypeEnum;
   round: Partial<LeagueCategoryRound>;
 };
+export type AutomaticMatchConfigRoundFormatData = {
+  type: "league_category_round_format";
+  format_name: string;
+  format_type: RoundFormatTypesEnum;
+  format_obj: Partial<RoundFormat>;
+};
 
 export type AutomaticMatchConfigFlowNodeData =
   | AutomaticMatchConfigLeagueCategoryNodeData
-  | AutomaticMatchConfigLeagueCategoryRoundNodeData;
+  | AutomaticMatchConfigLeagueCategoryRoundNodeData
+  | AutomaticMatchConfigRoundFormatData;
 
 export type AutomaticMatchConfigFlowNode =
   Node<AutomaticMatchConfigFlowNodeData>;

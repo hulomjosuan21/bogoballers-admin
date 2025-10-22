@@ -15,6 +15,8 @@ import {
   type LucideIcon,
   EyeOff,
   Eye,
+  Trophy,
+  ArrowUpRightIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -23,14 +25,16 @@ import {
   useActiveLeagueAnalytics,
 } from "@/hooks/useActiveLeague";
 import {
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertToolbar,
-} from "@/components/ui/alert";
-import { RiSpamFill } from "@remixicon/react";
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { useNavigate } from "react-router-dom";
 import type { League } from "@/types/league";
+import { Spinner } from "@/components/ui/spinner";
 
 interface DashboardCardProps {
   title: string;
@@ -175,13 +179,22 @@ const RecentUpdates = () => {
 };
 
 export default function DashboardPage() {
-  const { activeLeagueId, activeLeagueData } = useActiveLeague();
+  const { activeLeagueId, activeLeagueData, activeLeagueLoading } =
+    useActiveLeague();
 
-  const { activeLeagueAnalyticsData } =
+  const { activeLeagueAnalyticsData, activeLeagueAnalyticsLoading } =
     useActiveLeagueAnalytics(activeLeagueId);
   const [showUpdates, setShowUpdates] = useState(true);
 
   const navigate = useNavigate();
+
+  if (activeLeagueAnalyticsLoading || activeLeagueLoading) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <ContentShell>
@@ -249,26 +262,37 @@ export default function DashboardPage() {
             {showUpdates && <RecentUpdates />}
           </div>
         ) : (
-          <Alert variant="info">
-            <AlertIcon>
-              <RiSpamFill />
-            </AlertIcon>
-            <AlertTitle>Start new league.</AlertTitle>
-            <AlertToolbar>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Trophy />
+              </EmptyMedia>
+              <EmptyTitle>No League Yet</EmptyTitle>
+              <EmptyDescription>
+                You haven&apos;t started league yet. Start by creating your new
+                league.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
               <Button
-                variant="inverse"
-                mode="link"
-                underlined="solid"
-                size="sm"
-                className="flex mt-0.5"
                 onClick={() =>
                   navigate("/league-administrator/pages/league/new")
                 }
               >
-                Go to creation page
+                Create League
               </Button>
-            </AlertToolbar>
-          </Alert>
+            </EmptyContent>
+            <Button
+              variant="ghost"
+              asChild
+              className="text-muted-foreground"
+              size="sm"
+            >
+              <a href="#">
+                Learn More <ArrowUpRightIcon />
+              </a>
+            </Button>
+          </Empty>
         )}
       </ContentBody>
     </ContentShell>

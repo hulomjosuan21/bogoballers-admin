@@ -7,7 +7,7 @@ import type {
 } from "@/types/manualMatchConfigTypes";
 import type { Edge } from "@xyflow/react";
 
-interface FlowStateResponse {
+export interface FlowStateResponse {
   nodes: ManualMatchConfigFlowNode[];
   edges: Edge[];
 }
@@ -110,12 +110,6 @@ export class ManualLeagueManagementService {
     return response.data;
   }
 
-  async resetCategoryLayout(categoryId: string) {
-    const response = await axiosClient.put(
-      `/manual-league-management/categories/${categoryId}/reset-layout`
-    );
-    return response.data;
-  }
   async updateGroup(
     groupId: string,
     payload: Partial<IManualMatchConfigGroup>

@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FlowProvider,
-  useFlowDispatch,
+  ManualMatchConfigFlowProvider,
+  useManualMatchConfigFlowDispatch,
 } from "@/context/ManualMatchConfigFlowContext";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ContentHeader from "@/components/content-header";
@@ -9,17 +9,20 @@ import {
   ManualMatchNodeMenu,
   ManualLeagueTeamNodeMenu,
   ManualRoundNodeMenu,
-} from "@/components/manual-match-config/ManualNodeMenus";
+} from "@/components/manual-match-config/ManualMatchConfigNodeMenus";
 import { ManualMatchingCanvas } from "./LeagueMatchManualXyFlowCanvas";
 import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { toast } from "sonner";
 import { manualLeagueService } from "@/service/manualLeagueManagementService";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { Suspense } from "react";
 
 function ManualMatchingPageContent() {
-  const { activeLeagueId } = useActiveLeague();
-  const dispatch = useFlowDispatch();
+  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
+    useActiveLeague();
+  const dispatch = useManualMatchConfigFlowDispatch();
 
   const handleSyncBracket = async () => {
     if (!activeLeagueId) {
@@ -51,8 +54,10 @@ function ManualMatchingPageContent() {
         defaultValue="match-types"
         className="text-xs text-muted-foreground"
       >
-        <TabsList size="xs">
-          <TabsTrigger value="match-types">Match types</TabsTrigger>
+        <TabsList size="xs" className="">
+          <TabsTrigger value="match-types" className="text-xs">
+            Match templates
+          </TabsTrigger>
           <TabsTrigger value="round">Round</TabsTrigger>
           <TabsTrigger value="teams">Teams</TabsTrigger>
         </TabsList>
@@ -69,16 +74,34 @@ function ManualMatchingPageContent() {
     </div>
   );
 
+  if (activeLeagueLoading) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (activeLeagueError) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <p className="text-sm text-red-500">
+          {activeLeagueError.message || "Error loading league config"}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <ContentShell>
       <ContentHeader title="Manual Configuration">
         <Button onClick={handleSyncBracket} size="sm" className="">
           <ArrowRightLeft className="w-4 h-4" />
-          Sync Bracket
+          Sync
         </Button>
       </ContentHeader>
       <ContentBody className="flex-row flex">
-        <ManualMatchingCanvas />
+        <ManualMatchingCanvas activeLeagueId={activeLeagueId} />
         {rightMenu}
       </ContentBody>
     </ContentShell>
@@ -87,8 +110,16 @@ function ManualMatchingPageContent() {
 
 export default function ManualMatchingPage() {
   return (
-    <FlowProvider>
-      <ManualMatchingPageContent />
-    </FlowProvider>
+    <ManualMatchConfigFlowProvider>
+      <Suspense
+        fallback={
+          <div className="h-screen grid place-content-center">
+            <Spinner />
+          </div>
+        }
+      >
+        <ManualMatchingPageContent />
+      </Suspense>
+    </ManualMatchConfigFlowProvider>
   );
 }

@@ -1,8 +1,8 @@
 import { getLeagueGuestRequestQueryOptions } from "@/queries/leagueGuestQueryOption";
 import { useQuery } from "@tanstack/react-query";
 
-export const useLeagueGuestRequest = (leagueId?: string) => {
-  const query = useQuery(getLeagueGuestRequestQueryOptions(leagueId));
+export const useLeagueGuestRequest = (leagueCategoryId?: string) => {
+  const query = useQuery(getLeagueGuestRequestQueryOptions(leagueCategoryId));
 
   return {
     leagueGuestRequestData: query.data ?? [],

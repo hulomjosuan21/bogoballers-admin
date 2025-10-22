@@ -4,7 +4,6 @@ import {
   TeamSubmissionPage,
   SettingsPage,
   LeagueCreationPage,
-  LeagueCategoryManagementPage,
   LeagueAffiliatePage,
   LeagueOfficialsPage,
   LeagueMatchSetUnSchedulePage,
@@ -25,12 +24,10 @@ import {
   UsersRound,
   Settings,
   FolderKanban,
-  GitBranchPlus,
   Trophy,
   SquarePen,
   FileQuestionMark,
   type LucideIcon,
-  MessageSquare,
   ChevronsRightLeft,
   Network,
   ChartNoAxesGantt,
@@ -42,15 +39,13 @@ import LandingPage from "@/pages/public/landing-page/LandingPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import StartScorebookPage from "@/pages/scorebook/StartNewBook";
 import LeagueAdminPagesLGU from "@/pages/LeagueAdminPagesLGU";
-import ConversationListPage from "@/pages/ConversationListPage";
-import ChatLoader from "@/components/ChatLoader";
-import ChatScreen from "@/components/ChatScreen";
 import LeagueMatches from "@/pages/league-administrator/league/match/LeagueMatches";
 import LiveAdminPage from "@/pages/LiveAdminPage";
 import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/ManualManagementPage";
 import PublicLeaguePage from "@/components/public-components/PublicLeaguePage";
 import LeagueGuestPage from "@/pages/league-administrator/league/guest/LeagueGuestPage";
-import AutomaticVersionTwo from "@/pages/league-administrator/league/match/autoTwo";
+import AutomaticMatchConfigPage from "@/pages/league-administrator/league/match/automatic/AutomaticMatchConfigXyFlowPage";
+import MatchSetupPage from "@/pages/league-administrator/league/match/MatchSetupPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -124,28 +119,6 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   },
 
   {
-    path: "chat",
-    element: <ConversationListPage />,
-    permissions: [Permission.ViewChat],
-    showInSidebar: true,
-    sidebarTitle: "Chats",
-    icon: MessageSquare,
-    sidebarGroup: "platform",
-  },
-  {
-    path: "start-chat/:partnerId/:partnerName",
-    element: <ChatLoader />,
-    permissions: [Permission.ViewChat],
-    showInSidebar: false,
-  },
-  {
-    path: "chat/:partnerId",
-    element: <ChatScreen />,
-    permissions: [Permission.ViewChat],
-    showInSidebar: false,
-  },
-
-  {
     path: "pages/league-admins",
     element: <LeagueAdminPagesLGU />,
     permissions: [Permission.ManagementLeagueAdmins],
@@ -173,17 +146,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
   },
   {
-    path: "pages/league/automatic/management",
-    element: <LeagueCategoryManagementPage />,
-    permissions: [Permission.MatchManangement],
-    showInSidebar: true,
-    sidebarTitle: "Automatic",
-    sidebarParent: "Match Config",
-    icon: GitBranchPlus,
-    sidebarGroup: "league",
-  },
-  {
-    path: "pages/league/manual/management",
+    path: "pages/league/manual/configuration",
     element: <ManualMatchingPage />,
     permissions: [Permission.MatchManangement],
     showInSidebar: true,
@@ -192,12 +155,13 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     icon: Network,
     sidebarGroup: "league",
   },
+
   {
-    path: "pages/league/manual/management/v2",
-    element: <AutomaticVersionTwo />,
+    path: "pages/league/automatic/configuration",
+    element: <AutomaticMatchConfigPage />,
     permissions: [Permission.MatchManangement],
     showInSidebar: true,
-    sidebarTitle: "Automatic v2",
+    sidebarTitle: "Automatic",
     sidebarParent: "Match Config",
     icon: Network,
     sidebarGroup: "league",
@@ -318,6 +282,12 @@ export const protectedRoutesWithoutSidebar: AppRouteObject[] = [
     element: <span>test</span>,
     permissions: [Permission.ScoreBook],
     showInSidebar: false,
+  },
+  {
+    path: "/match/setup/:match_id?",
+    element: <MatchSetupPage />,
+    showInSidebar: false,
+    permissions: [Permission.SetupMatch],
   },
 ];
 

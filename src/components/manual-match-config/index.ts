@@ -4,9 +4,8 @@ import ManualMatchConfigLeagueCategoryRoundNode from "./ManualMatchConfigLeagueC
 import ManualMatchConfigLeagueMatchNode from "./ManualMatchConfigLeagueMatchNode";
 
 export const manualMatchConfigNodeTypes = {
-  manualMatchConfigleagueCategory: ManualMatchConfigLeagueCategoryNode,
-  manualMatchConfigleagueCategoryRound:
-    ManualMatchConfigLeagueCategoryRoundNode,
-  manualMatchConfigGroup: ManualMatchConfigGroupNode,
-  manualMatchConfigleagueMatch: ManualMatchConfigLeagueMatchNode,
+  leagueCategory: ManualMatchConfigLeagueCategoryNode,
+  leagueCategoryRound: ManualMatchConfigLeagueCategoryRoundNode,
+  group: ManualMatchConfigGroupNode,
+  leagueMatch: ManualMatchConfigLeagueMatchNode,
 };
