@@ -77,6 +77,7 @@ export default function TeamSubmissionPage() {
             <LeagueTeamSheetSheetSubmissionSheet />
             <RefundDialog />
             <Suspense
+              key={`${selectedCategory}-${activeLeagueId}`}
               fallback={
                 <div className="h-40 grid place-content-center">
                   <Spinner />

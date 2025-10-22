@@ -101,6 +101,7 @@ export default function LeagueTeamsPage() {
           selectedCategory &&
           selectedRound && (
             <Suspense
+              key={`${selectedCategory}-${selectedRound}`}
               fallback={
                 <div className="h-40 grid place-content-center">
                   <Spinner />
@@ -108,6 +109,7 @@ export default function LeagueTeamsPage() {
               }
             >
               <LeagueTeamsTable
+                key={selectedCategory}
                 leagueCategoryId={selectedCategory}
                 roundId={selectedRound}
               />

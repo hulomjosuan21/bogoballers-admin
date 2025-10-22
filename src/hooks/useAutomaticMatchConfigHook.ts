@@ -69,6 +69,10 @@ export function useManageAutomaticMatchConfigNode(activeLeagueId?: string) {
   const { onDrop, onDragOver } = useAutomaticMatchConfigDragAndDrop();
   const nodesRef = useRef(nodes);
 
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
   const TOAST_ID = "auto-layout-toast";
 
   const { data, isLoading, isSuccess, isError } =

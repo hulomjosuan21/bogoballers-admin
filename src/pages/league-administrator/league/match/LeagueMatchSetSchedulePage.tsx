@@ -1,124 +1,123 @@
-import { useState, useEffect } from "react";
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
-import type { LeagueCategory } from "@/types/leagueCategoryTypes";
-import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
-import { UnscheduleMatchTable } from "@/tables/LeagueMatchUnscheduledTable";
+
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
+import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
+import { Spinner } from "@/components/ui/spinner";
+import { Suspense } from "react";
+import { UnscheduleMatchTable } from "@/tables/LeagueMatchUnscheduledTable";
+import { useLeagueMatch } from "@/hooks/leagueMatch";
 
 export default function LeagueMatchSetUnSchedulePage() {
-  const { activeLeagueData, activeLeagueError, activeLeagueCategories } =
-    useActiveLeague();
+  const {
+    categories,
+    rounds,
+    isLoading,
+    activeLeagueData,
+    error,
+    selectedCategory,
+    selectedRound,
+    setSelectedCategory,
+    setSelectedRound,
+  } = useLeagueCategoriesRoundsGroups();
 
-  const hasActiveLeague =
-    !activeLeagueError &&
-    activeLeagueData &&
-    activeLeagueCategories &&
-    activeLeagueCategories.length > 0;
+  const {
+    leagueMatchData,
+    leagueMatchLoading,
+    leagueMatchError,
+    refetchLeagueMatch,
+  } = useLeagueMatch(selectedCategory, selectedRound, {
+    condition: "Unscheduled",
+  });
 
-  const [selectedCategory, setSelectedCategory] =
-    useState<LeagueCategory | null>(null);
-  const [activeRoundId, setActiveRoundId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (hasActiveLeague && activeLeagueCategories.length > 0) {
-      const firstCategory = activeLeagueCategories[0];
-      setSelectedCategory(firstCategory);
-      setActiveRoundId(firstCategory.rounds[0]?.round_id || null);
-    }
-  }, [hasActiveLeague, activeLeagueCategories]);
-
-  const handleCategorySelect = (categoryId: string) => {
-    const category =
-      activeLeagueCategories?.find(
-        (c) => c.league_category_id === categoryId
-      ) || null;
-    setSelectedCategory(category);
-    setActiveRoundId(category?.rounds[0]?.round_id || null);
-  };
-
-  if (activeLeagueData?.status === "Pending") {
+  if (activeLeagueData?.status == "Pending") {
     return <LeagueNotApproveYet />;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen grid place-content-center">
+        <p className="text-sm text-red-500">
+          {error.message || "Error loading match"}
+        </p>
+      </div>
+    );
   }
 
   return (
     <ContentShell>
       <ContentHeader title="Set Schedule" />
       <ContentBody>
-        {hasActiveLeague ? (
-          selectedCategory ? (
-            <Tabs
-              value={activeRoundId || undefined}
-              onValueChange={setActiveRoundId}
-              className="text-sm text-muted-foreground"
+        {categories.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
             >
-              <div className="flex flex-wrap gap-2 items-center mb-2">
-                <Select
-                  onValueChange={handleCategorySelect}
-                  value={selectedCategory?.league_category_id || ""}
-                >
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Select League Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Active League Categories</SelectLabel>
-                      {activeLeagueCategories?.map((category) => (
-                        <SelectItem
-                          key={category.league_category_id}
-                          value={category.league_category_id}
-                        >
-                          {category.category_name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+              <SelectTrigger className="h-6 px-2 py-1 text-xs">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent className="text-xs">
+                {categories.map((c) => (
+                  <SelectItem
+                    key={c.league_category_id}
+                    value={c.league_category_id}
+                  >
+                    {c.category_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-                <TabsList className="flex flex-wrap gap-2">
-                  {selectedCategory?.rounds.map((round) => (
-                    <TabsTrigger
-                      key={round.round_id}
-                      value={round.round_id}
-                      className="w-[175px]"
-                    >
-                      {round.round_name}
-                    </TabsTrigger>
+            {rounds.length > 0 && (
+              <Select value={selectedRound} onValueChange={setSelectedRound}>
+                <SelectTrigger className="h-6 px-2 py-1 text-xs">
+                  <SelectValue placeholder="Round" />
+                </SelectTrigger>
+                <SelectContent className="text-xs">
+                  {rounds.map((r) => (
+                    <SelectItem key={r.round_id} value={r.round_id}>
+                      {r.round_name}
+                    </SelectItem>
                   ))}
-                </TabsList>
-              </div>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        )}
 
-              {selectedCategory?.rounds.length > 0 ? (
-                selectedCategory.rounds.map((round) => (
-                  <TabsContent key={round.round_id} value={round.round_id}>
-                    <UnscheduleMatchTable
-                      leagueCategoryId={selectedCategory.league_category_id}
-                      roundId={round.round_id}
-                    />
-                  </TabsContent>
-                ))
-              ) : (
-                <p className="text-muted-foreground">
-                  No rounds available for this category.
-                </p>
-              )}
-            </Tabs>
-          ) : (
-            <p className="text-muted-foreground">No category selected.</p>
-          )
-        ) : (
-          <NoActiveLeagueAlert />
+        {selectedCategory && selectedRound && (
+          <Suspense
+            key={`${selectedCategory}-${selectedRound}`}
+            fallback={
+              <div className="h-40 grid place-content-center">
+                <Spinner />
+              </div>
+            }
+          >
+            <UnscheduleMatchTable
+              key={selectedCategory}
+              leagueMatchData={leagueMatchData}
+              leagueMatchLoading={leagueMatchLoading}
+              leagueMatchError={leagueMatchError}
+              refetchLeagueMatch={refetchLeagueMatch}
+            />
+          </Suspense>
         )}
       </ContentBody>
     </ContentShell>

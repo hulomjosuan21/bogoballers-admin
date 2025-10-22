@@ -29,18 +29,73 @@ import { autoMatchConfigService } from "@/service/automaticMatchConfigService";
 import { toast } from "sonner";
 import { ScrollArea } from "../ui/scroll-area";
 
+type ConfigValue = string | number | boolean | object | null;
+
 const AutomaticMatchConfigRoundFormatNode: React.FC<
   NodeProps<Node<AutomaticMatchConfigRoundFormatData>>
 > = ({ data }) => {
   const [formatName, setFormatName] = useState(data.format_name);
-  const [config, setConfig] = useState<Record<string, any>>(
-    data.format_obj.format_obj ?? {}
-  );
+
+  const getDefaultConfig = (
+    type: RoundFormatTypesEnum
+  ): Record<string, any> => {
+    switch (type) {
+      case RoundFormatTypesEnum.RoundRobin:
+        return {
+          group_count: 1,
+          advances_per_group: 1,
+          use_point_system: false,
+        };
+      case RoundFormatTypesEnum.Knockout:
+        return {
+          group_count: 1,
+          seeding: "random",
+          series_config: null,
+        };
+      case RoundFormatTypesEnum.DoubleElimination:
+        return {
+          group_count: 1,
+          max_loss: 2,
+          progress_group: 1,
+          max_progress_group: 6,
+          advances_per_group: 1,
+        };
+      case RoundFormatTypesEnum.BestOf:
+        return {
+          group_count: 1,
+          games: 3,
+          advances_per_group: 1,
+          series_config: null,
+        };
+      default:
+        return {};
+    }
+  };
+
+  const [config, setConfig] = useState<Record<string, any>>(() => {
+    const defaults = getDefaultConfig(data.format_type);
+    return { ...defaults, ...(data.format_obj.format_obj ?? {}) };
+  });
   const [isConfigured, setIsConfigured] = useState(
     data.format_obj.is_configured ?? false
   );
 
   const [isPending, startTransition] = useTransition();
+
+  const normalizeConfig = (cfg: Record<string, ConfigValue>) => {
+    const normalized: Record<string, ConfigValue> = {};
+    for (const key in cfg) {
+      const val = cfg[key];
+
+      if (typeof val === "string" && !isNaN(Number(val)) && val.trim() !== "") {
+        // convert numeric strings into numbers
+        normalized[key] = Number(val);
+      } else {
+        normalized[key] = val;
+      }
+    }
+    return normalized;
+  };
 
   const handleSave = (isConfigured: boolean) => {
     startTransition(async () => {
@@ -51,7 +106,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
           data.format_obj.format_id,
           {
             format_name: formatName,
-            format_obj: config,
+            format_obj: normalizeConfig(config),
             is_configured: isConfigured,
           }
         );
