@@ -241,6 +241,7 @@ function MainTable({
   const handleRemoveSaved = async (matchId: string) => {
     await deleteSavedState(matchId);
     setSavedMatches((prev) => prev.filter((m) => m.matchId !== matchId));
+    removeSelectedMatch();
   };
 
   const handleContinue = (matchId: string) => navigate(`/scorebook/${matchId}`);

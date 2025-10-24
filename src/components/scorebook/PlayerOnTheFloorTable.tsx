@@ -28,6 +28,11 @@ import type { PlayerBook, PlayerStatsSummary } from "@/types/scorebook";
 import { type Action } from "@/context/GameContext";
 import { DroppableTableRow } from "./DroppableTableRow";
 import { memo } from "react";
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+  ButtonGroupText,
+} from "@/components/ui/button-group";
 
 type Props = {
   viewMode?: boolean;
@@ -85,7 +90,10 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
           }
         };
 
-        const updateStat = (stat: keyof PlayerStatsSummary, value: number) => {
+        const updateStat = (
+          stat: keyof PlayerStatsSummary | "P" | "T", // Allow P and T for +/- fouls
+          value: number
+        ) => {
           dispatch({
             type: "UPDATE_PLAYER_STAT",
             payload: {
@@ -99,172 +107,143 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
 
         return (
           <div className="flex items-center gap-1">
+            {/* Dropdown Menu - Now only contains Stats (+) and Fouls (+) */}
             {!viewMode && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-1"
-                    disabled={viewMode}
-                  >
+                  <Button variant="ghost" size="sm" className="h-7 px-1">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Scoring</DropdownMenuLabel>
-                  <DropdownMenuGroup className="group-sm">
-                    <DropdownMenuItem
-                      className="menu-sm"
-                      onSelect={() => updateStat("fg2m", 1)}
-                    >
-                      +2 made
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="menu-sm-d"
-                      onSelect={() => updateStat("fg2a", 1)}
-                    >
-                      +2 miss
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="menu-sm"
-                      onSelect={() => updateStat("fg3m", 1)}
-                    >
-                      +3 made
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="menu-sm-d"
-                      onSelect={() => updateStat("fg3a", 1)}
-                    >
-                      +3 miss
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="menu-sm"
-                      onSelect={() => updateStat("ftm", 1)}
-                    >
-                      +1 made
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="menu-sm-d"
-                      onSelect={() => updateStat("fta", 1)}
-                    >
-                      +1 miss
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
                   <DropdownMenuLabel>Stats</DropdownMenuLabel>
+                  {/* Minus options are REMOVED */}
                   <DropdownMenuGroup className="group-sm">
-                    <DropdownMenuItem
-                      className="menu-sm-d"
-                      onSelect={() => updateStat("reb", -1)}
-                    >
-                      - reb
-                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("reb", 1)}
                     >
-                      + reb
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuGroup className="group-sm">
-                    <DropdownMenuItem
-                      className="menu-sm-d"
-                      onSelect={() => updateStat("ast", -1)}
-                    >
-                      - ast
+                      + REB
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("ast", 1)}
                     >
-                      + ast
+                      + AST
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
-
                   <DropdownMenuGroup className="group-sm">
-                    <DropdownMenuItem
-                      className="menu-sm-d"
-                      onSelect={() => updateStat("stl", -1)}
-                    >
-                      - stl
-                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("stl", 1)}
                     >
-                      + stl
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-
-                  <DropdownMenuGroup className="group-sm">
-                    <DropdownMenuItem
-                      className="menu-sm-d"
-                      onSelect={() => updateStat("blk", -1)}
-                    >
-                      - blk
+                      + STL
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("blk", 1)}
                     >
-                      + blk
+                      + BLK
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
-
                   <DropdownMenuGroup className="group-sm">
-                    <DropdownMenuItem
-                      className="menu-sm-d"
-                      onSelect={() => updateStat("tov", -1)}
-                    >
-                      - tov
-                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("tov", 1)}
                     >
-                      + tov
+                      + TOV
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Fouls</DropdownMenuLabel>
+                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("P", 1)}
+                    >
+                      + PF
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("T", 1)}
+                    >
+                      + TF
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+
+            {/* Editable Score Input */}
             <Input
               id={`score-input-${player.player_team_id}-${player.player_id}`}
               type="number"
               value={currentQtrScore}
               onChange={(e) => handleScoreChange(e.target.value)}
               disabled={viewMode}
-              className="w-18"
+              className="w-12 h-7 text-center font-bold"
               variant={"sm"}
             />
+
             {!viewMode && (
-              <>
-                <Button
-                  size="sm"
-                  className="h-7 px-2"
-                  onClick={() => updateStat("ftm", 1)}
-                  disabled={viewMode}
-                >
-                  +1
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-7 px-2"
-                  onClick={() => updateStat("fg2m", 1)}
-                  disabled={viewMode}
-                >
-                  +2
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-7 px-2"
-                  onClick={() => updateStat("fg3m", 1)}
-                  disabled={viewMode}
-                >
-                  +3
-                </Button>
-              </>
+              <div className="flex gap-1">
+                <ButtonGroup>
+                  <Button
+                    size="sm"
+                    variant="dashed"
+                    className="h-7 px-1.5 text-[10px] leading-none"
+                    onClick={() => updateStat("fta", 1)}
+                  >
+                    miss
+                  </Button>
+                  <ButtonGroupSeparator />
+                  <Button
+                    size="sm"
+                    className="h-7 px-1.5"
+                    onClick={() => updateStat("ftm", 1)}
+                  >
+                    +1
+                  </Button>
+                </ButtonGroup>
+                {/* 2 Pointers Group */}
+                <ButtonGroup>
+                  <Button
+                    size="sm"
+                    variant="dashed"
+                    className="h-7 px-1.5 text-[10px] leading-none"
+                    onClick={() => updateStat("fg2a", 1)}
+                  >
+                    miss
+                  </Button>
+                  <ButtonGroupSeparator />
+                  <Button
+                    size="sm"
+                    className="h-7 px-1.5"
+                    onClick={() => updateStat("fg2m", 1)}
+                  >
+                    +2
+                  </Button>
+                </ButtonGroup>
+                {/* 3 Pointers Group */}
+                <ButtonGroup>
+                  <Button
+                    size="sm"
+                    variant="dashed"
+                    className="h-7 px-1.5 text-[10px] leading-none"
+                    onClick={() => updateStat("fg3a", 1)}
+                  >
+                    miss
+                  </Button>
+                  <ButtonGroupSeparator />
+                  <Button
+                    size="sm"
+                    className="h-7 px-1.5"
+                    onClick={() => updateStat("fg3m", 1)}
+                  >
+                    +3
+                  </Button>
+                </ButtonGroup>
+              </div>
             )}
           </div>
         );

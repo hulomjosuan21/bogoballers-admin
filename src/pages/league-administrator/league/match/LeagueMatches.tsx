@@ -17,6 +17,7 @@ import { ToggleState } from "@/stores/toggleStore";
 import FinalizaMatchSection from "@/components/FinalizeMatch";
 import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import ScheduleMatchTable from "@/tables/LeagueMatchUpcomingTable";
+import { getErrorMessage } from "@/lib/error";
 
 export default function LeagueMatches() {
   const {
@@ -66,16 +67,6 @@ export default function LeagueMatches() {
     return (
       <div className="h-screen grid place-content-center">
         <Spinner />
-      </div>
-    );
-  }
-
-  if (error || leagueMatchError) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <p className="text-sm text-red-500">
-          {error?.message || leagueMatchError?.message || "Error loading match"}
-        </p>
       </div>
     );
   }
