@@ -18,6 +18,7 @@ export interface PlayerBook {
   full_name: string;
   jersey_name: string;
   jersey_number: number;
+  profile_image_url: string | null;
   total_score: number;
   score_per_qtr: { qtr: number; score: number }[];
   P: number;
@@ -31,6 +32,7 @@ export interface TeamBook {
   team_id: string;
   team_name: string;
   coach: string;
+  team_logo_url: string | null;
   coachT: number;
   none_memberT: number;
   capT_ball: string | null;
@@ -46,6 +48,7 @@ export interface MatchBook {
   away_total_score: number;
   is_overtime: boolean;
   quarters: number;
+  default_quarters: number;
   minutes_per_quarter: number;
   minutes_per_overtime: number;
   time_seconds: number;

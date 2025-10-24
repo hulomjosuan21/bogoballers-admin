@@ -31,7 +31,6 @@ import { memo } from "react";
 import {
   ButtonGroup,
   ButtonGroupSeparator,
-  ButtonGroupText,
 } from "@/components/ui/button-group";
 
 type Props = {
@@ -54,13 +53,30 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
       cell: ({ row }) => {
         const player = row.original;
         return (
-          <div className="flex flex-col">
-            <span className="font-medium whitespace-nowrap">
-              {player.jersey_name}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              #{player.jersey_number}
-            </span>
+          <div className="flex items-center gap-1">
+            {player.profile_image_url ? (
+              <img
+                src={player.profile_image_url}
+                alt={player.full_name}
+                className="h-8 w-8 rounded-md object-cover"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-[10px] font-bold uppercase">
+                {player.full_name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)}
+              </div>
+            )}
+            <div className="flex flex-col">
+              <span className="font-medium whitespace-nowrap">
+                {player.jersey_name}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                #{player.jersey_number}
+              </span>
+            </div>
           </div>
         );
       },
@@ -107,7 +123,6 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
 
         return (
           <div className="flex items-center gap-1">
-            {/* Dropdown Menu - Now only contains Stats (+) and Fouls (+) */}
             {!viewMode && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -115,10 +130,16 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="ml-2">
                   <DropdownMenuLabel>Stats</DropdownMenuLabel>
-                  {/* Minus options are REMOVED */}
                   <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem asChild>+ REB</DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("reb", -1)}
+                    >
+                      - REB
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("reb", 1)}
@@ -127,12 +148,22 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
+                      onSelect={() => updateStat("ast", -1)}
+                    >
+                      - AST
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
                       onSelect={() => updateStat("ast", 1)}
                     >
                       + AST
                     </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("stl", -1)}
+                    >
+                      - STL
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("stl", 1)}
@@ -141,12 +172,22 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
+                      onSelect={() => updateStat("blk", -1)}
+                    >
+                      - BLK
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
                       onSelect={() => updateStat("blk", 1)}
                     >
                       + BLK
                     </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuGroup className="group-sm">
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("tov", -1)}
+                    >
+                      - TOV
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
                       onSelect={() => updateStat("tov", 1)}
@@ -159,9 +200,21 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
                   <DropdownMenuGroup className="group-sm">
                     <DropdownMenuItem
                       className="menu-sm"
+                      onSelect={() => updateStat("P", -1)}
+                    >
+                      - PF
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
                       onSelect={() => updateStat("P", 1)}
                     >
                       + PF
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="menu-sm"
+                      onSelect={() => updateStat("T", -1)}
+                    >
+                      - TF
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="menu-sm"
@@ -181,7 +234,7 @@ export const PlayerOnTheFloorTable = memo(function PlayerOnTheFloorTable({
               value={currentQtrScore}
               onChange={(e) => handleScoreChange(e.target.value)}
               disabled={viewMode}
-              className="w-12 h-7 text-center font-bold"
+              className="max-w-32 h-7 font-bold"
               variant={"sm"}
             />
 

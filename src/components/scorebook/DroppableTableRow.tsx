@@ -12,6 +12,11 @@ export function DroppableTableRow({
 }) {
   const { isOver, setNodeRef } = useDroppable({
     id: player.player_id,
+    data: {
+      full_name: player.full_name,
+      jersey_name: player.jersey_name,
+      jersey_number: player.jersey_number,
+    },
   });
 
   return (

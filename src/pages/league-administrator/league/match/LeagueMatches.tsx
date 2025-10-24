@@ -17,7 +17,6 @@ import { ToggleState } from "@/stores/toggleStore";
 import FinalizaMatchSection from "@/components/FinalizeMatch";
 import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import ScheduleMatchTable from "@/tables/LeagueMatchUpcomingTable";
-import { getErrorMessage } from "@/lib/error";
 
 export default function LeagueMatches() {
   const {
@@ -25,7 +24,6 @@ export default function LeagueMatches() {
     rounds,
     isLoading,
     activeLeagueData,
-    error,
     selectedCategory,
     selectedRound,
     setSelectedCategory,
@@ -35,14 +33,10 @@ export default function LeagueMatches() {
   const [refereesOption, setRefereesOption] = useState<LeagueReferee[]>([]);
   const [courtOption, setCourtOption] = useState<LeagueCourt[]>([]);
 
-  const {
-    leagueMatchData,
-    leagueMatchLoading,
-    leagueMatchError,
-    refetchLeagueMatch,
-  } = useLeagueMatch(selectedCategory, selectedRound, {
-    condition: "Scheduled",
-  });
+  const { leagueMatchData, leagueMatchLoading, refetchLeagueMatch } =
+    useLeagueMatch(selectedCategory, selectedRound, {
+      condition: "Scheduled",
+    });
 
   const { state, data: selectMatch } = useToggleMatchBookSection();
 

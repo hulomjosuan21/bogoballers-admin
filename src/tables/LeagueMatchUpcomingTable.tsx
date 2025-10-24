@@ -526,7 +526,10 @@ export function SelectedMatchAlert({
   const navigate = useNavigate();
 
   const handleStart = () => {
-    if (match) navigate(`/scorebook/${match.league_match_id}`);
+    if (match) {
+      navigate(`/scorebook/${match.league_match_id}`);
+      onRemove();
+    }
   };
 
   if (!match) {

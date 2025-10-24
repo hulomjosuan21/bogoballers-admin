@@ -10,7 +10,13 @@ import {
   SelectValue,
 } from "../ui/select";
 import { CirclePause, Play } from "lucide-react";
-
+export const formatTime = (totalSeconds: number) => {
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+};
 type Props = { viewMode?: boolean };
 
 export function TopSection({ viewMode = false }: Props) {
@@ -28,14 +34,6 @@ export function TopSection({ viewMode = false }: Props) {
     };
   }, [state.timer_running, state.time_seconds, dispatch]);
 
-  const formatTime = (totalSeconds: number) => {
-    const minutes = Math.floor(totalSeconds / 60)
-      .toString()
-      .padStart(2, "0");
-    const seconds = (totalSeconds % 60).toString().padStart(2, "0");
-    return `${minutes}:${seconds}`;
-  };
-
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const [minutes, seconds] = e.target.value.split(":").map(Number);
     const totalSeconds = (minutes || 0) * 60 + (seconds || 0);
@@ -49,9 +47,9 @@ export function TopSection({ viewMode = false }: Props) {
       <div className="flex items-center gap-4">
         {viewMode ? (
           <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-            {state.current_quarter <= 4
+            {state.current_quarter <= state.default_quarters
               ? `Quarter ${state.current_quarter}`
-              : `OT ${state.current_quarter - 4}`}
+              : `OT ${state.current_quarter - state.default_quarters}`}
           </span>
         ) : (
           <Select
@@ -74,8 +72,8 @@ export function TopSection({ viewMode = false }: Props) {
             <SelectContent>
               {Array.from({ length: state.quarters }, (_, i) => {
                 const quarterNum = i + 1;
-                const isRegulation = quarterNum <= 4;
-                const otNumber = quarterNum - 4;
+                const isRegulation = quarterNum <= state.default_quarters;
+                const otNumber = quarterNum - state.default_quarters;
 
                 return (
                   <SelectItem key={quarterNum} value={String(quarterNum)}>
@@ -84,7 +82,7 @@ export function TopSection({ viewMode = false }: Props) {
                 );
               })}
 
-              {state.current_quarter >= 4 && (
+              {state.current_quarter >= state.default_quarters && (
                 <>
                   <SelectSeparator />
                   <SelectItem
