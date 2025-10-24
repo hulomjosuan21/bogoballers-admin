@@ -1,11 +1,4 @@
 import {
-  DndContext,
-  DragOverlay,
-  useDraggable,
-  useDroppable,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
@@ -21,264 +14,227 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useLeagueMatch } from "@/hooks/leagueMatch";
 import type { LeagueMatch } from "@/types/leagueMatch";
-import { GripVertical, MoreVertical, X } from "lucide-react";
+import { MoreVertical, X } from "lucide-react";
 import { formatDate12h } from "@/lib/app_utils";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { memo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   deleteSavedState,
   listSavedStates,
   type GameState,
 } from "@/service/secureStore";
-
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToggleMatchBookSection } from "@/stores/matchStore";
 import { ToggleState } from "@/stores/toggleStore";
+import { Label } from "@/components/ui/label";
+import { DateTimePicker } from "@/components/datetime-picker";
+import { Input } from "@/components/ui/input";
+import MultipleSelector from "@/components/ui/multiselect";
+import { LeagueMatchService } from "@/service/leagueMatchService";
+import type {
+  QueryObserverResult,
+  RefetchOptions,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
+import type { LeagueCourt, LeagueReferee } from "@/types/league";
+import { DataTablePagination } from "@/components/data-table-pagination";
+import { getErrorMessage } from "@/lib/error";
+import {
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertToolbar,
+} from "@/components/ui/alert";
+import { RiErrorWarningFill } from "@remixicon/react";
+import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
 
-type Props = {
-  leagueCategoryId?: string;
-  roundId?: string;
-  fromApi?: LeagueMatch | null;
+type SavedMatchItem = { matchId: string; state: GameState };
+
+type SheetFormData = {
+  scheduled_date?: Date;
+  court?: string;
+  referees?: { label: string; value: string }[];
+  quarters?: number;
+  minutes_per_quarter?: number;
+  home_team_score?: number;
+  away_team_score?: number;
+  winner_team_id?: string;
+  status?: string;
+  minutes_per_overtime?: number;
 };
 
-function DraggableRow({
-  match,
-  children,
+type Props = {
+  leagueMatchData: LeagueMatch[];
+  leagueMatchLoading: boolean;
+  refetchLeagueMatch: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<LeagueMatch[] | null, Error>>;
+  refereesOption: LeagueReferee[];
+  courtOption: LeagueCourt[];
+};
+
+function DataTable<T>({
+  data,
+  columns,
+  empty,
 }: {
-  match: LeagueMatch;
-  children: React.ReactNode;
+  data: T[];
+  columns: ColumnDef<T>[];
+  empty?: string;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: match.public_league_match_id,
-      data: { match },
-    });
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   return (
-    <TableRow
-      ref={setNodeRef}
-      style={{
-        opacity: isDragging ? 0.5 : 1,
-        cursor: "grab",
-        transform: transform
-          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-          : undefined,
-      }}
-      {...listeners}
-      {...attributes}
-    >
-      {children}
-    </TableRow>
-  );
-}
-
-function DropSlot({
-  match,
-  onRemove,
-}: {
-  match: LeagueMatch | null;
-  onRemove: () => void;
-}) {
-  const { isOver, setNodeRef } = useDroppable({ id: "drop-slot" });
-  const navigate = useNavigate();
-
-  const handleStart = () => {
-    navigate(`/scorebook/${match?.league_match_id}`);
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      className={`mb-4 flex min-h-[100px] items-center justify-center rounded-md border-1 border-dashed p-4 transition ${
-        isOver && "border-primary"
-      }`}
-    >
-      {match ? (
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-2">
-            <img
-              src={match.home_team!.team_logo_url}
-              alt={match.home_team!.team_name}
-              className="h-8 w-8 rounded-sm object-cover"
-            />
-            <span className="font-medium">{match.home_team!.team_name}</span>
-            <span className="mx-2">vs</span>
-            <img
-              src={match.away_team!.team_logo_url}
-              alt={match.away_team!.team_name}
-              className="h-8 w-8 rounded-sm object-cover"
-            />
-            <span className="font-medium">{match.away_team!.team_name}</span>
-          </div>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleStart}>
-              Start
-            </Button>
-            <Button size="sm" variant="outline" onClick={onRemove}>
-              Remove
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <span className="text-muted">Drop a match here and start</span>
-      )}
+    <div className="overflow-hidden rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((hg) => (
+            <TableRow key={hg.id} className="bg-muted/50">
+              {hg.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center text-muted"
+              >
+                {empty ?? "No data"}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }
 
-export function UpcomingMatchTable({
-  leagueCategoryId,
-  roundId,
-  fromApi,
+function MainTable({
+  leagueMatchData,
+  leagueMatchLoading,
+  refetchLeagueMatch,
+  refereesOption,
+  courtOption,
 }: Props) {
-  const { leagueMatchData, leagueMatchLoading, leagueMatchError } =
-    useLeagueMatch(leagueCategoryId, roundId, {
-      condition: "Upcoming",
-    });
   const navigate = useNavigate();
+  const { toggle } = useToggleMatchBookSection();
 
   const [matches, setMatches] = useState<LeagueMatch[]>([]);
-  const [selectedMatch, setSelectedMatch] = useState<LeagueMatch | null>(
-    fromApi ?? null
-  );
-  const [activeMatch, setActiveMatch] = useState<LeagueMatch | null>(null);
+  const { selectedMatch, setSelectedMatch, removeSelectedMatch } =
+    useSelectedMatchStore();
 
-  const [savedMatches, setSavedMatches] = useState<
-    { matchId: string; state: GameState }[]
-  >([]);
+  const [editingMatch, setEditingMatch] = useState<LeagueMatch | null>(null);
+  const [savedMatches, setSavedMatches] = useState<SavedMatchItem[]>([]);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [sheetFormData, setSheetFormData] = useState<SheetFormData>({});
+
+  const handleFormChange = (field: keyof SheetFormData, value: any) => {
+    setSheetFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  useEffect(() => {
+    const load = async () => setSavedMatches(await listSavedStates());
+    load();
+  }, []);
 
   useEffect(() => {
     if (leagueMatchData) {
       setMatches(
         leagueMatchData.filter(
-          (m) =>
-            m.public_league_match_id !== fromApi?.public_league_match_id &&
-            !savedMatches.some((s) => s.matchId === m.league_match_id)
+          (m) => !savedMatches.some((s) => s.matchId === m.league_match_id)
         )
       );
     }
-  }, [leagueMatchData, fromApi, savedMatches]);
+  }, [leagueMatchData, savedMatches]);
 
-  const { toggle } = useToggleMatchBookSection();
-
-  useEffect(() => {
-    listSavedStates().then(setSavedMatches);
-  }, []);
-
-  const columns: ColumnDef<LeagueMatch>[] = [
-    {
-      id: "drag",
-      header: "",
-      cell: () => {
-        return (
-          <div>
-            <GripVertical size={16} />
-          </div>
-        );
-      },
-      size: 30,
-    },
-    {
-      accessorKey: "home-team",
-      header: "Home Team",
-      cell: ({ row }) => {
-        const { home_team } = row.original;
-        return (
-          <div className="flex items-center gap-2">
-            <img
-              src={home_team!.team_logo_url}
-              alt={home_team!.team_name}
-              className="h-8 w-8 rounded-sm object-cover"
-            />
-            <span>{home_team!.team_name}</span>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "away-team",
-      header: "Away Team",
-      cell: ({ row }) => {
-        const { away_team } = row.original;
-        return (
-          <div className="flex items-center gap-2">
-            <img
-              src={away_team!.team_logo_url}
-              alt={away_team!.team_name}
-              className="h-8 w-8 rounded-sm object-cover"
-            />
-            <span>{away_team!.team_name}</span>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "scheduled_date",
-      header: "Schedule",
-      cell: ({ row }) => (
-        <span>{formatDate12h(row.original.scheduled_date!)}</span>
-      ),
-    },
-    {
-      accessorKey: "details",
-      header: "Format",
-      cell: ({ row }) => {
-        const { quarters, minutes_per_quarter } = row.original;
-        return quarters && minutes_per_quarter ? (
-          `${quarters}Q @ ${minutes_per_quarter}m`
-        ) : (
-          <Badge variant="outline" className="gap-1">
-            <X className="text-red-500" size={12} aria-hidden="true" />
-            Not Set
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "display_name",
-      header: "Group",
-    },
-  ];
-
-  const table = useReactTable({
-    data: matches,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
+  const initForm = (match: LeagueMatch): SheetFormData => ({
+    scheduled_date: match.scheduled_date
+      ? new Date(match.scheduled_date)
+      : undefined,
+    court: match.court || "",
+    quarters: match.quarters,
+    minutes_per_quarter: match.minutes_per_quarter,
+    minutes_per_overtime: match.minutes_per_overtime,
+    referees: match.referees?.map((r) => ({ label: r, value: r })) ?? [],
   });
 
-  const handleDragStart = (event: any) => {
-    if (event.active.data.current?.match) {
-      setActiveMatch(event.active.data.current.match);
-    }
+  const handleSelectMatch = (match: LeagueMatch) => {
+    if (selectedMatch) setMatches((prev) => [...prev, selectedMatch]);
+    setSelectedMatch(match);
+    setMatches((prev) =>
+      prev.filter(
+        (m) => m.public_league_match_id !== match.public_league_match_id
+      )
+    );
+    setSheetFormData(initForm(match));
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    if (event.over?.id === "drop-slot" && event.active.data.current?.match) {
-      const dropped = event.active.data.current.match as LeagueMatch;
-      setSelectedMatch(dropped);
-      setMatches((prev) =>
-        prev.filter(
-          (m) => m.public_league_match_id !== dropped.public_league_match_id
-        )
-      );
-    }
-    setActiveMatch(null);
+  const handleConfigureMatch = (match: LeagueMatch) => {
+    setEditingMatch(match);
+    setSheetFormData(initForm(match));
+    setIsSheetOpen(true);
   };
 
-  const handleRemove = () => {
-    if (selectedMatch) {
-      setMatches((prev) => [...prev, selectedMatch]);
-      setSelectedMatch(null);
+  const handleSaveChanges = async () => {
+    if (!editingMatch) return;
+    try {
+      await LeagueMatchService.updateOne(editingMatch.league_match_id, {
+        ...sheetFormData,
+        referees: sheetFormData.referees?.map((r) => r.value),
+        scheduled_date: sheetFormData.scheduled_date?.toISOString(),
+      });
+      await refetchLeagueMatch();
+      setIsSheetOpen(false);
+      toast.success("Update successful");
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred");
     }
   };
 
@@ -287,142 +243,322 @@ export function UpcomingMatchTable({
     setSavedMatches((prev) => prev.filter((m) => m.matchId !== matchId));
   };
 
-  const handleContinue = (matchId: string) => {
-    navigate(`/scorebook/${matchId}`);
+  const handleContinue = (matchId: string) => navigate(`/scorebook/${matchId}`);
+
+  const handleRefresh = async () => {
+    toast.promise(refetchLeagueMatch(), {
+      loading: "Loading...",
+      success: "Done",
+      error: (e) => getErrorMessage(e),
+    });
   };
 
-  return (
-    <div className="space-y-2">
-      {savedMatches.length > 0 && (
-        <div className="mb-4 rounded-md border p-4">
-          <h3 className="mb-2 font-semibold">Continue Matches</h3>
-          <div className="flex flex-col gap-2">
-            {savedMatches.map((saved) => (
-              <div
-                key={saved.matchId}
-                className="flex items-center justify-between rounded bg-muted px-3 py-2"
-              >
-                <span>
-                  {saved.state.present.home_team.team_name} vs{" "}
-                  {saved.state.present.away_team.team_name}
-                </span>
-                <div className="flex gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuGroup>
-                        <DropdownMenuItem
-                          onClick={() => handleContinue(saved.matchId)}
-                        >
-                          Continue
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleRemoveSaved(saved.matchId)}
-                        >
-                          Remove
-                        </DropdownMenuItem>
-                      </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuGroup>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            toggle(
-                              saved.state.present,
-                              ToggleState.SHOW_SAVED_MATCH
-                            )
-                          }
-                        >
-                          Finalize
-                        </DropdownMenuItem>
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            ))}
-          </div>
+  const upcomingColumns: ColumnDef<LeagueMatch>[] = [
+    {
+      header: "Home Team",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <img
+            src={row.original.home_team!.team_logo_url}
+            className="h-8 w-8 rounded-sm object-cover"
+          />
+          <span>{row.original.home_team!.team_name}</span>
         </div>
-      )}
+      ),
+    },
+    {
+      header: "Away Team",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <img
+            src={row.original.away_team!.team_logo_url}
+            className="h-8 w-8 rounded-sm object-cover"
+          />
+          <span>{row.original.away_team!.team_name}</span>
+        </div>
+      ),
+    },
+    {
+      header: "Schedule",
+      cell: ({ row }) => (
+        <span>{formatDate12h(row.original.scheduled_date!)}</span>
+      ),
+    },
+    {
+      header: "Format",
+      cell: ({ row }) =>
+        row.original.quarters && row.original.minutes_per_quarter ? (
+          `${row.original.quarters}Q @ ${row.original.minutes_per_quarter}m`
+        ) : (
+          <Badge variant="outline" className="gap-1">
+            <X size={12} className="text-red-500" /> Not Set
+          </Badge>
+        ),
+    },
+    { accessorKey: "display_name", header: "Group" },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <div className="text-right">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreVertical />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={() => handleSelectMatch(row.original)}
+                >
+                  Select
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleConfigureMatch(row.original)}
+                >
+                  Configure
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ),
+    },
+  ];
 
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <DropSlot match={selectedMatch} onRemove={handleRemove} />
-        <div className="overflow-hidden rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="bg-muted">
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <DraggableRow key={row.id} match={row.original}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </DraggableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    {leagueMatchLoading
-                      ? "Loading data..."
-                      : leagueMatchError
-                      ? leagueMatchError.message
-                      : "No upcoming matches"}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+  const savedColumns: ColumnDef<SavedMatchItem>[] = [
+    {
+      header: "Match",
+      cell: ({ row }) =>
+        `${row.original.state.present.home_team.team_name} vs ${row.original.state.present.away_team.team_name}`,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <div className="text-right">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreVertical />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={() => handleContinue(row.original.matchId)}
+                >
+                  Continue
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleRemoveSaved(row.original.matchId)}
+                >
+                  Remove
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    toggle(
+                      row.original.state.present,
+                      ToggleState.SHOW_SAVED_MATCH
+                    )
+                  }
+                >
+                  Finalize
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        {createPortal(
-          <DragOverlay>
-            {activeMatch ? (
-              <div className="flex items-center gap-2 rounded-md border bg-background p-2 shadow-lg">
-                <img
-                  src={activeMatch.home_team!.team_logo_url}
-                  alt={activeMatch.home_team!.team_name}
-                  className="h-6 w-6 rounded-sm object-cover"
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <SelectedMatchAlert
+        match={selectedMatch}
+        onRemove={() => {
+          if (selectedMatch) {
+            setMatches((prev) => [...prev, selectedMatch]);
+          }
+          removeSelectedMatch();
+        }}
+      />
+
+      <span className="text-sm font-medium">Continue Matches</span>
+      <DataTable data={savedMatches} columns={savedColumns} />
+
+      <span className="text-sm font-medium">Upcoming Matches</span>
+      <div className="space-y-2">
+        <DataTable
+          data={matches}
+          columns={upcomingColumns}
+          empty={leagueMatchLoading ? "Loading..." : "No upcoming matches"}
+        />
+
+        <div className="flex gap-2 items-center">
+          <div className="flex-1">
+            <DataTablePagination
+              showPageSize={true}
+              table={useReactTable({
+                data: matches,
+                columns: upcomingColumns,
+                getCoreRowModel: getCoreRowModel(),
+              })}
+            />
+          </div>
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Manage Match</SheetTitle>
+            <SheetDescription>
+              Update match details or set the final schedule.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="grid space-y-4">
+            <div>
+              <Label>Schedule Date & Time</Label>
+              <DateTimePicker
+                dateTime={sheetFormData.scheduled_date}
+                setDateTime={(date) => handleFormChange("scheduled_date", date)}
+              />
+            </div>
+
+            <div>
+              <Label>Court</Label>
+              <Select
+                value={sheetFormData.court}
+                onValueChange={(value) => handleFormChange("court", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Court" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courtOption.map((court) => (
+                    <SelectItem key={court.name} value={court.name}>
+                      {court.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <div>
+                <Label>Quarters</Label>
+                <Input
+                  type="number"
+                  value={sheetFormData.quarters ?? ""}
+                  onChange={(e) =>
+                    handleFormChange("quarters", e.target.valueAsNumber)
+                  }
                 />
-                <span>{activeMatch.home_team!.team_name}</span>
-                <span className="mx-1">vs</span>
-                <img
-                  src={activeMatch.away_team!.team_logo_url}
-                  alt={activeMatch.away_team!.team_name}
-                  className="h-6 w-6 rounded-sm object-cover"
-                />
-                <span>{activeMatch.away_team!.team_name}</span>
               </div>
-            ) : null}
-          </DragOverlay>,
-          document.body
-        )}
-      </DndContext>
+              <div>
+                <Label>Minutes per Quarter</Label>
+                <Input
+                  type="number"
+                  value={sheetFormData.minutes_per_quarter ?? ""}
+                  onChange={(e) =>
+                    handleFormChange(
+                      "minutes_per_quarter",
+                      e.target.valueAsNumber
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label>Minutes per Overtime</Label>
+                <Input
+                  type="number"
+                  value={sheetFormData.minutes_per_overtime ?? ""}
+                  onChange={(e) =>
+                    handleFormChange(
+                      "minutes_per_overtime",
+                      e.target.valueAsNumber
+                    )
+                  }
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Referees</Label>
+              <MultipleSelector
+                maxSelected={3}
+                value={sheetFormData.referees ?? []}
+                onChange={(value) => handleFormChange("referees", value)}
+                options={refereesOption.map((ref) => ({
+                  label: ref.full_name,
+                  value: ref.full_name,
+                }))}
+                placeholder="Select referees..."
+              />
+            </div>
+          </div>
+
+          <SheetFooter className="mt-auto">
+            <Button onClick={handleSaveChanges}>Save Changes</Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
+  );
+}
+
+const ScheduleMatchTable = memo(MainTable);
+export default ScheduleMatchTable;
+
+export function SelectedMatchAlert({
+  match,
+  onRemove,
+}: {
+  match: LeagueMatch | null;
+  onRemove: () => void;
+}) {
+  const navigate = useNavigate();
+
+  const handleStart = () => {
+    if (match) navigate(`/scorebook/${match.league_match_id}`);
+  };
+
+  if (!match) {
+    return (
+      <Alert variant="warning" close={false}>
+        <AlertIcon>
+          <RiErrorWarningFill />
+        </AlertIcon>
+        <AlertTitle>No match selected</AlertTitle>
+      </Alert>
+    );
+  }
+
+  return (
+    <Alert variant="info" close={true} onClose={onRemove}>
+      <AlertIcon>
+        <RiErrorWarningFill />
+      </AlertIcon>
+      <AlertTitle>
+        {match.home_team?.team_name} vs {match.away_team?.team_name}
+      </AlertTitle>
+      <AlertToolbar>
+        <Button
+          variant="inverse"
+          mode="link"
+          underlined="solid"
+          size="sm"
+          className="flex mt-0.5"
+          onClick={handleStart}
+        >
+          Start
+        </Button>
+      </AlertToolbar>
+    </Alert>
   );
 }

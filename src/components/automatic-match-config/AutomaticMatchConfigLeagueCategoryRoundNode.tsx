@@ -1,7 +1,10 @@
 import React, { memo, useState } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import type { AutomaticMatchConfigLeagueCategoryRoundNodeData } from "@/types/automaticMatchConfigTypes";
-import { RoundTypeEnum } from "@/types/leagueCategoryTypes";
+import {
+  RoundFormatTypesEnum,
+  RoundTypeEnum,
+} from "@/types/leagueCategoryTypes";
 import { Info, Settings, Play, FastForward, RotateCcw } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -64,6 +67,70 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
     }
   };
 
+  const renderProgressButton = () => {
+    if (!round) return null;
+
+    const isLoading = loading === "progress";
+
+    if (round.format?.format_type == RoundFormatTypesEnum.DoubleElimination) {
+      if (round.current_stage != null && round.total_stages != null) {
+        if (round.current_stage < round.total_stages) {
+          return (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleProgress}
+              disabled={isLoading}
+            >
+              <FastForward className="w-3 h-3 mr-1" />
+              {isLoading
+                ? "Progressing..."
+                : `Progress to Stage ${round.current_stage + 1}`}
+            </Button>
+          );
+        } else {
+          return (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleProgress}
+              disabled={isLoading}
+            >
+              <FastForward className="w-3 h-3 mr-1" />
+              {isLoading ? "Processing..." : "Process Final"}
+            </Button>
+          );
+        }
+      }
+    }
+
+    if (round.round_name === RoundTypeEnum.Final) {
+      return (
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={handleProgress}
+          disabled={isLoading}
+        >
+          <FastForward className="w-3 h-3 mr-1" />
+          {isLoading ? "Processing..." : "Process Final"}
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        size="sm"
+        variant="secondary"
+        onClick={handleProgress}
+        disabled={isLoading}
+      >
+        <FastForward className="w-3 h-3 mr-1" />
+        {isLoading ? "Progressing..." : "Progress Round"}
+      </Button>
+    );
+  };
+
   return (
     <div className="relative p-3 border rounded-md bg-background w-fit">
       {round.league_category_id ? (
@@ -102,7 +169,6 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
             </div>
           </div>
 
-          {/* Settings Sheet */}
           <Sheet>
             <SheetTrigger asChild>
               <div>
@@ -136,15 +202,7 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
                     : "Generate Matches"}
                 </Button>
 
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={handleProgress}
-                  disabled={loading === "progress"}
-                >
-                  <FastForward className="w-3 h-3 mr-1" />
-                  {loading === "progress" ? "Progressing..." : "Progress Round"}
-                </Button>
+                {renderProgressButton()}
 
                 <Button
                   size="sm"

@@ -2,6 +2,7 @@ import { ReactFlow, Background, Controls } from "@xyflow/react";
 
 import { useManageManualMatchConfigNode } from "@/hooks/useManualMatchConfigHook";
 import { manualMatchConfigNodeTypes } from "@/components/manual-match-config";
+import { useTheme } from "@/providers/theme-provider";
 
 export function ManualMatchingCanvas({
   activeLeagueId,
@@ -18,6 +19,7 @@ export function ManualMatchingCanvas({
     onDragOver,
     onNodeDragStop,
   } = useManageManualMatchConfigNode(activeLeagueId);
+  const { theme } = useTheme();
 
   return (
     <div className="h-full border rounded-md w-full bg-background">
@@ -30,6 +32,7 @@ export function ManualMatchingCanvas({
         onDrop={onDrop}
         onDragOver={onDragOver}
         onNodeDragStop={onNodeDragStop}
+        colorMode={theme}
         nodeTypes={manualMatchConfigNodeTypes}
         fitView
       >

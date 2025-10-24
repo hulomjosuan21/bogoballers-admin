@@ -29,6 +29,7 @@ export interface LeagueCategoryRound {
   total_stages: number;
   current_stage: number;
   matches_generated: boolean;
+  format: RoundFormat | null;
   position: {
     x: number;
     y: number;
@@ -40,6 +41,7 @@ export interface RoundFormat {
   format_id: string;
   round_id: string | null;
   format_name: string;
+  format_type: string;
   format_obj: Record<string, any>;
   is_configured: boolean;
   position: {

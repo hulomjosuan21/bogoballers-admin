@@ -10,6 +10,13 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
+import { Suspense, useEffect, useState } from "react";
+import { useLeagueMatch } from "@/hooks/leagueMatch";
+import { useToggleMatchBookSection } from "@/stores/matchStore";
+import { ToggleState } from "@/stores/toggleStore";
+import FinalizaMatchSection from "@/components/FinalizeMatch";
+import type { LeagueCourt, LeagueReferee } from "@/types/league";
+import ScheduleMatchTable from "@/tables/LeagueMatchUpcomingTable";
 
 export default function LeagueMatches() {
   const {
@@ -24,6 +31,33 @@ export default function LeagueMatches() {
     setSelectedRound,
   } = useLeagueCategoriesRoundsGroups();
 
+  const [refereesOption, setRefereesOption] = useState<LeagueReferee[]>([]);
+  const [courtOption, setCourtOption] = useState<LeagueCourt[]>([]);
+
+  const {
+    leagueMatchData,
+    leagueMatchLoading,
+    leagueMatchError,
+    refetchLeagueMatch,
+  } = useLeagueMatch(selectedCategory, selectedRound, {
+    condition: "Scheduled",
+  });
+
+  const { state, data: selectMatch } = useToggleMatchBookSection();
+
+  useEffect(() => {
+    const referees = (activeLeagueData?.league_referees ?? []).filter(
+      (ref) => ref.is_available
+    );
+
+    const courts = (activeLeagueData?.league_courts ?? []).filter(
+      (court) => court.is_available
+    );
+
+    setRefereesOption(referees);
+    setCourtOption(courts);
+  }, [activeLeagueData]);
+
   if (activeLeagueData?.status == "Pending") {
     return <LeagueNotApproveYet />;
   }
@@ -36,11 +70,11 @@ export default function LeagueMatches() {
     );
   }
 
-  if (error) {
+  if (error || leagueMatchError) {
     return (
       <div className="h-screen grid place-content-center">
         <p className="text-sm text-red-500">
-          {error.message || "Error loading match"}
+          {error?.message || leagueMatchError?.message || "Error loading match"}
         </p>
       </div>
     );
@@ -86,6 +120,29 @@ export default function LeagueMatches() {
               </Select>
             )}
           </div>
+        )}
+
+        {selectedCategory && selectedRound && (
+          <Suspense
+            key={`${selectedCategory}-${selectedRound}`}
+            fallback={
+              <div className="h-40 grid place-content-center">
+                <Spinner />
+              </div>
+            }
+          >
+            {state === ToggleState.SHOW_SAVED_MATCH && selectMatch ? (
+              <FinalizaMatchSection match={selectMatch} />
+            ) : (
+              <ScheduleMatchTable
+                leagueMatchData={leagueMatchData ?? []}
+                leagueMatchLoading={leagueMatchLoading}
+                refetchLeagueMatch={refetchLeagueMatch}
+                refereesOption={refereesOption}
+                courtOption={courtOption}
+              />
+            )}
+          </Suspense>
         )}
       </ContentBody>
     </ContentShell>

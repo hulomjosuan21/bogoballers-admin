@@ -1,6 +1,7 @@
-import { ReactFlow, Background, Controls } from "@xyflow/react";
+import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
 import { automaticMatchConfigNodeTypes } from "@/components/automatic-match-config";
 import { useManageAutomaticMatchConfigNode } from "@/hooks/useAutomaticMatchConfigHook";
+import { useTheme } from "@/providers/theme-provider";
 
 export function AutomaticMatchConfigXyFlowCanvas({
   activeLeagueId,
@@ -17,6 +18,7 @@ export function AutomaticMatchConfigXyFlowCanvas({
     onDragOver,
     onNodeDragStop,
   } = useManageAutomaticMatchConfigNode(activeLeagueId);
+  const { theme } = useTheme();
 
   return (
     <div className="h-full w-full border rounded-md bg-background">
@@ -29,11 +31,13 @@ export function AutomaticMatchConfigXyFlowCanvas({
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onDrop={onDrop}
+        colorMode={theme}
         onDragOver={onDragOver}
         fitView
       >
         <Background />
         <Controls />
+        <MiniMap />
       </ReactFlow>
     </div>
   );
