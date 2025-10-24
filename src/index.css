@@ -137,22 +137,19 @@
   @apply animate-spin text-primary;
 }
 
-/* Change the control buttons' icon/text color */
-.react-flow__controls button {
-  color: white; /* text/icon color */
-  fill: white; /* icon color for SVG */
+/* .react-flow__controls button {
+  color: white;
+  fill: white;
 }
 
-/* Optional: change background */
 .react-flow__controls button {
-  background-color: #333; /* dark background */
+  background-color: #333;
 }
 
-/* Optional: change hover style */
 .react-flow__controls button:hover {
   background-color: #555;
   color: yellow;
-}
+} */
 
 .node-menu-button {
   & > button {

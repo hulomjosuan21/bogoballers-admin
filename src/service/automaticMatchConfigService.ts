@@ -103,10 +103,9 @@ export class AutoMatchConfigService {
   }
 
   async progressRound(roundId: string) {
-    const { data } = await axiosClient.post<{
-      next_round_id?: string;
-      champion_team_id?: string;
-    }>(`/auto-match-config/rounds/${roundId}/progress`);
+    const { data } = await axiosClient.post<{ message: string }>(
+      `/auto-match-config/rounds/${roundId}/progress`
+    );
     return data;
   }
 

@@ -20,6 +20,7 @@ import {
 import { ScrollArea } from "../ui/scroll-area";
 import { toast } from "sonner";
 import { autoMatchConfigService } from "@/service/automaticMatchConfigService";
+import { getErrorMessage } from "@/lib/error";
 
 const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
   NodeProps<Node<AutomaticMatchConfigLeagueCategoryRoundNodeData>> & {
@@ -46,10 +47,12 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
   const handleProgress = async () => {
     try {
       setLoading("progress");
-      await autoMatchConfigService.progressRound(round.round_id!);
-      toast.success("Round progressed successfully!");
+      const result = await autoMatchConfigService.progressRound(
+        round.round_id!
+      );
+      toast.success(result.message);
     } catch (e) {
-      toast.error("Failed to progress round.");
+      toast.error(getErrorMessage(e));
     } finally {
       setLoading(null);
     }

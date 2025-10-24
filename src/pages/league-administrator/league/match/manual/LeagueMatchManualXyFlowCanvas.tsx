@@ -1,4 +1,4 @@
-import { ReactFlow, Background, Controls } from "@xyflow/react";
+import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
 
 import { useManageManualMatchConfigNode } from "@/hooks/useManualMatchConfigHook";
 import { manualMatchConfigNodeTypes } from "@/components/manual-match-config";
@@ -38,6 +38,7 @@ export function ManualMatchingCanvas({
       >
         <Background />
         <Controls />
+        <MiniMap />
       </ReactFlow>
     </div>
   );
