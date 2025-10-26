@@ -24,21 +24,7 @@ import {
   listSavedStates,
   type GameState,
 } from "@/service/secureStore";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,19 +32,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToggleMatchBookSection } from "@/stores/matchStore";
+import {
+  useToggleMatchBookSection,
+  useToggleUpcomingMatchSection,
+} from "@/stores/matchStore";
 import { ToggleState } from "@/stores/toggleStore";
-import { Label } from "@/components/ui/label";
-import { DateTimePicker } from "@/components/datetime-picker";
-import { Input } from "@/components/ui/input";
-import MultipleSelector from "@/components/ui/multiselect";
-import { LeagueMatchService } from "@/service/leagueMatchService";
+
 import type {
   QueryObserverResult,
   RefetchOptions,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { getErrorMessage } from "@/lib/error";
 import {
@@ -72,27 +56,12 @@ import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
 
 type SavedMatchItem = { matchId: string; state: GameState };
 
-type SheetFormData = {
-  scheduled_date?: Date;
-  court?: string;
-  referees?: { label: string; value: string }[];
-  quarters?: number;
-  minutes_per_quarter?: number;
-  home_team_score?: number;
-  away_team_score?: number;
-  winner_team_id?: string;
-  status?: string;
-  minutes_per_overtime?: number;
-};
-
 type Props = {
   leagueMatchData: LeagueMatch[];
   leagueMatchLoading: boolean;
   refetchLeagueMatch: (
     options?: RefetchOptions | undefined
   ) => Promise<QueryObserverResult<LeagueMatch[] | null, Error>>;
-  refereesOption: LeagueReferee[];
-  courtOption: LeagueCourt[];
 };
 
 function DataTable<T>({
@@ -160,24 +129,16 @@ function MainTable({
   leagueMatchData,
   leagueMatchLoading,
   refetchLeagueMatch,
-  refereesOption,
-  courtOption,
 }: Props) {
   const navigate = useNavigate();
-  const { toggle } = useToggleMatchBookSection();
+  const { toggle: toggleMatchBook } = useToggleMatchBookSection();
+  const { toggle: toggleUpcomingMatch } = useToggleUpcomingMatchSection();
 
   const [matches, setMatches] = useState<LeagueMatch[]>([]);
   const { selectedMatch, setSelectedMatch, removeSelectedMatch } =
     useSelectedMatchStore();
 
-  const [editingMatch, setEditingMatch] = useState<LeagueMatch | null>(null);
   const [savedMatches, setSavedMatches] = useState<SavedMatchItem[]>([]);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [sheetFormData, setSheetFormData] = useState<SheetFormData>({});
-
-  const handleFormChange = (field: keyof SheetFormData, value: any) => {
-    setSheetFormData((prev) => ({ ...prev, [field]: value }));
-  };
 
   useEffect(() => {
     const load = async () => setSavedMatches(await listSavedStates());
@@ -194,17 +155,6 @@ function MainTable({
     }
   }, [leagueMatchData, savedMatches]);
 
-  const initForm = (match: LeagueMatch): SheetFormData => ({
-    scheduled_date: match.scheduled_date
-      ? new Date(match.scheduled_date)
-      : undefined,
-    court: match.court || "",
-    quarters: match.quarters,
-    minutes_per_quarter: match.minutes_per_quarter,
-    minutes_per_overtime: match.minutes_per_overtime,
-    referees: match.referees?.map((r) => ({ label: r, value: r })) ?? [],
-  });
-
   const handleSelectMatch = (match: LeagueMatch) => {
     if (selectedMatch) setMatches((prev) => [...prev, selectedMatch]);
     setSelectedMatch(match);
@@ -213,29 +163,6 @@ function MainTable({
         (m) => m.public_league_match_id !== match.public_league_match_id
       )
     );
-    setSheetFormData(initForm(match));
-  };
-
-  const handleConfigureMatch = (match: LeagueMatch) => {
-    setEditingMatch(match);
-    setSheetFormData(initForm(match));
-    setIsSheetOpen(true);
-  };
-
-  const handleSaveChanges = async () => {
-    if (!editingMatch) return;
-    try {
-      await LeagueMatchService.updateOne(editingMatch.league_match_id, {
-        ...sheetFormData,
-        referees: sheetFormData.referees?.map((r) => r.value),
-        scheduled_date: sheetFormData.scheduled_date?.toISOString(),
-      });
-      await refetchLeagueMatch();
-      setIsSheetOpen(false);
-      toast.success("Update successful");
-    } catch (err: any) {
-      toast.error(err.message || "An error occurred");
-    }
   };
 
   const handleRemoveSaved = async (matchId: string) => {
@@ -296,7 +223,7 @@ function MainTable({
           </Badge>
         ),
     },
-    { accessorKey: "display_name", header: "Group" },
+    { accessorKey: "display_name", header: "Detail" },
     {
       id: "actions",
       cell: ({ row }) => (
@@ -315,7 +242,12 @@ function MainTable({
                   Select
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => handleConfigureMatch(row.original)}
+                  onClick={() =>
+                    toggleUpcomingMatch(
+                      row.original,
+                      ToggleState.CONFIG_UPCOMING
+                    )
+                  }
                 >
                   Configure
                 </DropdownMenuItem>
@@ -357,7 +289,7 @@ function MainTable({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() =>
-                    toggle(
+                    toggleMatchBook(
                       row.original.state.present,
                       ToggleState.SHOW_SAVED_MATCH
                     )
@@ -412,103 +344,6 @@ function MainTable({
           </Button>
         </div>
       </div>
-
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Manage Match</SheetTitle>
-            <SheetDescription>
-              Update match details or set the final schedule.
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="grid space-y-4">
-            <div>
-              <Label>Schedule Date & Time</Label>
-              <DateTimePicker
-                dateTime={sheetFormData.scheduled_date}
-                setDateTime={(date) => handleFormChange("scheduled_date", date)}
-              />
-            </div>
-
-            <div>
-              <Label>Court</Label>
-              <Select
-                value={sheetFormData.court}
-                onValueChange={(value) => handleFormChange("court", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Court" />
-                </SelectTrigger>
-                <SelectContent>
-                  {courtOption.map((court) => (
-                    <SelectItem key={court.name} value={court.name}>
-                      {court.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <div>
-                <Label>Quarters</Label>
-                <Input
-                  type="number"
-                  value={sheetFormData.quarters ?? ""}
-                  onChange={(e) =>
-                    handleFormChange("quarters", e.target.valueAsNumber)
-                  }
-                />
-              </div>
-              <div>
-                <Label>Minutes per Quarter</Label>
-                <Input
-                  type="number"
-                  value={sheetFormData.minutes_per_quarter ?? ""}
-                  onChange={(e) =>
-                    handleFormChange(
-                      "minutes_per_quarter",
-                      e.target.valueAsNumber
-                    )
-                  }
-                />
-              </div>
-              <div>
-                <Label>Minutes per Overtime</Label>
-                <Input
-                  type="number"
-                  value={sheetFormData.minutes_per_overtime ?? ""}
-                  onChange={(e) =>
-                    handleFormChange(
-                      "minutes_per_overtime",
-                      e.target.valueAsNumber
-                    )
-                  }
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label>Referees</Label>
-              <MultipleSelector
-                maxSelected={3}
-                value={sheetFormData.referees ?? []}
-                onChange={(value) => handleFormChange("referees", value)}
-                options={refereesOption.map((ref) => ({
-                  label: ref.full_name,
-                  value: ref.full_name,
-                }))}
-                placeholder="Select referees..."
-              />
-            </div>
-          </div>
-
-          <SheetFooter className="mt-auto">
-            <Button onClick={handleSaveChanges}>Save Changes</Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }

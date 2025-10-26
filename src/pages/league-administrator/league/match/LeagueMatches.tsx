@@ -12,11 +12,15 @@ import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoun
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import { Suspense, useEffect, useState } from "react";
 import { useLeagueMatch } from "@/hooks/leagueMatch";
-import { useToggleMatchBookSection } from "@/stores/matchStore";
+import {
+  useToggleMatchBookSection,
+  useToggleUpcomingMatchSection,
+} from "@/stores/matchStore";
 import { ToggleState } from "@/stores/toggleStore";
 import FinalizaMatchSection from "@/components/FinalizeMatch";
 import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import ScheduleMatchTable from "@/tables/LeagueMatchUpcomingTable";
+import { ConfigUpcomingMatch } from "./ConfigUpcomingPage";
 
 export default function LeagueMatches() {
   const {
@@ -38,7 +42,10 @@ export default function LeagueMatches() {
       condition: "Scheduled",
     });
 
-  const { state, data: selectMatch } = useToggleMatchBookSection();
+  const { state: stateMatchBook, data: selectedMatchBookData } =
+    useToggleMatchBookSection();
+  const { state: stateUpcomingMatch, data: selectedUpcomingMatchData } =
+    useToggleUpcomingMatchSection();
 
   useEffect(() => {
     const referees = (activeLeagueData?.league_referees ?? []).filter(
@@ -69,44 +76,6 @@ export default function LeagueMatches() {
     <ContentShell>
       <ContentHeader title="League Matches" />
       <ContentBody>
-        {categories.length > 0 && (
-          <div className="flex items-center gap-2">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="h-6 px-2 py-1 text-xs">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent className="text-xs">
-                {categories.map((c) => (
-                  <SelectItem
-                    key={c.league_category_id}
-                    value={c.league_category_id}
-                  >
-                    {c.category_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {rounds.length > 0 && (
-              <Select value={selectedRound} onValueChange={setSelectedRound}>
-                <SelectTrigger className="h-6 px-2 py-1 text-xs">
-                  <SelectValue placeholder="Round" />
-                </SelectTrigger>
-                <SelectContent className="text-xs">
-                  {rounds.map((r) => (
-                    <SelectItem key={r.round_id} value={r.round_id}>
-                      {r.round_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-        )}
-
         {selectedCategory && selectedRound && (
           <Suspense
             key={`${selectedCategory}-${selectedRound}`}
@@ -116,16 +85,64 @@ export default function LeagueMatches() {
               </div>
             }
           >
-            {state === ToggleState.SHOW_SAVED_MATCH && selectMatch ? (
-              <FinalizaMatchSection match={selectMatch} />
-            ) : (
-              <ScheduleMatchTable
-                leagueMatchData={leagueMatchData ?? []}
-                leagueMatchLoading={leagueMatchLoading}
-                refetchLeagueMatch={refetchLeagueMatch}
+            {stateMatchBook == ToggleState.SHOW_SAVED_MATCH &&
+            selectedMatchBookData ? (
+              <FinalizaMatchSection match={selectedMatchBookData} />
+            ) : stateUpcomingMatch === ToggleState.CONFIG_UPCOMING &&
+              selectedUpcomingMatchData ? (
+              <ConfigUpcomingMatch
+                upcomingMatch={selectedUpcomingMatchData}
                 refereesOption={refereesOption}
                 courtOption={courtOption}
               />
+            ) : (
+              <>
+                {categories.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={setSelectedCategory}
+                    >
+                      <SelectTrigger className="h-6 px-2 py-1 text-xs">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent className="text-xs">
+                        {categories.map((c) => (
+                          <SelectItem
+                            key={c.league_category_id}
+                            value={c.league_category_id}
+                          >
+                            {c.category_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {rounds.length > 0 && (
+                      <Select
+                        value={selectedRound}
+                        onValueChange={setSelectedRound}
+                      >
+                        <SelectTrigger className="h-6 px-2 py-1 text-xs">
+                          <SelectValue placeholder="Round" />
+                        </SelectTrigger>
+                        <SelectContent className="text-xs">
+                          {rounds.map((r) => (
+                            <SelectItem key={r.round_id} value={r.round_id}>
+                              {r.round_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                )}
+                <ScheduleMatchTable
+                  leagueMatchData={leagueMatchData ?? []}
+                  leagueMatchLoading={leagueMatchLoading}
+                  refetchLeagueMatch={refetchLeagueMatch}
+                />
+              </>
             )}
           </Suspense>
         )}
