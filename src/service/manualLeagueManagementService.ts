@@ -134,9 +134,9 @@ export class ManualLeagueManagementService {
     return response.data;
   }
 
-  async synchronizeBracket(leagueId: string) {
-    const response = await axiosClient.post<{ teams_progressed: number }>(
-      `/manual-league-management/leagues/${leagueId}/synchronize`
+  async synchronizeBracket(leagueCategoryId: string) {
+    const response = await axiosClient.post<{ message: string }>(
+      `/manual-league-management/leagues/${leagueCategoryId}/synchronize`
     );
     return response.data;
   }

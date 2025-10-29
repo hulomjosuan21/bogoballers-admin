@@ -37,6 +37,21 @@ export const TeamSection = memo(function TeamSection({
   return (
     <section className="grid auto-rows-auto gap-4 p-3 border rounded-lg">
       <div className="flex gap-1 items-center">
+        {team.team_logo_url ? (
+          <img
+            src={team.team_logo_url}
+            alt={team.team_name}
+            className="h-8 w-8 rounded-md object-cover"
+          />
+        ) : (
+          <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-[10px] font-bold uppercase">
+            {team.team_name
+              ?.split(" ")
+              .map((n) => n[0])
+              .join("")
+              .slice(0, 2)}
+          </div>
+        )}
         <h2 className="text-md font-semibold">{team.team_name}</h2>
         <Badge className="text-xs">{team.side}</Badge>
       </div>

@@ -117,7 +117,7 @@ export default function Scorebook({ viewMode = false, latency }: Props) {
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate(-1)}>
-                    Back <DropdownMenuShortcut>esc</DropdownMenuShortcut>
+                    Exit <DropdownMenuShortcut>esc</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -7,7 +7,6 @@ import {
   LeagueAffiliatePage,
   LeagueOfficialsPage,
   LeagueMatchSetUnSchedulePage,
-  LeagueMatchScheduledPage,
   LeagueUpdatePage,
   ManageLeagueCategoriesPage,
 } from "@/pages";
@@ -31,8 +30,8 @@ import {
   ChevronsRightLeft,
   Network,
   ChartNoAxesGantt,
+  ClipboardClock,
 } from "lucide-react";
-import LeagueMatchCompletedPage from "@/pages/league-administrator/league/match/LeagueMatchUpcoming";
 import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
 import LoginPage from "@/pages/auth/LoginPage";
 import LandingPage from "@/pages/public/landing-page/LandingPage";
@@ -46,6 +45,7 @@ import PublicLeaguePage from "@/components/public-components/PublicLeaguePage";
 import LeagueGuestPage from "@/pages/league-administrator/league/guest/LeagueGuestPage";
 import AutomaticMatchConfigPage from "@/pages/league-administrator/league/match/automatic/AutomaticMatchConfigXyFlowPage";
 import MatchSetupPage from "@/pages/league-administrator/league/match/MatchSetupPage";
+import MatchHistoryPage from "@/pages/league-administrator/league/match/MatchHistoryPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -233,31 +233,23 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
   },
   {
-    path: "pages/league/match/scheduled",
-    element: <LeagueMatchScheduledPage />,
-    permissions: [Permission.ViewScheduledMatches],
-    showInSidebar: true,
-    sidebarTitle: "Scheduled",
-    sidebarParent: "Match",
-    sidebarGroup: "league",
-  },
-  {
-    path: "pages/league/match/upcoming",
-    element: <LeagueMatchCompletedPage />,
-    permissions: [Permission.ViewScheduledMatches],
-    showInSidebar: true,
-    sidebarTitle: "Upcoming",
-    sidebarParent: "Match",
-    sidebarGroup: "league",
-  },
-  {
     path: "pages/league-matches",
     element: <LeagueMatches />,
     showInSidebar: true,
     icon: ChevronsRightLeft,
     sidebarGroup: "league",
     sidebarParent: "Match",
-    sidebarTitle: "Matches",
+    sidebarTitle: "Scheduled",
+    permissions: [Permission.ScheduleMatches, Permission.ViewScheduledMatches],
+  },
+  {
+    path: "pages/league-matches/history",
+    element: <MatchHistoryPage />,
+    showInSidebar: true,
+    icon: ClipboardClock,
+    sidebarGroup: "league",
+    sidebarParent: "Match",
+    sidebarTitle: "History",
     permissions: [Permission.ViewScheduledMatches],
   },
   {

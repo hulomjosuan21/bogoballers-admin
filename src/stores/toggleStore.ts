@@ -5,6 +5,7 @@ export enum ToggleState {
   HIDE,
   SHOW_LEAGUE_TEAM,
   SHOW_SAVED_MATCH,
+  CONFIG_UPCOMING,
 }
 
 type ToggleStore<T> = {

@@ -6,8 +6,8 @@ const ManualMatchConfigLeagueCategoryRoundNode: React.FC<
   NodeProps<Node<ManualMatchConfigLeagueCategoryRoundNodeData>>
 > = ({ data }) => {
   return (
-    <div className="p-3 border rounded-md bg-background w-56 text-foreground">
-      <div className="font-semibold text-primary">
+    <div className="p-3 border rounded-md bg-background w-32 text-foreground">
+      <div className="font-semibold text-primary text-sm">
         {data.league_category_round}
       </div>
       <div className="text-xs text-muted-foreground">Round</div>

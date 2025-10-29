@@ -55,6 +55,7 @@ export interface LeaguePlayer extends PlayerTeam {
   league_team_id: string;
   total_points: number;
   is_ban_in_league: boolean;
+  include_first5: boolean;
   is_allowed_in_league: boolean;
   league_team: LeagueTeam | null;
   league_player_created_at: string;

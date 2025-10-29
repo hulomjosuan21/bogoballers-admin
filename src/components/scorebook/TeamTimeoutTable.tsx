@@ -1,4 +1,3 @@
-// src/components/TeamTimeoutTable.tsx
 import type { TeamBook } from "@/types/scorebook";
 import { useGame } from "@/context/GameContext";
 import { Button } from "../ui/button";
@@ -20,12 +19,14 @@ type Props = {
 };
 
 export function TeamTimeoutTable({ team, viewMode = false }: Props) {
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
   const { openDialog } = useAlertDialog();
 
   const handleAddTimeout = async () => {
     const confirm = await openDialog({
-      confirmText: "Confirm",
+      title: "Confirm Timeout",
+      description: `Are you sure you want to call a timeout for team ${team.team_name}?`,
+      confirmText: "Yes, Timeout",
       cancelText: "Cancel",
     });
     if (!confirm) return;
@@ -71,7 +72,11 @@ export function TeamTimeoutTable({ team, viewMode = false }: Props) {
             {timeouts.length > 0 ? (
               timeouts.map((timeout, index) => (
                 <TableRow key={index}>
-                  <TableCell>Q{timeout.qtr}</TableCell>
+                  <TableCell>
+                    {timeout.qtr >= state.default_quarters
+                      ? `OT${timeout.qtr - state.default_quarters}`
+                      : `Q${timeout.qtr}`}
+                  </TableCell>
                   <TableCell>{timeout.game_time}</TableCell>
                   {!viewMode && (
                     <TableCell className="text-right">

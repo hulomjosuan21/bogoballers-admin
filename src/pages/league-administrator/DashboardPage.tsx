@@ -35,6 +35,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import type { League } from "@/types/league";
 import { Spinner } from "@/components/ui/spinner";
+import { SelectedMatchAlert } from "@/tables/LeagueMatchUpcomingTable";
+import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
+import {
+  MatchHistoryFilter,
+  LeagueMatchTableWrapper,
+} from "./league/match/MatchHistoryPage";
+import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
+import { useQueries } from "@tanstack/react-query";
+import { getLeagueMatchQueryOption } from "@/queries/leagueMatchQueryOption";
 
 interface DashboardCardProps {
   title: string;
@@ -125,62 +134,31 @@ const AnalyticsCard = ({
   </Card>
 );
 
-const RecentUpdates = () => {
-  const updates = [
-    {
-      name: "Bob Johnson",
-      time: "2 days ago",
-      title: "Weekend Plans",
-      body: "Hey everyone! I'm thinking of organizing a team outing this weekend....",
-    },
-    {
-      name: "Emily Davis",
-      time: "2 days ago",
-      title: "Re: Question about Budget",
-      body: "I've reviewed the budget numbers you sent over....",
-    },
-    {
-      name: "Michael Wilson",
-      time: "1 week ago",
-      title: "Important Announcement",
-      body: "Please join us for an all-hands meeting this Friday at 3 PM....",
-    },
-    {
-      name: "Sarah Brown",
-      time: "1 week ago",
-      title: "Re: Feedback on Proposal",
-      body: "Thank you for sending over the proposal. I've reviewed it and have some thoughts....",
-    },
-  ];
-
-  return (
-    <div className="bg-card rounded-md py-4 border shadow-sm">
-      <div className="border-b">
-        <h2 className="text-md font-semibold mb-4 text-center">
-          Recent Updates
-        </h2>
-      </div>
-      <div>
-        {updates.map((item, i) => (
-          <div key={i} className="border-b p-2 last:border-none last:pb-0">
-            <div className="flex justify-between text-sm font-medium">
-              <span className="font-light">{item.name}</span>
-              <span className="text-muted-foreground text-xs">{item.time}</span>
-            </div>
-            <p className="font-semibold text-sm">{item.title}</p>
-            <p className="text-xs text-muted-foreground line-clamp-2">
-              {item.body}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 export default function DashboardPage() {
   const { activeLeagueId, activeLeagueData, activeLeagueLoading } =
     useActiveLeague();
+  const {
+    categories,
+    rounds,
+    selectedCategory,
+    selectedRound,
+    setSelectedCategory,
+    setSelectedRound,
+  } = useLeagueCategoriesRoundsGroups();
+
+  const [upcomingMatch, completedMatch] = useQueries({
+    queries: [
+      getLeagueMatchQueryOption(selectedCategory, selectedRound, {
+        condition: "Upcoming",
+        limit: 5,
+      }),
+      getLeagueMatchQueryOption(selectedCategory, undefined, {
+        condition: "Completed",
+        limit: 5,
+      }),
+    ],
+  });
+  const { selectedMatch, removeSelectedMatch } = useSelectedMatchStore();
 
   const { activeLeagueAnalyticsData, activeLeagueAnalyticsLoading } =
     useActiveLeagueAnalytics(activeLeagueId);
@@ -218,11 +196,14 @@ export default function DashboardPage() {
 
       <ContentBody>
         {activeLeagueData && activeLeagueAnalyticsData ? (
-          <div
-            className={`grid gap-6 ${
-              showUpdates ? "lg:grid-cols-3" : "lg:grid-cols-2"
-            }`}
-          >
+          <div className="space-y-4">
+            {selectedMatch && (
+              <SelectedMatchAlert
+                match={selectedMatch}
+                onRemove={removeSelectedMatch}
+                onOtherPage={true}
+              />
+            )}
             <div className="lg:col-span-2 flex flex-col gap-6">
               <LeagueSection
                 league={activeLeagueAnalyticsData.active_league}
@@ -257,9 +238,43 @@ export default function DashboardPage() {
               </div>
 
               <ProfitAreaChart data={activeLeagueAnalyticsData.total_profit} />
-            </div>
 
-            {showUpdates && <RecentUpdates />}
+              <div className="space-y-2">
+                <MatchHistoryFilter
+                  label="Filter"
+                  categories={categories}
+                  rounds={rounds}
+                  selectedCategory={selectedCategory}
+                  selectedRound={selectedRound}
+                  setSelectedCategory={setSelectedCategory}
+                  setSelectedRound={setSelectedRound}
+                />
+
+                <LeagueMatchTableWrapper
+                  key={"upcoming"}
+                  selectedCategory={selectedCategory}
+                  selectedRound={selectedRound}
+                  leagueMatchData={upcomingMatch.data ?? []}
+                  leagueMatchLoading={upcomingMatch.isLoading}
+                  refresh={upcomingMatch.refetch}
+                  controlls={false}
+                  label={"Upcoming Match"}
+                  excludeFields={["home_team_score", "away_team_score"]}
+                />
+
+                <LeagueMatchTableWrapper
+                  key={"completed"}
+                  selectedCategory={selectedCategory}
+                  selectedRound={selectedRound}
+                  leagueMatchData={completedMatch.data ?? []}
+                  leagueMatchLoading={completedMatch.isLoading}
+                  refresh={completedMatch.refetch}
+                  controlls={false}
+                  label={"Completed Match"}
+                  excludeFields={["scheduled_date"]}
+                />
+              </div>
+            </div>
           </div>
         ) : (
           <Empty>
