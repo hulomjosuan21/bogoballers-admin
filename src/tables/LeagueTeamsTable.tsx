@@ -350,7 +350,6 @@ function ActionCell({ row }: { row: any }) {
     });
     if (!confirm) return;
 
-    // TODO: Implement ban functionality
     toast.info("Ban functionality not implemented yet");
   }, [team.team_name, openDialog]);
 
@@ -363,7 +362,6 @@ function ActionCell({ row }: { row: any }) {
     });
     if (!confirm) return;
 
-    // TODO: Implement remove and refund functionality
     toast.info("Remove & Refund functionality not implemented yet");
   }, [team.team_name, openDialog]);
 

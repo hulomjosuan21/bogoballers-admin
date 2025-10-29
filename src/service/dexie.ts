@@ -1,10 +1,10 @@
 import Dexie, { type Table } from "dexie";
 import { type Node, type Edge } from "@xyflow/react";
-import type { FlowNodeData } from "@/types/manualMatchConfigTypes";
+import type { ManualMatchConfigFlowNodeData } from "@/types/manualMatchConfigTypes";
 
 export interface FlowStateStore {
   id: number;
-  nodes: Node<FlowNodeData>[];
+  nodes: Node<ManualMatchConfigFlowNodeData>[];
   edges: Edge[];
 }
 

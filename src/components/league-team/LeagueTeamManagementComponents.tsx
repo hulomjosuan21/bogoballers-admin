@@ -6,25 +6,14 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  useCheckPlayerSheet,
-  useRefundDialog,
-} from "../../stores/leagueTeamStores";
+import { useCheckPlayerSheet } from "../../stores/leagueTeamStores";
 import { NoteBox } from "../nodebox";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataGrid, DataGridContainer } from "@/components/ui/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid-table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { getErrorMessage } from "@/lib/error";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -49,11 +38,6 @@ import {
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import type { Refund } from "@/stores/refundStore";
-import { LeagueTeamService } from "@/service/leagueTeamService";
-import { toast } from "sonner";
 import type { PlayerTeam } from "@/types/player";
 
 export function LeagueTeamSheetSheetSubmissionSheet() {
@@ -225,82 +209,5 @@ export function LeagueTeamPlayerDataGrid({
         </div>
       </div>
     </div>
-  );
-}
-export function RefundDialog() {
-  const { isOpen, data, dialogClose } = useRefundDialog();
-  const [loading, setLoading] = useState(false);
-
-  const handleRefund = async () => {
-    setLoading(true);
-    if (!data) return;
-
-    const amountInput = (document.getElementById("amount") as HTMLInputElement)
-      .value;
-    const reasonInput = (document.getElementById("reason") as HTMLInputElement)
-      .value;
-
-    const payload: Refund = {
-      ...data,
-      message: reasonInput,
-      data: {
-        ...data.data,
-        amount: Number(amountInput),
-      },
-    };
-
-    const refundTeam = async () => {
-      try {
-        const result = await LeagueTeamService.refund(payload);
-        return result;
-        dialogClose();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    toast.promise(refundTeam(), {
-      loading: "Loading...",
-      success: (res) => res.message,
-      error: (err) => getErrorMessage(err) ?? "Something went wrong!",
-    });
-  };
-
-  if (!data) return null;
-
-  return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && dialogClose()}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Refund Player</DialogTitle>
-          <DialogDescription>
-            Update the amount and reason for the refund. Click "Refund" to
-            confirm.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-4">
-          <div className="grid gap-3">
-            <Label htmlFor="amount">Amount</Label>
-            <Input
-              id="amount"
-              name="amount"
-              defaultValue={data.data.amount}
-              type="number"
-            />
-          </div>
-          <div className="grid gap-3">
-            <Label htmlFor="reason">Reason</Label>
-            <Input id="reason" name="reason" defaultValue={data.message} />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button onClick={handleRefund} disabled={loading}>
-            {loading ? "Processing..." : "Refund"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
