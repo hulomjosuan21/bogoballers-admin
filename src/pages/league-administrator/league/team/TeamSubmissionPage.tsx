@@ -9,10 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TeamSubmissionTable } from "@/tables/LeagueTeamSubmissionTable";
-import {
-  LeagueTeamSheetSheetSubmissionSheet,
-  RefundDialog,
-} from "@/components/league-team/LeagueTeamManagementComponents";
+import { LeagueTeamSheetSheetSubmissionSheet } from "@/components/league-team/LeagueTeamManagementComponents";
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { Spinner } from "@/components/ui/spinner";
@@ -75,7 +72,6 @@ export default function TeamSubmissionPage() {
         {categories.length > 0 && (
           <>
             <LeagueTeamSheetSheetSubmissionSheet />
-            <RefundDialog />
             <Suspense
               key={`${selectedCategory}-${activeLeagueId}`}
               fallback={
