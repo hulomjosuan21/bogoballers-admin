@@ -152,7 +152,7 @@ export default function DashboardPage() {
         condition: "Upcoming",
         limit: 5,
       }),
-      getLeagueMatchQueryOption(selectedCategory, undefined, {
+      getLeagueMatchQueryOption(selectedCategory, selectedRound, {
         condition: "Completed",
         limit: 5,
       }),
