@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 export const useLeagueMatch = (
   leagueCategoryId?: string,
   roundId?: string,
-  data?: Partial<LeagueMatch> & { condition: string }
+  data?: Partial<LeagueMatch> & { condition: string; limit?: number }
 ) => {
   const query = useQuery(
     getLeagueMatchQueryOption(leagueCategoryId, roundId, data)

@@ -64,14 +64,16 @@ type Props = {
   ) => Promise<QueryObserverResult<LeagueMatch[] | null, Error>>;
 };
 
-function DataTable<T>({
+export function CustomDataTable<T>({
   data,
   columns,
   empty,
+  loading = false,
 }: {
   data: T[];
   columns: ColumnDef<T>[];
   empty?: string;
+  loading?: boolean;
 }) {
   const table = useReactTable({
     data,
@@ -116,6 +118,7 @@ function DataTable<T>({
                 className="h-24 text-center text-muted"
               >
                 {empty ?? "No data"}
+                {loading ?? "Loading data..."}
               </TableCell>
             </TableRow>
           )}
@@ -132,13 +135,13 @@ function MainTable({
 }: Props) {
   const navigate = useNavigate();
   const { toggle: toggleMatchBook } = useToggleMatchBookSection();
-  const { toggle: toggleUpcomingMatch } = useToggleUpcomingMatchSection();
 
   const [matches, setMatches] = useState<LeagueMatch[]>([]);
   const { selectedMatch, setSelectedMatch, removeSelectedMatch } =
     useSelectedMatchStore();
 
   const [savedMatches, setSavedMatches] = useState<SavedMatchItem[]>([]);
+  const { toggle: toggleUpcomingMatch } = useToggleUpcomingMatchSection();
 
   useEffect(() => {
     const load = async () => setSavedMatches(await listSavedStates());
@@ -149,14 +152,15 @@ function MainTable({
     if (leagueMatchData) {
       setMatches(
         leagueMatchData.filter(
-          (m) => !savedMatches.some((s) => s.matchId === m.league_match_id)
+          (m) =>
+            !savedMatches.some((s) => s.matchId === m.league_match_id) &&
+            m.league_match_id !== selectedMatch?.league_match_id // exclude selected
         )
       );
     }
-  }, [leagueMatchData, savedMatches]);
+  }, [leagueMatchData, savedMatches, selectedMatch]);
 
   const handleSelectMatch = (match: LeagueMatch) => {
-    if (selectedMatch) setMatches((prev) => [...prev, selectedMatch]);
     setSelectedMatch(match);
     setMatches((prev) =>
       prev.filter(
@@ -168,7 +172,6 @@ function MainTable({
   const handleRemoveSaved = async (matchId: string) => {
     await deleteSavedState(matchId);
     setSavedMatches((prev) => prev.filter((m) => m.matchId !== matchId));
-    removeSelectedMatch();
   };
 
   const handleContinue = (matchId: string) => navigate(`/scorebook/${matchId}`);
@@ -226,36 +229,37 @@ function MainTable({
     { accessorKey: "display_name", header: "Detail" },
     {
       id: "actions",
-      cell: ({ row }) => (
-        <div className="text-right">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <MoreVertical />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={() => handleSelectMatch(row.original)}
-                >
-                  Select
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    toggleUpcomingMatch(
-                      row.original,
-                      ToggleState.CONFIG_UPCOMING
-                    )
-                  }
-                >
-                  Configure
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const m = row.original;
+
+        return (
+          <div className="text-right">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => handleSelectMatch(row.original)}
+                  >
+                    Select
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      toggleUpcomingMatch(m, ToggleState.CONFIG_UPCOMING)
+                    }
+                  >
+                    Setup
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
     },
   ];
 
@@ -318,11 +322,11 @@ function MainTable({
       />
 
       <span className="text-sm font-medium">Continue Matches</span>
-      <DataTable data={savedMatches} columns={savedColumns} />
+      <CustomDataTable data={savedMatches} columns={savedColumns} />
 
       <span className="text-sm font-medium">Upcoming Matches</span>
       <div className="space-y-2">
-        <DataTable
+        <CustomDataTable
           data={matches}
           columns={upcomingColumns}
           empty={leagueMatchLoading ? "Loading..." : "No upcoming matches"}
@@ -354,18 +358,14 @@ export default ScheduleMatchTable;
 export function SelectedMatchAlert({
   match,
   onRemove,
+  onOtherPage = false,
 }: {
   match: LeagueMatch | null;
   onRemove: () => void;
+  onOtherPage?: boolean;
 }) {
+  const { toggle: toggleUpcomingMatch } = useToggleUpcomingMatchSection();
   const navigate = useNavigate();
-
-  const handleStart = () => {
-    if (match) {
-      navigate(`/scorebook/${match.league_match_id}`);
-      onRemove();
-    }
-  };
 
   if (!match) {
     return (
@@ -377,6 +377,12 @@ export function SelectedMatchAlert({
       </Alert>
     );
   }
+  const handleSetup = () => {
+    toggleUpcomingMatch(match, ToggleState.CONFIG_UPCOMING);
+    if (onOtherPage) {
+      navigate("/portal/league-administrator/pages/league-matches");
+    }
+  };
 
   return (
     <Alert variant="info" close={true} onClose={onRemove}>
@@ -393,9 +399,9 @@ export function SelectedMatchAlert({
           underlined="solid"
           size="sm"
           className="flex mt-0.5"
-          onClick={handleStart}
+          onClick={handleSetup}
         >
-          Start
+          Setup
         </Button>
       </AlertToolbar>
     </Alert>

@@ -25,7 +25,7 @@ import { ArrowUpDown } from "lucide-react";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import type { LeagueTeam } from "@/types/team";
 import { useLeagueTeam } from "@/hooks/useLeagueTeam";
-import { Badge } from "@/components/ui/badge";
+import { renderPlacementBadges } from "./LeagueTeamsTable";
 
 type Props = {
   leagueCategoryId?: string;
@@ -73,26 +73,8 @@ function LegueTeamTable({ leagueCategoryId }: Props) {
                 <div className="h-8 w-8 rounded-md bg-muted" />
               )}
               <div className="space-y-px">
-                <div className="font-medium text-foreground">
-                  {row.original.team_name}{" "}
-                  {row.original.is_eliminated && (
-                    <Badge variant={"destructive"} className="text-xs">
-                      Eliminated
-                    </Badge>
-                  )}
-                  {row.original.is_champion && row.original.final_rank == 1 && (
-                    <Badge className="text-xs">Champion</Badge>
-                  )}
-                  {row.original.final_rank == 2 && (
-                    <Badge className="text-xs" variant={"outline"}>
-                      Runner up
-                    </Badge>
-                  )}
-                  {row.original.final_rank == 3 && (
-                    <Badge className="text-xs" variant={"secondary"}>
-                      Third place
-                    </Badge>
-                  )}
+                <div className="font-medium text-foreground flex items-center gap-1">
+                  {row.original.team_name} {renderPlacementBadges(row.original)}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   wins:{row.original.wins} losses:{row.original.losses}

@@ -2,20 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useToggleUpcomingMatchSection } from "@/stores/matchStore";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { ChevronLeft, MoreVertical } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  type ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { type ColumnDef } from "@tanstack/react-table";
 import type { LeaguePlayer } from "@/types/player";
 import { memo, useEffect, useState, useTransition } from "react";
 import {
@@ -42,9 +29,13 @@ import { LeagueMatchService } from "@/service/leagueMatchService";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/error";
 import { Spinner } from "@/components/ui/spinner";
+import { LeaguePlayerService } from "@/service/leaguePlayerService";
+import { useNavigate } from "react-router-dom";
+import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
+import { CustomDataTable } from "@/tables/LeagueMatchUpcomingTable";
 
 type Props = {
-  upcomingMatch: LeagueMatch;
+  selectedMatch: LeagueMatch;
   refereesOption: LeagueReferee[];
   courtOption: LeagueCourt[];
 };
@@ -62,12 +53,17 @@ type UpdatetableFields = {
   minutes_per_overtime?: number;
 };
 
-export const ConfigUpcomingMatch = memo(
-  ({ upcomingMatch, refereesOption, courtOption }: Props) => {
+export const SetupSelectedMatch = memo(
+  ({ selectedMatch, refereesOption, courtOption }: Props) => {
     const { reset } = useToggleUpcomingMatchSection();
+    const { removeSelectedMatch } = useSelectedMatchStore();
 
-    const homeTeamPlayers = upcomingMatch.home_team?.league_players ?? [];
-    const awayTeamPlayers = upcomingMatch.away_team?.league_players ?? [];
+    const [homePlayers, setHomePlayers] = useState<LeaguePlayer[]>(
+      selectedMatch.home_team?.league_players ?? []
+    );
+    const [awayPlayers, setAwayPlayers] = useState<LeaguePlayer[]>(
+      selectedMatch.away_team?.league_players ?? []
+    );
 
     const initForm = (match: LeagueMatch): UpdatetableFields => ({
       scheduled_date: match.scheduled_date
@@ -87,15 +83,24 @@ export const ConfigUpcomingMatch = memo(
     };
 
     useEffect(() => {
-      setSheetFormData(initForm(upcomingMatch));
+      setSheetFormData(initForm(selectedMatch));
     }, []);
+
+    const navigate = useNavigate();
+
+    const handleStart = () => {
+      if (selectedMatch) {
+        navigate(`/scorebook/${selectedMatch.league_match_id}`);
+        removeSelectedMatch();
+      }
+    };
 
     const [isPending, startTransition] = useTransition();
 
     const handleSaveChanges = () => {
       startTransition(async () => {
         try {
-          await LeagueMatchService.updateOne(upcomingMatch.league_match_id, {
+          await LeagueMatchService.updateOne(selectedMatch.league_match_id, {
             ...sheetFormData,
             referees: sheetFormData.referees?.map((r) => r.value),
             scheduled_date: sheetFormData.scheduled_date?.toISOString(),
@@ -117,7 +122,6 @@ export const ConfigUpcomingMatch = memo(
         header,
         cell: ({ row }) => {
           const value = row.original[accessorKey];
-
           const index = row.index + 1;
 
           return (
@@ -142,9 +146,14 @@ export const ConfigUpcomingMatch = memo(
           const p = row.original;
           const index = row.index + 1;
           return (
-            <span className="text-xs">
-              {index}. {p.full_name}
-            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-xs">
+                {index}. {p.full_name}
+              </span>
+              {p.include_first5 && (
+                <Badge className="text-[10px]">First 5</Badge>
+              )}
+            </div>
           );
         },
       },
@@ -153,7 +162,9 @@ export const ConfigUpcomingMatch = memo(
       {
         accessorKey: "action",
         header: "",
-        cell: () => {
+        cell: ({ row }) => {
+          const p = row.original;
+
           return (
             <div className="text-right">
               <DropdownMenu>
@@ -165,7 +176,34 @@ export const ConfigUpcomingMatch = memo(
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem>Include first 5</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      try {
+                        const updatedPlayer =
+                          await LeaguePlayerService.updateOne(
+                            p.league_player_id,
+                            { condition: "Include first 5" }
+                          );
+
+                        setHomePlayers((prev) =>
+                          prev.map((pl) =>
+                            pl.league_player_id ===
+                            updatedPlayer.league_player_id
+                              ? updatedPlayer
+                              : pl
+                          )
+                        );
+
+                        toast.success("Updated starter status");
+                      } catch (err) {
+                        toast.error(getErrorMessage(err) || "Failed to update");
+                      }
+                    }}
+                  >
+                    {p.include_first5
+                      ? "Remove from first 5"
+                      : "Include first 5"}
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -173,6 +211,7 @@ export const ConfigUpcomingMatch = memo(
         },
       },
     ];
+
     const awayTeamPlayerColumns: ColumnDef<LeaguePlayer>[] = [
       {
         accessorKey: "full_name",
@@ -197,7 +236,8 @@ export const ConfigUpcomingMatch = memo(
       {
         accessorKey: "action",
         header: "",
-        cell: () => {
+        cell: ({ row }) => {
+          const p = row.original;
           return (
             <div className="text-right">
               <DropdownMenu>
@@ -209,7 +249,35 @@ export const ConfigUpcomingMatch = memo(
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem>Include first 5</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      try {
+                        const updatedPlayer =
+                          await LeaguePlayerService.updateOne(
+                            p.league_player_id,
+                            { condition: "Include first 5" }
+                          );
+
+                        // ✅ update local state for away team
+                        setAwayPlayers((prev) =>
+                          prev.map((pl) =>
+                            pl.league_player_id ===
+                            updatedPlayer.league_player_id
+                              ? updatedPlayer
+                              : pl
+                          )
+                        );
+
+                        toast.success("Updated starter status");
+                      } catch (err) {
+                        toast.error(getErrorMessage(err) || "Failed to update");
+                      }
+                    }}
+                  >
+                    {p.include_first5
+                      ? "Remove from first 5"
+                      : "Include first 5"}
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -224,8 +292,9 @@ export const ConfigUpcomingMatch = memo(
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
+        {/* Match config form */}
         <div>
-          <div className="bg-card rounded-md p-2 border grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div className="bg-card rounded-md px-2 pb-2 pt-4 border grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             <div className="space-y-2">
               <Label>Schedule Date & Time</Label>
               <DateTimePicker
@@ -315,7 +384,8 @@ export const ConfigUpcomingMatch = memo(
                 onClick={handleSaveChanges}
                 disabled={isPending}
               >
-                {isPending && <Spinner />}Save Changes
+                {isPending && <Spinner />}
+                Save Changes
               </Button>
             </div>
           </div>
@@ -323,72 +393,21 @@ export const ConfigUpcomingMatch = memo(
 
         <div className="">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <DataTable data={homeTeamPlayers} columns={homeTeamPlayerColumns} />
-            <DataTable data={awayTeamPlayers} columns={awayTeamPlayerColumns} />
+            <CustomDataTable
+              data={homePlayers}
+              columns={homeTeamPlayerColumns}
+            />
+            <CustomDataTable
+              data={awayPlayers}
+              columns={awayTeamPlayerColumns}
+            />
           </div>
+        </div>
+
+        <div className="">
+          <Button onClick={handleStart}>Start</Button>
         </div>
       </div>
     );
   }
 );
-
-function DataTable<T>({
-  data,
-  columns,
-  empty,
-}: {
-  data: T[];
-  columns: ColumnDef<T>[];
-  empty?: string;
-}) {
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  return (
-    <div className="overflow-hidden rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((hg) => (
-            <TableRow key={hg.id} className="bg-muted/50">
-              {hg.headers.map((header) => (
-                <TableHead key={header.id} className="text-xs">
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center text-muted"
-              >
-                {empty ?? "No data"}
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}

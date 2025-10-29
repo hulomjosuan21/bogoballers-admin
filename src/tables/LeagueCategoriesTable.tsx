@@ -132,10 +132,10 @@ export function LeagueCategoriesTable({
               handleFieldChange(id, "league_category_status", val)
             }
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="h-6 px-2 py-1 text-xs">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="text-xs">
               <SelectItem value="Close">Close</SelectItem>
               <SelectItem value="Open">Open</SelectItem>
               <SelectItem value="Ongoing">Ongoing</SelectItem>

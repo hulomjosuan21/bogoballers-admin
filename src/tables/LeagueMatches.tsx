@@ -137,7 +137,7 @@ function MatchesTable({ leagueCategoryId, roundId, viewOnly = false }: Props) {
     },
     {
       accessorKey: "display_name",
-      header: "Info",
+      header: "Detail",
     },
     {
       accessorKey: "scheduled_date",

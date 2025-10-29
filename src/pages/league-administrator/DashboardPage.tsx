@@ -37,6 +37,13 @@ import type { League } from "@/types/league";
 import { Spinner } from "@/components/ui/spinner";
 import { SelectedMatchAlert } from "@/tables/LeagueMatchUpcomingTable";
 import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
+import {
+  MatchHistoryFilter,
+  LeagueMatchTableWrapper,
+} from "./league/match/MatchHistoryPage";
+import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
+import { useQueries } from "@tanstack/react-query";
+import { getLeagueMatchQueryOption } from "@/queries/leagueMatchQueryOption";
 
 interface DashboardCardProps {
   title: string;
@@ -130,7 +137,27 @@ const AnalyticsCard = ({
 export default function DashboardPage() {
   const { activeLeagueId, activeLeagueData, activeLeagueLoading } =
     useActiveLeague();
+  const {
+    categories,
+    rounds,
+    selectedCategory,
+    selectedRound,
+    setSelectedCategory,
+    setSelectedRound,
+  } = useLeagueCategoriesRoundsGroups();
 
+  const [upcomingMatch, completedMatch] = useQueries({
+    queries: [
+      getLeagueMatchQueryOption(selectedCategory, selectedRound, {
+        condition: "Upcoming",
+        limit: 5,
+      }),
+      getLeagueMatchQueryOption(selectedCategory, undefined, {
+        condition: "Completed",
+        limit: 5,
+      }),
+    ],
+  });
   const { selectedMatch, removeSelectedMatch } = useSelectedMatchStore();
 
   const { activeLeagueAnalyticsData, activeLeagueAnalyticsLoading } =
@@ -174,6 +201,7 @@ export default function DashboardPage() {
               <SelectedMatchAlert
                 match={selectedMatch}
                 onRemove={removeSelectedMatch}
+                onOtherPage={true}
               />
             )}
             <div className="lg:col-span-2 flex flex-col gap-6">
@@ -210,6 +238,42 @@ export default function DashboardPage() {
               </div>
 
               <ProfitAreaChart data={activeLeagueAnalyticsData.total_profit} />
+
+              <div className="space-y-2">
+                <MatchHistoryFilter
+                  label="Filter"
+                  categories={categories}
+                  rounds={rounds}
+                  selectedCategory={selectedCategory}
+                  selectedRound={selectedRound}
+                  setSelectedCategory={setSelectedCategory}
+                  setSelectedRound={setSelectedRound}
+                />
+
+                <LeagueMatchTableWrapper
+                  key={"upcoming"}
+                  selectedCategory={selectedCategory}
+                  selectedRound={selectedRound}
+                  leagueMatchData={upcomingMatch.data ?? []}
+                  leagueMatchLoading={upcomingMatch.isLoading}
+                  refresh={upcomingMatch.refetch}
+                  controlls={false}
+                  label={"Upcoming Match"}
+                  excludeFields={["home_team_score", "away_team_score"]}
+                />
+
+                <LeagueMatchTableWrapper
+                  key={"completed"}
+                  selectedCategory={selectedCategory}
+                  selectedRound={selectedRound}
+                  leagueMatchData={completedMatch.data ?? []}
+                  leagueMatchLoading={completedMatch.isLoading}
+                  refresh={completedMatch.refetch}
+                  controlls={false}
+                  label={"Completed Match"}
+                  excludeFields={["scheduled_date"]}
+                />
+              </div>
             </div>
           </div>
         ) : (

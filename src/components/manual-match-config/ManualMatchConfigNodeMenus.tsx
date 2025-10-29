@@ -70,7 +70,7 @@ export function ManualGroupNodeMenu() {
           Add
         </Button>
       </div>
-      <div className="flex flex-col gap-2 justify-center">
+      <div className="flex flex-col gap-2 justify-center mt-2">
         {groups.map((value, index) => (
           <div
             key={index}
@@ -147,24 +147,24 @@ export function ManualLeagueTeamNodeMenu() {
     !activeLeagueCategoriesError &&
     activeLeagueCategories.length > 0;
 
-  // ✅ initialize once with first category
   const [selectedCategory, setSelectedCategory] =
-    useState<LeagueCategory | null>(
-      hasActiveLeague ? activeLeagueCategories[0] ?? null : null
-    );
+    useState<LeagueCategory | null>(null);
 
-  // ✅ only reset if current selection no longer exists
   useEffect(() => {
-    if (
-      hasActiveLeague &&
-      selectedCategory &&
-      !activeLeagueCategories.find(
-        (c) => c.league_category_id === selectedCategory.league_category_id
-      )
-    ) {
-      setSelectedCategory(activeLeagueCategories[0] || null);
+    if (hasActiveLeague) {
+      const currentSelectionValid =
+        selectedCategory &&
+        activeLeagueCategories.find(
+          (c) => c.league_category_id === selectedCategory.league_category_id
+        );
+
+      if (!currentSelectionValid) {
+        setSelectedCategory(activeLeagueCategories[0] || null);
+      }
+    } else {
+      setSelectedCategory(null);
     }
-  }, [hasActiveLeague, activeLeagueCategories]);
+  }, [hasActiveLeague, activeLeagueCategories, selectedCategory]);
 
   const { dynamicLeagueTeamData, dynamicLeagueTeamLoading } =
     useLeagueTeamDynamicQuery(
@@ -186,18 +186,11 @@ export function ManualLeagueTeamNodeMenu() {
   const [currentRoll, setCurrentRoll] = useState<LeagueTeam[]>([]);
   const [showAll, setShowAll] = useState(false);
 
-  // reset teams when category changes
   useEffect(() => {
-    if (dynamicLeagueTeamData?.length) {
-      setTeamPool(dynamicLeagueTeamData);
-      setCurrentRoll([]);
-      setShowAll(false);
-    } else {
-      setTeamPool([]);
-      setCurrentRoll([]);
-      setShowAll(false);
-    }
-  }, [dynamicLeagueTeamData, selectedCategory]);
+    setTeamPool([]);
+    setCurrentRoll([]);
+    setShowAll(false);
+  }, [selectedCategory]);
 
   const onDragStart = useCallback(
     (event: React.DragEvent<HTMLDivElement>, team: LeagueTeam) => {
@@ -234,7 +227,6 @@ export function ManualLeagueTeamNodeMenu() {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      {/* Category Selector */}
       <Select
         onValueChange={(catId) => {
           const category = activeLeagueCategories?.find(

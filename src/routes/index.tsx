@@ -30,6 +30,7 @@ import {
   ChevronsRightLeft,
   Network,
   ChartNoAxesGantt,
+  ClipboardClock,
 } from "lucide-react";
 import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
 import LoginPage from "@/pages/auth/LoginPage";
@@ -44,6 +45,7 @@ import PublicLeaguePage from "@/components/public-components/PublicLeaguePage";
 import LeagueGuestPage from "@/pages/league-administrator/league/guest/LeagueGuestPage";
 import AutomaticMatchConfigPage from "@/pages/league-administrator/league/match/automatic/AutomaticMatchConfigXyFlowPage";
 import MatchSetupPage from "@/pages/league-administrator/league/match/MatchSetupPage";
+import MatchHistoryPage from "@/pages/league-administrator/league/match/MatchHistoryPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -238,6 +240,16 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
     sidebarParent: "Match",
     sidebarTitle: "Scheduled",
+    permissions: [Permission.ScheduleMatches, Permission.ViewScheduledMatches],
+  },
+  {
+    path: "pages/league-matches/history",
+    element: <MatchHistoryPage />,
+    showInSidebar: true,
+    icon: ClipboardClock,
+    sidebarGroup: "league",
+    sidebarParent: "Match",
+    sidebarTitle: "History",
     permissions: [Permission.ViewScheduledMatches],
   },
   {

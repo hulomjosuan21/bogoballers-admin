@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, useCallback, memo, type JSX } from "react";
 import { getErrorMessage } from "@/lib/error";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Copy, MoreVertical } from "lucide-react";
@@ -44,6 +44,7 @@ import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { LeagueTeamService } from "@/service/leagueTeamService";
 import { Badge } from "@/components/ui/badge";
+import { getOrdinal } from "@/lib/app_utils";
 
 type Props = {
   leagueCategoryId?: string;
@@ -51,6 +52,45 @@ type Props = {
   viewOnly?: boolean;
 };
 
+export const renderPlacementBadges = (t: LeagueTeam) => {
+  const badges: JSX.Element[] = [];
+
+  if (t.is_eliminated) {
+    badges.push(
+      <Badge key="eliminated" variant="destructive" className="text-xs">
+        Eliminated
+      </Badge>
+    );
+  }
+
+  if (t.final_rank === 1) {
+    badges.push(
+      <Badge key="champion" className="text-xs">
+        Champion
+      </Badge>
+    );
+  } else if (t.final_rank === 2) {
+    badges.push(
+      <Badge key="runnerup" className="text-xs" variant="outline">
+        Runner Up
+      </Badge>
+    );
+  } else if (t.final_rank === 3) {
+    badges.push(
+      <Badge key="third" className="text-xs" variant="secondary">
+        Third Place
+      </Badge>
+    );
+  } else if (t.final_rank && t.final_rank > 3) {
+    badges.push(
+      <Badge key="placer" className="text-xs" variant="outline">
+        {getOrdinal(t.final_rank)} Placer
+      </Badge>
+    );
+  }
+
+  return <>{badges}</>;
+};
 export function LeagueTeamsTable({
   leagueCategoryId,
   roundId,
@@ -131,26 +171,8 @@ export function LeagueTeamsTable({
                 <div className="h-8 w-8 rounded-md bg-muted" />
               )}
               <div className="space-y-px">
-                <div className="font-medium text-foreground">
-                  {row.original.team_name}{" "}
-                  {row.original.is_eliminated && (
-                    <Badge variant={"destructive"} className="text-xs">
-                      Eliminated
-                    </Badge>
-                  )}
-                  {row.original.is_champion && row.original.final_rank == 1 && (
-                    <Badge className="text-xs">Champion</Badge>
-                  )}
-                  {row.original.final_rank == 2 && (
-                    <Badge className="text-xs" variant={"outline"}>
-                      Runner up
-                    </Badge>
-                  )}
-                  {row.original.final_rank == 3 && (
-                    <Badge className="text-xs" variant={"secondary"}>
-                      Third place
-                    </Badge>
-                  )}
+                <div className="font-medium text-foreground flex gap-1 items-center">
+                  {row.original.team_name} {renderPlacementBadges(row.original)}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   wins:{row.original.wins} losses:{row.original.losses}

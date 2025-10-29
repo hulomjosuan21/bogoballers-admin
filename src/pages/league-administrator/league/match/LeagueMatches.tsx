@@ -20,7 +20,7 @@ import { ToggleState } from "@/stores/toggleStore";
 import FinalizaMatchSection from "@/components/FinalizeMatch";
 import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import ScheduleMatchTable from "@/tables/LeagueMatchUpcomingTable";
-import { ConfigUpcomingMatch } from "./ConfigUpcomingPage";
+import { SetupSelectedMatch } from "./SetupSelectedMatch";
 
 export default function LeagueMatches() {
   const {
@@ -90,8 +90,8 @@ export default function LeagueMatches() {
               <FinalizaMatchSection match={selectedMatchBookData} />
             ) : stateUpcomingMatch === ToggleState.CONFIG_UPCOMING &&
               selectedUpcomingMatchData ? (
-              <ConfigUpcomingMatch
-                upcomingMatch={selectedUpcomingMatchData}
+              <SetupSelectedMatch
+                selectedMatch={selectedUpcomingMatchData}
                 refereesOption={refereesOption}
                 courtOption={courtOption}
               />
