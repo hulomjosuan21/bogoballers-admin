@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react";
-import { initialMatchData } from "@/data/mock";
+import { initialMatchData } from "@/data/scorebookInitialState";
 import type {
   MatchBook,
   PlayerStatsSummary,
