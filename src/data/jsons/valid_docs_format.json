@@ -1,0 +1,13 @@
+[
+  { "value": "Birth Certificate", "format": "single" },
+  { "value": "Live Birth", "format": "single" },
+  { "value": "Barangay Clearance", "format": "single" },
+  { "value": "Medical Certificate", "format": "single" },
+  { "value": "National ID", "format": "back_to_back" },
+  { "value": "PSA Birth Certificate", "format": "back_to_back" },
+  { "value": "PSA Marriage Certificate", "format": "back_to_back" },
+  {
+    "value": "PSA CENOMAR (Certificate of No Marriage)",
+    "format": "back_to_back"
+  }
+]

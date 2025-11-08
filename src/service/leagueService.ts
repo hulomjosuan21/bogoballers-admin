@@ -24,6 +24,14 @@ type ImageKeyMap = {
   [K in keyof FieldKeyMap]: keyof FieldKeyMap[K] | null;
 };
 
+export interface FetchLeagueGenericDataParams {
+  userId?: string; // Corresponds to 'user_id'
+  status?: string; // Corresponds to 'status'
+  filter?: string; // Corresponds to 'filter'
+  all?: boolean; // Corresponds to 'all'
+  active?: boolean;
+}
+
 const IMAGE_KEY_MAP: ImageKeyMap = {
   league_courts: null,
   league_officials: "photo",
@@ -119,8 +127,20 @@ export class LeagueService {
     return response.data;
   }
 
-  // static async getOne<T extends Partial<League> & { condition: string }>(
-  //   leagueId: string,
-  //   data?: T
-  // ) {}
+  async fetchLeagueGenericData<T>(params: FetchLeagueGenericDataParams) {
+    const url = "/league/fetch";
+    const response = await axiosClient.get<T>(url, {
+      params: {
+        user_id: params.userId,
+        status: params.status,
+        filter: params.filter,
+        all: params.all,
+        active: params.active,
+      },
+    });
+
+    return response.data;
+  }
 }
+
+export const leagueService = new LeagueService();
