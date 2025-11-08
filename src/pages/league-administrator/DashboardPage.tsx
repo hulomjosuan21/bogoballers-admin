@@ -20,10 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import {
-  useActiveLeague,
-  useActiveLeagueAnalytics,
-} from "@/hooks/useActiveLeague";
+import { useActiveLeagueAnalytics } from "@/hooks/useActiveLeague";
 import {
   Empty,
   EmptyContent,
@@ -44,6 +41,7 @@ import {
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { useQueries } from "@tanstack/react-query";
 import { getLeagueMatchQueryOption } from "@/queries/leagueMatchQueryOption";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
 
 interface DashboardCardProps {
   title: string;
@@ -135,8 +133,14 @@ const AnalyticsCard = ({
 );
 
 export default function DashboardPage() {
-  const { activeLeagueId, activeLeagueData, activeLeagueLoading } =
-    useActiveLeague();
+  const {
+    leagueId: activeLeagueId,
+    data: activeLeagueData,
+    isLoading: activeLeagueLoading,
+  } = useFetchLeagueGenericData<League>({
+    params: { active: true, status: ["Scheduled", "Ongoing"] },
+  });
+
   const {
     categories,
     rounds,

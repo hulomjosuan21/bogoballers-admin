@@ -9,18 +9,21 @@ import {
 } from "@/components/ui/alert";
 import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
-import { useMemo } from "react";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 import UpdateLeagueForm from "@/forms/UpdateLeagueForm";
 import { useNavigate } from "react-router-dom";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
+import type { League } from "@/types/league";
 export default function LeagueUpdatePage() {
-  const { activeLeagueId, activeLeagueData, activeLeagueLoading } =
-    useActiveLeague();
-  const navigate = useNavigate();
+  const {
+    leagueId: activeLeagueId,
+    data: activeLeagueData,
+    isLoading: activeLeagueLoading,
+    hasData,
+  } = useFetchLeagueGenericData<League>({
+    params: { active: true, status: ["Pending", "Scheduled", "Ongoing"] },
+  });
 
-  const hasActiveLeague = useMemo(() => {
-    return activeLeagueData != null && Object.keys(activeLeagueData).length > 0;
-  }, [activeLeagueData]);
+  const navigate = useNavigate();
 
   return (
     <ContentShell>
@@ -31,7 +34,7 @@ export default function LeagueUpdatePage() {
       </ContentHeader>
 
       <ContentBody>
-        {!hasActiveLeague && (
+        {!hasData && (
           <Alert variant="info">
             <AlertIcon>
               <RiSpamFill />
@@ -56,7 +59,7 @@ export default function LeagueUpdatePage() {
         {!activeLeagueLoading && activeLeagueData && (
           <UpdateLeagueForm
             leagueId={activeLeagueId!}
-            hasActive={!hasActiveLeague}
+            hasActive={!hasData}
             activeLeague={activeLeagueData}
             activeLeagueLoading={activeLeagueLoading}
           />

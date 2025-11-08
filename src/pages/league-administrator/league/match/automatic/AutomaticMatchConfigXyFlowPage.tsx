@@ -7,13 +7,19 @@ import {
 } from "@/components/automatic-match-config/AutomaticMatchConfigNodeMenu";
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
 import { AutomaticMatchConfigXyFlowCanvas } from "./AutomaticMatchConfigXyFlowCanvas";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
+import type { League } from "@/types/league";
 
 function AutomaticMatchConfigPage() {
-  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
-    useActiveLeague();
+  const {
+    leagueId: activeLeagueId,
+    isLoading: activeLeagueLoading,
+    error: activeLeagueError,
+  } = useFetchLeagueGenericData<League>({
+    params: { active: true, status: ["Scheduled", "Ongoing"] },
+  });
 
   const menu = (
     <div className="w-48 flex flex-col gap-2">

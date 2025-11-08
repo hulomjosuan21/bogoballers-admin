@@ -9,19 +9,20 @@ import {
   AlertToolbar,
 } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
+import type { League } from "@/types/league";
 
 export default function CreateLeaguePage() {
-  const { activeLeagueData, activeLeagueError } = useActiveLeague();
-
-  const hasActiveLeague = !activeLeagueError && activeLeagueData;
+  const { hasData } = useFetchLeagueGenericData<League>({
+    params: { active: true, filter: "Check" },
+  });
 
   return (
     <ContentShell>
       <ContentHeader title="Create League" />
 
       <ContentBody>
-        {hasActiveLeague && (
+        {hasData && (
           <Alert variant="info">
             <AlertIcon>
               <RiSpamFill />
@@ -46,7 +47,7 @@ export default function CreateLeaguePage() {
             </AlertToolbar>
           </Alert>
         )}
-        <CreateLeagueForm hasActive={!!activeLeagueData} />
+        <CreateLeagueForm hasActive={hasData} />
       </ContentBody>
     </ContentShell>
   );

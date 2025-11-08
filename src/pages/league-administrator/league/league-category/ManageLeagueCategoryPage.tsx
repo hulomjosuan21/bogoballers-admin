@@ -1,12 +1,18 @@
 import ContentHeader from "@/components/content-header";
 import { Spinner } from "@/components/ui/spinner";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { LeagueCategoriesTable } from "@/tables/LeagueCategoriesTable";
+import type { League } from "@/types/league";
 
 export default function ManageLeagueCategoriesPage() {
-  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
-    useActiveLeague();
+  const {
+    leagueId: activeLeagueId,
+    isLoading: activeLeagueLoading,
+    error: activeLeagueError,
+  } = useFetchLeagueGenericData<League>({
+    params: { active: true, status: ["Pending", "Scheduled", "Ongoing"] },
+  });
 
   if (activeLeagueLoading) {
     return (

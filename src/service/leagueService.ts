@@ -23,12 +23,18 @@ type FieldKeyMap = {
 type ImageKeyMap = {
   [K in keyof FieldKeyMap]: keyof FieldKeyMap[K] | null;
 };
-
+export type LeagueStatus =
+  | "Pending"
+  | "Scheduled"
+  | "Ongoing"
+  | "Completed"
+  | "Postponed"
+  | "Cancelled";
 export interface FetchLeagueGenericDataParams {
-  userId?: string; // Corresponds to 'user_id'
-  status?: string; // Corresponds to 'status'
-  filter?: string; // Corresponds to 'filter'
-  all?: boolean; // Corresponds to 'all'
+  userId?: string;
+  status?: LeagueStatus | LeagueStatus[];
+  filter?: string | keyof League;
+  all?: boolean;
   active?: boolean;
 }
 
@@ -127,19 +133,26 @@ export class LeagueService {
     return response.data;
   }
 
-  async fetchLeagueGenericData<T>(params: FetchLeagueGenericDataParams) {
-    const url = "/league/fetch";
-    const response = await axiosClient.get<T>(url, {
-      params: {
-        user_id: params.userId,
-        status: params.status,
-        filter: params.filter,
-        all: params.all,
-        active: params.active,
-      },
-    });
+  async fetchGenericData<T>(
+    params: FetchLeagueGenericDataParams
+  ): Promise<T | null> {
+    try {
+      const url = "/league/fetch";
 
-    return response.data;
+      const response = await axiosClient.get<T>(url, {
+        params: {
+          user_id: params.userId,
+          status: params.status,
+          filter: params.filter,
+          all: params.all,
+          active: params.active,
+        },
+      });
+
+      return response.data;
+    } catch {
+      return null;
+    }
   }
 }
 

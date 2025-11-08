@@ -8,14 +8,20 @@ import {
   ManualRoundNodeMenu,
 } from "@/components/manual-match-config/ManualMatchConfigNodeMenus";
 import { ManualMatchingCanvas } from "./LeagueMatchManualXyFlowCanvas";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
+import type { League } from "@/types/league";
 
 function ManualMatchingPageContent() {
-  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
-    useActiveLeague();
+  const {
+    leagueId: activeLeagueId,
+    isLoading: activeLeagueLoading,
+    error: activeLeagueError,
+  } = useFetchLeagueGenericData<League>({
+    params: { active: true, status: ["Scheduled", "Ongoing"] },
+  });
 
   const rightMenu = (
     <div className="w-fit flex flex-col gap-2">

@@ -3,15 +3,22 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageOfficials from "@/tables/ManageOfficialsTable";
 import ManangeReferees from "@/tables/ManageRefereesTable";
 import ManageCourts from "@/tables/ManageCourtsTable";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import { Spinner } from "@/components/ui/spinner";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
+import type { League } from "@/types/league";
 
 export default function LeagueOfficialsPage() {
-  const { activeLeagueData, activeLeagueLoading } = useActiveLeague();
+  const {
+    isLoading: activeLeagueLoading,
+    data: activeLeagueData,
+    hasData,
+  } = useFetchLeagueGenericData<League>({
+    params: { active: true, status: ["Pending", "Scheduled", "Ongoing"] },
+  });
 
-  if (activeLeagueData?.status == "Pending") {
+  if (hasData && activeLeagueData?.status == "Pending") {
     return <LeagueNotApproveYet />;
   }
 

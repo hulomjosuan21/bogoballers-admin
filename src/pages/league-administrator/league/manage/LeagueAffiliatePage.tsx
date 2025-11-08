@@ -2,14 +2,21 @@ import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageAffiliates from "@/tables/ManangeAffiliateTable";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import { Spinner } from "@/components/ui/spinner";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
+import type { League } from "@/types/league";
 
 export default function LeagueAffiliatePage() {
-  const { activeLeagueData, activeLeagueLoading } = useActiveLeague();
+  const {
+    isLoading: activeLeagueLoading,
+    data: activeLeagueData,
+    hasData,
+  } = useFetchLeagueGenericData<League>({
+    params: { active: true, status: ["Pending", "Scheduled", "Ongoing"] },
+  });
 
-  if (activeLeagueData?.status == "Pending") {
+  if (hasData && activeLeagueData?.status == "Pending") {
     return <LeagueNotApproveYet />;
   }
 

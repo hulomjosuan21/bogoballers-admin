@@ -2,6 +2,7 @@ import {
   leagueService,
   type FetchLeagueGenericDataParams,
 } from "@/service/leagueService";
+import type { League } from "@/types/league";
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
 type GenericQueryOptions<T> = Omit<
@@ -9,17 +10,30 @@ type GenericQueryOptions<T> = Omit<
   "queryKey" | "queryFn"
 >;
 
-export const useFetchLeagueGenericData = <T>(
-  queryKeyBase: string,
-  params: FetchLeagueGenericDataParams,
-  options?: GenericQueryOptions<T>
-) => {
-  const queryKey = [queryKeyBase, params];
+export const useFetchLeagueGenericData = <T>({
+  params,
+  options,
+}: {
+  params: FetchLeagueGenericDataParams;
+  options?: GenericQueryOptions<T | null>;
+}) => {
+  const queryKey = ["league-generic", JSON.stringify(params)];
 
-  return useQuery<T, Error>({
-    queryKey: queryKey,
+  const query = useQuery<T | null, Error>({
+    queryKey,
 
-    queryFn: () => leagueService.fetchLeagueGenericData<T>(params),
+    queryFn: () => leagueService.fetchGenericData<T>(params),
     ...options,
   });
+
+  const leagueId =
+    query.data && typeof query.data === "object" && "league_id" in query.data
+      ? (query.data as unknown as League).league_id
+      : undefined;
+
+  return {
+    ...query,
+    hasData: !query.isError && query.data !== null,
+    leagueId: leagueId,
+  };
 };

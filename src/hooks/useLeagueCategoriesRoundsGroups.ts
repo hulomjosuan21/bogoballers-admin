@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axiosClient from "@/lib/axiosClient";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { useLeagueMatchSelectionStore } from "./useLeagueMatchSelectionStore";
+import { useFetchLeagueGenericData } from "./useFetchLeagueGenericData";
+import type { League } from "@/types/league";
 
 export interface LeagueGroup {
   group_id: string;
@@ -23,11 +24,13 @@ export interface LeagueCategoryWithRounds {
 
 export function useLeagueCategoriesRoundsGroups() {
   const {
-    activeLeagueId,
-    activeLeagueData,
-    activeLeagueLoading,
-    activeLeagueError,
-  } = useActiveLeague();
+    leagueId: activeLeagueId,
+    data: activeLeagueData,
+    isLoading: activeLeagueLoading,
+    error: activeLeagueError,
+  } = useFetchLeagueGenericData<League>({
+    params: { active: true, status: ["Scheduled", "Ongoing"] },
+  });
 
   const {
     selectedCategory,
