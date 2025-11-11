@@ -3,31 +3,35 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageOfficials from "@/tables/ManageOfficialsTable";
 import ManangeReferees from "@/tables/ManageRefereesTable";
 import ManageCourts from "@/tables/ManageCourtsTable";
-import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
-import { Spinner } from "@/components/ui/spinner";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
-import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
-import type { League } from "@/types/league";
+import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
+import { useLeagueStore } from "@/stores/leagueStore";
+import type { LeagueStatus } from "@/service/leagueService";
 
 export default function LeagueOfficialsPage() {
-  const {
-    isLoading: activeLeagueLoading,
-    data: activeLeagueData,
-    hasData,
-  } = useFetchLeagueGenericData<League>({
-    params: { active: true, status: ["Pending", "Scheduled", "Ongoing"] },
-  });
+  const { league, isLoading, leagueId } = useLeagueStore();
 
-  if (hasData && activeLeagueData?.status == "Pending") {
-    return <LeagueNotApproveYet />;
+  if (isLoading) {
+    return <SelectedLeagueStateScreen loading />;
   }
 
-  if (activeLeagueLoading) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
-    );
+  if (!league || !leagueId) {
+    return <SelectedLeagueStateScreen />;
+  }
+
+  const leagueStatus = league.status as LeagueStatus;
+
+  const handledStates: Record<LeagueStatus, boolean> = {
+    Pending: false,
+    Completed: true,
+    Postponed: true,
+    Cancelled: true,
+    Scheduled: false,
+    Ongoing: false,
+  };
+
+  if (handledStates[leagueStatus]) {
+    return <SelectedLeagueStateScreen state={leagueStatus} league={league} />;
   }
 
   return (
@@ -36,18 +40,21 @@ export default function LeagueOfficialsPage() {
 
       <ContentBody className="">
         <>
-          {!activeLeagueData && <NoActiveLeagueAlert />}
+          {!league && <NoActiveLeagueAlert />}
           <ManageOfficials
-            data={activeLeagueData?.league_officials ?? []}
-            hasActiveLeague={!activeLeagueData}
+            data={league.league_officials ?? []}
+            hasActiveLeague={!league}
+            activeLeagueId={leagueId}
           />
           <ManangeReferees
-            data={activeLeagueData?.league_referees ?? []}
-            hasActiveLeague={!activeLeagueData}
+            data={league?.league_referees ?? []}
+            hasActiveLeague={!league}
+            activeLeagueId={leagueId}
           />
           <ManageCourts
-            data={activeLeagueData?.league_courts ?? []}
-            hasActiveLeague={!activeLeagueData}
+            data={league?.league_courts ?? []}
+            hasActiveLeague={!league}
+            activeLeagueId={leagueId}
           />
         </>
       </ContentBody>

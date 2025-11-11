@@ -1,31 +1,34 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageAffiliates from "@/tables/ManangeAffiliateTable";
-import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
-import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
-import { Spinner } from "@/components/ui/spinner";
-import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
-import type { League } from "@/types/league";
+import { useLeagueStore } from "@/stores/leagueStore";
+import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
+import { LeagueStatus } from "@/service/leagueService";
 
 export default function LeagueAffiliatePage() {
-  const {
-    isLoading: activeLeagueLoading,
-    data: activeLeagueData,
-    hasData,
-  } = useFetchLeagueGenericData<League>({
-    params: { active: true, status: ["Pending", "Scheduled", "Ongoing"] },
-  });
+  const { league, isLoading, leagueId } = useLeagueStore();
 
-  if (hasData && activeLeagueData?.status == "Pending") {
-    return <LeagueNotApproveYet />;
+  if (isLoading) {
+    return <SelectedLeagueStateScreen loading />;
   }
 
-  if (activeLeagueLoading) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
-    );
+  if (!league || !leagueId) {
+    return <SelectedLeagueStateScreen />;
+  }
+
+  const leagueStatus = league.status as LeagueStatus;
+
+  const handledStates: Record<LeagueStatus, boolean> = {
+    Pending: false,
+    Completed: true,
+    Postponed: true,
+    Cancelled: true,
+    Scheduled: false,
+    Ongoing: false,
+  };
+
+  if (handledStates[leagueStatus]) {
+    return <SelectedLeagueStateScreen state={leagueStatus} league={league} />;
   }
 
   return (
@@ -33,10 +36,10 @@ export default function LeagueAffiliatePage() {
       <ContentHeader title="Sponsors & Partners"></ContentHeader>
 
       <ContentBody>
-        {!activeLeagueData && <NoActiveLeagueAlert />}
         <ManageAffiliates
-          data={activeLeagueData?.league_affiliates ?? []}
-          hasActiveLeague={!activeLeagueData}
+          data={league.league_affiliates ?? []}
+          hasActiveLeague={!league}
+          activeLeagueId={leagueId}
         />
       </ContentBody>
     </ContentShell>

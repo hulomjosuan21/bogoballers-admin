@@ -24,8 +24,7 @@ import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeam } from "@/types/team";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
-import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
-import type { League } from "@/types/league";
+import { useLeagueStore } from "@/stores/leagueStore";
 
 export function ManualGroupNodeMenu() {
   const [groups, setGroups] = useState<IManualMatchConfigGroup[]>([]);
@@ -134,9 +133,11 @@ export function ManualRoundNodeMenu() {
 }
 
 export function ManualLeagueTeamNodeMenu() {
-  const { leagueId: activeLeagueId } = useFetchLeagueGenericData<League>({
-    params: { active: true },
-  });
+  const { leagueId: activeLeagueId } = useLeagueStore();
+
+  if (!activeLeagueId) {
+    return null;
+  }
 
   const {
     activeLeagueCategories,

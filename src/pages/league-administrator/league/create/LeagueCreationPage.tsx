@@ -11,10 +11,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
 import type { League } from "@/types/league";
+import { LeagueStatus } from "@/service/leagueService";
 
 export default function CreateLeaguePage() {
-  const { hasData } = useFetchLeagueGenericData<League>({
-    params: { active: true, filter: "Check" },
+  const { data, refetch } = useFetchLeagueGenericData<League>({
+    key: ["is-active"],
+    params: {
+      active: true,
+      status: [
+        LeagueStatus.Pending,
+        LeagueStatus.Scheduled,
+        LeagueStatus.Ongoing,
+      ],
+    },
   });
 
   return (
@@ -22,7 +31,7 @@ export default function CreateLeaguePage() {
       <ContentHeader title="Create League" />
 
       <ContentBody>
-        {hasData && (
+        {data && (
           <Alert variant="info">
             <AlertIcon>
               <RiSpamFill />
@@ -47,7 +56,7 @@ export default function CreateLeaguePage() {
             </AlertToolbar>
           </Alert>
         )}
-        <CreateLeagueForm hasActive={hasData} />
+        <CreateLeagueForm hasActive={!!data} refetch={refetch} />
       </ContentBody>
     </ContentShell>
   );

@@ -23,13 +23,15 @@ type FieldKeyMap = {
 type ImageKeyMap = {
   [K in keyof FieldKeyMap]: keyof FieldKeyMap[K] | null;
 };
-export type LeagueStatus =
-  | "Pending"
-  | "Scheduled"
-  | "Ongoing"
-  | "Completed"
-  | "Postponed"
-  | "Cancelled";
+export enum LeagueStatus {
+  Pending = "Pending",
+  Scheduled = "Scheduled",
+  Ongoing = "Ongoing",
+  Completed = "Completed",
+  Postponed = "Postponed",
+  Cancelled = "Cancelled",
+}
+
 export interface FetchLeagueGenericDataParams {
   userId?: string;
   status?: LeagueStatus | LeagueStatus[];
@@ -45,6 +47,14 @@ const IMAGE_KEY_MAP: ImageKeyMap = {
   league_affiliates: "image",
 };
 export class LeagueService {
+  async getLeaguePDF(leagueId: string): Promise<Blob> {
+    const response = await axiosClient.get<Blob>(`/league/print/${leagueId}`, {
+      responseType: "blob",
+    });
+
+    return new Blob([response.data], { type: "application/pdf" });
+  }
+
   static async analytics(leagueId: string) {
     const res = await axiosClient.get<LeagueAnalytics>(
       `/league/analytics/${leagueId}`

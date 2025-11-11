@@ -41,12 +41,10 @@ import { ImageUploadField } from "@/components/image-upload-field";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { useEffect, useRef, useState } from "react";
 import type { LeagueAffiliate } from "@/types/league";
-import { useQuery } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
 import { LeagueService } from "@/service/leagueService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 
 export type LeagueAffiliateCreate = {
   name: string;
@@ -58,11 +56,14 @@ export type LeagueAffiliateCreate = {
 export default function ManageAffiliates({
   data,
   hasActiveLeague,
+  activeLeagueId,
+  isActive = true,
 }: {
   data: LeagueAffiliate[];
   hasActiveLeague: boolean;
+  activeLeagueId: string;
+  isActive?: boolean;
 }) {
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
   const handleError = useErrorToast();
   const [isProcessing, setProcess] = useState(false);
   const [affiliates, setAffiliates] = useState<LeagueAffiliateCreate[]>(data);
@@ -71,7 +72,9 @@ export default function ManageAffiliates({
   );
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    actions: isActive,
+  });
   const [rowSelection, setRowSelection] = useState({});
   const [hasChanges, setChanges] = useState(false);
 
@@ -120,12 +123,8 @@ export default function ManageAffiliates({
   const handleSaveChanges = async () => {
     setProcess(true);
     try {
-      const leagueId = activeLeague?.league_id;
-      if (!leagueId) {
-        throw new Error("No League id");
-      }
       const response = await LeagueService.updateSingleLeagueResourceField(
-        leagueId,
+        activeLeagueId,
         "league_affiliates",
         affiliates
       );
@@ -183,6 +182,7 @@ export default function ManageAffiliates({
     },
     {
       id: "actions",
+      enableHiding: true,
       cell: ({ row }) => {
         const index = row.index;
         return (
@@ -211,20 +211,20 @@ export default function ManageAffiliates({
   const table = useReactTable({
     data: affiliates,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
     },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (

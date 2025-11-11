@@ -11,13 +11,15 @@ type GenericQueryOptions<T> = Omit<
 >;
 
 export const useFetchLeagueGenericData = <T>({
+  key = ["league-generic"],
   params,
   options,
 }: {
+  key?: string[];
   params: FetchLeagueGenericDataParams;
   options?: GenericQueryOptions<T | null>;
 }) => {
-  const queryKey = ["league-generic", JSON.stringify(params)];
+  const queryKey = [...key, params];
 
   const query = useQuery<T | null, Error>({
     queryKey,

@@ -46,10 +46,8 @@ import { DataTablePagination } from "@/components/data-table-pagination";
 import type { LeagueOfficial } from "@/types/league";
 import { LeagueService } from "@/service/leagueService";
 import { useErrorToast } from "@/components/error-toast";
-import { useQuery } from "@tanstack/react-query";
 import { StaticData } from "@/data";
 import { cn } from "@/lib/utils";
-import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 
 export type LeagueCreateOfficialCreate = {
   full_name: string;
@@ -64,11 +62,14 @@ const MULTIPLE_ROLES: string[] = StaticData.MultiLeagueRoleOfficials;
 export default function ManageOfficialsComponent({
   data,
   hasActiveLeague,
+  activeLeagueId,
+  isActive = true,
 }: {
   data: LeagueOfficial[];
   hasActiveLeague: boolean;
+  activeLeagueId: string;
+  isActive?: boolean;
 }) {
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
   const [officials, setOfficials] =
     useState<LeagueCreateOfficialCreate[]>(data);
   const originalData = useRef<LeagueOfficial[] | LeagueCreateOfficialCreate[]>(
@@ -135,7 +136,9 @@ export default function ManageOfficialsComponent({
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    actions: isActive,
+  });
   const [rowSelection, setRowSelection] = useState({});
 
   useEffect(() => {
@@ -147,12 +150,8 @@ export default function ManageOfficialsComponent({
   const handleSaveChanges = async () => {
     setProcess(true);
     try {
-      const leagueId = activeLeague?.league_id;
-      if (!leagueId) {
-        throw new Error("No League id");
-      }
       const response = await LeagueService.updateSingleLeagueResourceField(
-        leagueId,
+        activeLeagueId,
         "league_officials",
         officials
       );
@@ -216,7 +215,7 @@ export default function ManageOfficialsComponent({
     },
     {
       id: "actions",
-      enableHiding: false,
+      enableHiding: true,
       cell: ({ row }) => {
         const index = row.index;
         return (

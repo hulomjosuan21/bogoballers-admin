@@ -8,17 +8,18 @@ import { toast } from "sonner";
 import { manualLeagueService } from "@/service/manualLeagueManagementService";
 import { Spinner } from "../ui/spinner";
 import { getErrorMessage } from "@/lib/error";
-import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
-import type { League } from "@/types/league";
+import { useLeagueStore } from "@/stores/leagueStore";
 
 const handleStyle = {};
 
 const ManualMatchConfigLeagueCategoryNode: React.FC<
   NodeProps<Node<ManualMatchConfigLeagueCategoryNodeData>>
 > = ({ data }) => {
-  const { leagueId: activeLeagueId } = useFetchLeagueGenericData<League>({
-    params: { active: true, status: ["Scheduled", "Ongoing", "Pending"] },
-  });
+  const { leagueId: activeLeagueId } = useLeagueStore();
+
+  if (!activeLeagueId) {
+    return null;
+  }
 
   const { league_category_id } = data.league_category;
 

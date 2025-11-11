@@ -4,6 +4,7 @@ import axiosClient from "@/lib/axiosClient";
 import { useLeagueMatchSelectionStore } from "./useLeagueMatchSelectionStore";
 import { useFetchLeagueGenericData } from "./useFetchLeagueGenericData";
 import type { League } from "@/types/league";
+import { LeagueStatus } from "@/service/leagueService";
 
 export interface LeagueGroup {
   group_id: string;
@@ -29,7 +30,15 @@ export function useLeagueCategoriesRoundsGroups() {
     isLoading: activeLeagueLoading,
     error: activeLeagueError,
   } = useFetchLeagueGenericData<League>({
-    params: { active: true, status: ["Scheduled", "Ongoing"] },
+    key: ["is-active"],
+    params: {
+      active: true,
+      status: [
+        LeagueStatus.Pending,
+        LeagueStatus.Scheduled,
+        LeagueStatus.Ongoing,
+      ],
+    },
   });
 
   const {

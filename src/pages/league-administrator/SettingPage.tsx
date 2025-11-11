@@ -6,6 +6,9 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ManageCategories from "./league/ManageCategories";
 import UpdateOrganizationTab from "@/components/UpdateOrganization";
+import { Suspense } from "react";
+import LeagueHistoryTable from "@/tables/LeagueHistoryTable";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function SettingsPage() {
   const tab1Content = () => (
@@ -27,6 +30,9 @@ export default function SettingsPage() {
               <TabsTrigger value="preferences" className="tab-trigger">
                 Preferences
               </TabsTrigger>
+              <TabsTrigger value="leagues" className="tab-trigger">
+                Leagues
+              </TabsTrigger>
               <TabsTrigger value="categories" className="tab-trigger">
                 Categories
               </TabsTrigger>
@@ -37,6 +43,18 @@ export default function SettingsPage() {
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
           <TabsContent value="preferences">{tab1Content()}</TabsContent>
+          <TabsContent value="leagues">
+            <Suspense
+              key="league-history"
+              fallback={
+                <div className="h-40 grid place-content-center">
+                  <Spinner />
+                </div>
+              }
+            >
+              <LeagueHistoryTable />
+            </Suspense>
+          </TabsContent>
           <TabsContent value="categories">
             <ManageCategories />
           </TabsContent>

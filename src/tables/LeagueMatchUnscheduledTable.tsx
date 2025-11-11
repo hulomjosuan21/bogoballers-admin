@@ -57,6 +57,7 @@ import type {
   RefetchOptions,
 } from "@tanstack/react-query";
 import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
+import { LeagueStatus } from "@/service/leagueService";
 
 type SheetFormData = {
   scheduled_date?: Date;
@@ -85,7 +86,7 @@ function UnscheduleTable({
   refetchLeagueMatch,
 }: Props) {
   const { data: activeLeagueData } = useFetchLeagueGenericData<League>({
-    params: { active: true, status: "Ongoing" },
+    params: { active: true, status: LeagueStatus.Ongoing },
   });
 
   const [sorting, setSorting] = useState<SortingState>([]);
