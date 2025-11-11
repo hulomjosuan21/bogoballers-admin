@@ -24,12 +24,15 @@ import { toast } from "sonner";
 
 import {
   type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
   useReactTable,
+  type VisibilityState,
 } from "@tanstack/react-table";
 
 import {
@@ -43,10 +46,8 @@ import {
 import { DataTablePagination } from "@/components/data-table-pagination";
 import type { LeagueReferee } from "@/types/league";
 import { LeagueService } from "@/service/leagueService";
-import { useQuery } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
 import { cn } from "@/lib/utils";
-import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 
 export type LeagueRefereeCreate = {
   full_name: string;
@@ -58,19 +59,28 @@ export type LeagueRefereeCreate = {
 export default function ManageRefereesComponent({
   data,
   hasActiveLeague,
+  activeLeagueId,
+  isActive = true,
 }: {
   data: LeagueReferee[];
   hasActiveLeague: boolean;
+  activeLeagueId: string;
+  isActive?: boolean;
 }) {
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
   const handleError = useErrorToast();
   const [isProcessing, setProcess] = useState(false);
   const [referees, setReferees] = useState<LeagueRefereeCreate[]>(data);
   const originalData = useRef<LeagueReferee[] | LeagueRefereeCreate[]>(data);
   const [open, setOpen] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [sorting, setSorting] = useState<SortingState>([]);
   const [hasChanges, setChanges] = useState(false);
+
+  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    actions: isActive,
+  });
   const [form, setForm] = useState<LeagueRefereeCreate>({
     full_name: "",
     contact_info: "",
@@ -131,12 +141,8 @@ export default function ManageRefereesComponent({
   const handleSaveChanges = async () => {
     setProcess(true);
     try {
-      const leagueId = activeLeague?.league_id;
-      if (!leagueId) {
-        throw new Error("No League id");
-      }
       const response = await LeagueService.updateSingleLeagueResourceField(
-        leagueId,
+        activeLeagueId,
         "league_referees",
         referees
       );
@@ -209,6 +215,7 @@ export default function ManageRefereesComponent({
     },
     {
       id: "actions",
+      enableHiding: true,
       cell: ({ row }) => (
         <div className="text-right">
           <DropdownMenu>
@@ -234,11 +241,20 @@ export default function ManageRefereesComponent({
   const table = useReactTable({
     data: referees,
     columns,
-    state: { sorting },
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (

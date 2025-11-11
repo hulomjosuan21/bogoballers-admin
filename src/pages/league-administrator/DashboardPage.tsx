@@ -19,11 +19,8 @@ import {
   ArrowUpRightIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import {
-  useActiveLeague,
-  useActiveLeagueAnalytics,
-} from "@/hooks/useActiveLeague";
+import { useEffect, useState } from "react";
+import { useActiveLeagueAnalytics } from "@/hooks/useActiveLeague";
 import {
   Empty,
   EmptyContent,
@@ -44,6 +41,10 @@ import {
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { useQueries } from "@tanstack/react-query";
 import { getLeagueMatchQueryOption } from "@/queries/leagueMatchQueryOption";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
+import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
+import { useLeagueStore } from "@/stores/leagueStore";
+import { LeagueStatus } from "@/service/leagueService";
 
 interface DashboardCardProps {
   title: string;
@@ -135,8 +136,43 @@ const AnalyticsCard = ({
 );
 
 export default function DashboardPage() {
-  const { activeLeagueId, activeLeagueData, activeLeagueLoading } =
-    useActiveLeague();
+  const {
+    leagueId: activeLeagueId,
+    data,
+    isLoading,
+    refetch,
+    isError,
+    error,
+  } = useFetchLeagueGenericData<League>({
+    key: ["is-active"],
+    params: {
+      active: true,
+      status: [
+        LeagueStatus.Pending,
+        LeagueStatus.Scheduled,
+        LeagueStatus.Ongoing,
+      ],
+    },
+  });
+
+  const { hasData, setLeague, setQueryState } = useLeagueStore();
+
+  useEffect(() => {
+    setQueryState({
+      isLoading,
+      isError,
+      error: error ?? null,
+      leagueId: activeLeagueId,
+      refetch,
+    });
+  }, [isLoading, isError, error, activeLeagueId, refetch, setQueryState]);
+
+  useEffect(() => {
+    if (!hasData && data) {
+      setLeague(data);
+    }
+  }, [data, hasData, setLeague]);
+
   const {
     categories,
     rounds,
@@ -158,6 +194,7 @@ export default function DashboardPage() {
       }),
     ],
   });
+
   const { selectedMatch, removeSelectedMatch } = useSelectedMatchStore();
 
   const { activeLeagueAnalyticsData, activeLeagueAnalyticsLoading } =
@@ -166,7 +203,11 @@ export default function DashboardPage() {
 
   const navigate = useNavigate();
 
-  if (activeLeagueAnalyticsLoading || activeLeagueLoading) {
+  if (isLoading) {
+    return <SelectedLeagueStateScreen loading={true} />;
+  }
+
+  if (activeLeagueAnalyticsLoading) {
     return (
       <div className="h-screen grid place-content-center">
         <Spinner />
@@ -195,7 +236,7 @@ export default function DashboardPage() {
       </ContentHeader>
 
       <ContentBody>
-        {activeLeagueData && activeLeagueAnalyticsData ? (
+        {data && activeLeagueAnalyticsData ? (
           <div className="space-y-4">
             {selectedMatch && (
               <SelectedMatchAlert
@@ -291,7 +332,7 @@ export default function DashboardPage() {
             <EmptyContent>
               <Button
                 onClick={() =>
-                  navigate("/league-administrator/pages/league/new")
+                  navigate("/portal/league-administrator/pages/league/new")
                 }
               >
                 Create League

@@ -49,14 +49,15 @@ import {
 } from "@/components/ui/tooltip";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { Label } from "@/components/ui/label";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
-import type { LeagueCourt, LeagueReferee } from "@/types/league";
+import type { League, LeagueCourt, LeagueReferee } from "@/types/league";
 import { LeagueMatchService } from "@/service/leagueMatchService";
 import { getErrorMessage } from "@/lib/error";
 import type {
   QueryObserverResult,
   RefetchOptions,
 } from "@tanstack/react-query";
+import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
+import { LeagueStatus } from "@/service/leagueService";
 
 type SheetFormData = {
   scheduled_date?: Date;
@@ -84,7 +85,9 @@ function UnscheduleTable({
   leagueMatchError,
   refetchLeagueMatch,
 }: Props) {
-  const { activeLeagueData } = useActiveLeague();
+  const { data: activeLeagueData } = useFetchLeagueGenericData<League>({
+    params: { active: true, status: LeagueStatus.Ongoing },
+  });
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

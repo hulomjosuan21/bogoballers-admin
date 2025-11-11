@@ -6,16 +6,21 @@ import { ArrowRightLeft } from "lucide-react";
 import { useManualMatchConfigFlowDispatch } from "@/context/ManualMatchConfigFlowContext";
 import { toast } from "sonner";
 import { manualLeagueService } from "@/service/manualLeagueManagementService";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { Spinner } from "../ui/spinner";
 import { getErrorMessage } from "@/lib/error";
+import { useLeagueStore } from "@/stores/leagueStore";
 
 const handleStyle = {};
 
 const ManualMatchConfigLeagueCategoryNode: React.FC<
   NodeProps<Node<ManualMatchConfigLeagueCategoryNodeData>>
 > = ({ data }) => {
-  const { activeLeagueId } = useActiveLeague();
+  const { leagueId: activeLeagueId } = useLeagueStore();
+
+  if (!activeLeagueId) {
+    return null;
+  }
+
   const { league_category_id } = data.league_category;
 
   const dispatch = useManualMatchConfigFlowDispatch();

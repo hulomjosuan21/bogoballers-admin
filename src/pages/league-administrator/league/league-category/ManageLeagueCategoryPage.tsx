@@ -1,36 +1,41 @@
 import ContentHeader from "@/components/content-header";
-import { Spinner } from "@/components/ui/spinner";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
+import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
+import type { LeagueStatus } from "@/service/leagueService";
+import { useLeagueStore } from "@/stores/leagueStore";
 import { LeagueCategoriesTable } from "@/tables/LeagueCategoriesTable";
 
 export default function ManageLeagueCategoriesPage() {
-  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
-    useActiveLeague();
+  const { league, isLoading, leagueId } = useLeagueStore();
 
-  if (activeLeagueLoading) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
-    );
+  if (isLoading) {
+    return <SelectedLeagueStateScreen loading />;
   }
 
-  if (activeLeagueError) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <p className="text-sm text-red-500">
-          {activeLeagueError.message || "Error loading league categories"}
-        </p>
-      </div>
-    );
+  if (!league || !leagueId) {
+    return <SelectedLeagueStateScreen />;
+  }
+
+  const leagueStatus = league.status as LeagueStatus;
+
+  const handledStates: Record<LeagueStatus, boolean> = {
+    Pending: true,
+    Completed: true,
+    Postponed: true,
+    Cancelled: true,
+    Scheduled: false,
+    Ongoing: false,
+  };
+
+  if (handledStates[leagueStatus]) {
+    return <SelectedLeagueStateScreen state={leagueStatus} league={league} />;
   }
 
   return (
     <ContentShell>
       <ContentHeader title="Manage League Categories" />
       <ContentBody>
-        <LeagueCategoriesTable activeLeagueId={activeLeagueId} />
+        <LeagueCategoriesTable activeLeagueId={leagueId} />
       </ContentBody>
     </ContentShell>
   );

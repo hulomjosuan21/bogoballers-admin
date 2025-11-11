@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { IManualMatchConfigGroup } from "@/types/manualMatchConfigTypes";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 import {
   RoundTypeEnum,
   type LeagueCategory,
@@ -25,6 +24,7 @@ import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeam } from "@/types/team";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
+import { useLeagueStore } from "@/stores/leagueStore";
 
 export function ManualGroupNodeMenu() {
   const [groups, setGroups] = useState<IManualMatchConfigGroup[]>([]);
@@ -133,7 +133,11 @@ export function ManualRoundNodeMenu() {
 }
 
 export function ManualLeagueTeamNodeMenu() {
-  const { activeLeagueId } = useActiveLeague();
+  const { leagueId: activeLeagueId } = useLeagueStore();
+
+  if (!activeLeagueId) {
+    return null;
+  }
 
   const {
     activeLeagueCategories,

@@ -7,13 +7,37 @@ import {
 } from "@/components/automatic-match-config/AutomaticMatchConfigNodeMenu";
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
 import { AutomaticMatchConfigXyFlowCanvas } from "./AutomaticMatchConfigXyFlowCanvas";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
+import { useLeagueStore } from "@/stores/leagueStore";
+import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
+import type { LeagueStatus } from "@/service/leagueService";
 
 function AutomaticMatchConfigPage() {
-  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
-    useActiveLeague();
+  const { league, isLoading, leagueId } = useLeagueStore();
+
+  if (isLoading) {
+    return <SelectedLeagueStateScreen loading />;
+  }
+
+  if (!league || !leagueId) {
+    return <SelectedLeagueStateScreen />;
+  }
+
+  const leagueStatus = league.status as LeagueStatus;
+
+  const handledStates: Record<LeagueStatus, boolean> = {
+    Pending: true,
+    Completed: true,
+    Postponed: true,
+    Cancelled: true,
+    Scheduled: false,
+    Ongoing: false,
+  };
+
+  if (handledStates[leagueStatus]) {
+    return <SelectedLeagueStateScreen state={leagueStatus} league={league} />;
+  }
 
   const menu = (
     <div className="w-48 flex flex-col gap-2">
@@ -32,29 +56,11 @@ function AutomaticMatchConfigPage() {
     </div>
   );
 
-  if (activeLeagueLoading) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
-    );
-  }
-
-  if (activeLeagueError) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <p className="text-sm text-red-500">
-          {activeLeagueError.message || "Error loading config"}
-        </p>
-      </div>
-    );
-  }
-
   return (
     <ContentShell>
       <ContentHeader title="Automatic Configuration" />
       <ContentBody className="flex flex-row">
-        <AutomaticMatchConfigXyFlowCanvas activeLeagueId={activeLeagueId} />
+        <AutomaticMatchConfigXyFlowCanvas activeLeagueId={leagueId} />
         {menu}
       </ContentBody>
     </ContentShell>

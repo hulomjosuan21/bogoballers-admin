@@ -121,7 +121,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league-admins",
     element: <LeagueAdminPagesLGU />,
-    permissions: [Permission.ManagementLeagueAdmins],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "League Admins",
     icon: UsersRound,

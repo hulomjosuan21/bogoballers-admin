@@ -23,12 +23,20 @@ type FieldKeyMap = {
 type ImageKeyMap = {
   [K in keyof FieldKeyMap]: keyof FieldKeyMap[K] | null;
 };
+export enum LeagueStatus {
+  Pending = "Pending",
+  Scheduled = "Scheduled",
+  Ongoing = "Ongoing",
+  Completed = "Completed",
+  Postponed = "Postponed",
+  Cancelled = "Cancelled",
+}
 
 export interface FetchLeagueGenericDataParams {
-  userId?: string; // Corresponds to 'user_id'
-  status?: string; // Corresponds to 'status'
-  filter?: string; // Corresponds to 'filter'
-  all?: boolean; // Corresponds to 'all'
+  userId?: string;
+  status?: LeagueStatus | LeagueStatus[];
+  filter?: string | keyof League;
+  all?: boolean;
   active?: boolean;
 }
 
@@ -39,6 +47,14 @@ const IMAGE_KEY_MAP: ImageKeyMap = {
   league_affiliates: "image",
 };
 export class LeagueService {
+  async getLeaguePDF(leagueId: string): Promise<Blob> {
+    const response = await axiosClient.get<Blob>(`/league/print/${leagueId}`, {
+      responseType: "blob",
+    });
+
+    return new Blob([response.data], { type: "application/pdf" });
+  }
+
   static async analytics(leagueId: string) {
     const res = await axiosClient.get<LeagueAnalytics>(
       `/league/analytics/${leagueId}`
@@ -127,19 +143,26 @@ export class LeagueService {
     return response.data;
   }
 
-  async fetchLeagueGenericData<T>(params: FetchLeagueGenericDataParams) {
-    const url = "/league/fetch";
-    const response = await axiosClient.get<T>(url, {
-      params: {
-        user_id: params.userId,
-        status: params.status,
-        filter: params.filter,
-        all: params.all,
-        active: params.active,
-      },
-    });
+  async fetchGenericData<T>(
+    params: FetchLeagueGenericDataParams
+  ): Promise<T | null> {
+    try {
+      const url = "/league/fetch";
 
-    return response.data;
+      const response = await axiosClient.get<T>(url, {
+        params: {
+          user_id: params.userId,
+          status: params.status,
+          filter: params.filter,
+          all: params.all,
+          active: params.active,
+        },
+      });
+
+      return response.data;
+    } catch {
+      return null;
+    }
   }
 }
 

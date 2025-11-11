@@ -8,14 +8,38 @@ import {
   ManualRoundNodeMenu,
 } from "@/components/manual-match-config/ManualMatchConfigNodeMenus";
 import { ManualMatchingCanvas } from "./LeagueMatchManualXyFlowCanvas";
-import { useActiveLeague } from "@/hooks/useActiveLeague";
 
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
+import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
+import { useLeagueStore } from "@/stores/leagueStore";
+import type { LeagueStatus } from "@/service/leagueService";
 
 function ManualMatchingPageContent() {
-  const { activeLeagueId, activeLeagueLoading, activeLeagueError } =
-    useActiveLeague();
+  const { league, isLoading, leagueId } = useLeagueStore();
+
+  if (isLoading) {
+    return <SelectedLeagueStateScreen loading />;
+  }
+
+  if (!league || !leagueId) {
+    return <SelectedLeagueStateScreen />;
+  }
+
+  const leagueStatus = league.status as LeagueStatus;
+
+  const handledStates: Record<LeagueStatus, boolean> = {
+    Pending: true,
+    Completed: true,
+    Postponed: true,
+    Cancelled: true,
+    Scheduled: false,
+    Ongoing: false,
+  };
+
+  if (handledStates[leagueStatus]) {
+    return <SelectedLeagueStateScreen state={leagueStatus} league={league} />;
+  }
 
   const rightMenu = (
     <div className="w-fit flex flex-col gap-2">
@@ -43,29 +67,11 @@ function ManualMatchingPageContent() {
     </div>
   );
 
-  if (activeLeagueLoading) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
-    );
-  }
-
-  if (activeLeagueError) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <p className="text-sm text-red-500">
-          {activeLeagueError.message || "Error loading league config"}
-        </p>
-      </div>
-    );
-  }
-
   return (
     <ContentShell>
       <ContentHeader title="Manual Configuration" />
       <ContentBody className="flex-row flex">
-        <ManualMatchingCanvas activeLeagueId={activeLeagueId} />
+        <ManualMatchingCanvas activeLeagueId={leagueId} />
         {rightMenu}
       </ContentBody>
     </ContentShell>

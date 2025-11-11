@@ -127,4 +127,6 @@ export class LeagueTeamSubmissionService {
 
     return response.data;
   }
+
+  async fetchGenericData() {}
 }

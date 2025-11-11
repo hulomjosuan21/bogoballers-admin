@@ -42,20 +42,19 @@ import { toast } from "sonner";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { useEffect, useRef, useState } from "react";
 import type { LeagueCourt } from "@/types/league";
-import { useQuery } from "@tanstack/react-query";
 import { useErrorToast } from "@/components/error-toast";
 import { LeagueService } from "@/service/leagueService";
 import { cn } from "@/lib/utils";
-import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 
 export default function ManageCourts({
   data,
   hasActiveLeague,
+  activeLeagueId,
 }: {
   data: LeagueCourt[];
   hasActiveLeague: boolean;
+  activeLeagueId: string;
 }) {
-  const { data: activeLeague } = useQuery(getActiveLeagueQueryOption);
   const handleError = useErrorToast();
   const [isProcessing, setProcess] = useState(false);
   const [courts, setCourts] = useState<LeagueCourt[]>(data);
@@ -116,12 +115,8 @@ export default function ManageCourts({
   const handleSaveChanges = async () => {
     setProcess(true);
     try {
-      const leagueId = activeLeague?.league_id;
-      if (!leagueId) {
-        throw new Error("No League id");
-      }
       const response = await LeagueService.updateSingleLeagueResourceField(
-        leagueId,
+        activeLeagueId,
         "league_courts",
         courts
       );
@@ -204,20 +199,20 @@ export default function ManageCourts({
   const table = useReactTable({
     data: courts,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
     },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (

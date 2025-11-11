@@ -14,7 +14,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Check, Loader2, MoreVertical, X } from "lucide-react";
 
-// Shadcn UI Components
 import {
   Table,
   TableBody,

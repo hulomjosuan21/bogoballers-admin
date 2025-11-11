@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 import { ButtonLoading } from "@/components/custom-buttons";
 import { disableOnLoading } from "@/lib/app_utils";
-import { useQueries } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -35,7 +35,6 @@ import { authLeagueAdminQueryOption } from "@/queries/leagueAdminQueryOption";
 import { Check, ChevronsUpDown } from "lucide-react";
 import MultipleSelector from "@/components/ui/multiselect";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
-import { getActiveLeagueQueryOption } from "@/queries/leagueQueryOption";
 import { getErrorMessage } from "@/lib/error";
 import { useCategories } from "@/hooks/useLeagueAdmin";
 import type { Category } from "@/types/category";
@@ -79,15 +78,11 @@ function validateLeagueForm({
 
 type Props = {
   hasActive: boolean;
+  refetch: () => Promise<any>;
 };
 
-export default function CreateLeagueForm({ hasActive }: Props) {
-  const [leagueAdmin, activeLeague] = useQueries({
-    queries: [
-      authLeagueAdminQueryOption({ enabled: true }),
-      getActiveLeagueQueryOption,
-    ],
-  });
+export default function CreateLeagueForm({ hasActive, refetch }: Props) {
+  const leagueAdmin = useQuery(authLeagueAdminQueryOption({ enabled: true }));
   const { categoriesData } = useCategories();
 
   const [leagueBanner, setLeagueBanner] = useState<File | string | null>(null);
@@ -149,7 +144,7 @@ export default function CreateLeagueForm({ hasActive }: Props) {
         }
         const response = await LeagueService.createNewLeague(formData);
 
-        await activeLeague.refetch();
+        await refetch();
         return response;
       } finally {
         setProcessing(false);
