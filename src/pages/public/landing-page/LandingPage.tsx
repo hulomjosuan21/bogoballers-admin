@@ -1,12 +1,12 @@
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { HashLink as Link } from "react-router-hash-link";
 import { TextEffect } from "@/components/ui/text-effect";
 import { HeroHeader } from "./header";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { AppImage } from "@/assets";
 import LiveAdminPage from "@/pages/LiveAdminPage";
-
+import { Android } from "@/components/ui/android";
 export default function HeroSection() {
   return (
     <>
@@ -55,11 +55,11 @@ export default function HeroSection() {
                   }}
                 >
                   <Link
-                    to="#link"
+                    to="#ai"
                     className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950"
                   >
                     <span className="text-foreground text-xs">
-                      Introducing AI Baketball Mentor
+                      Introducing Coach Wan an AI Basketball Mentor
                     </span>
                     <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
 
@@ -181,6 +181,40 @@ export default function HeroSection() {
                 </div>
               </div>
             </AnimatedGroup>
+
+            <AnimatedGroup
+              variants={{
+                container: {
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.05,
+                    },
+                  },
+                },
+                item: {
+                  hidden: { opacity: 0, y: 40, filter: "blur(4px)" },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    filter: "blur(0px)",
+                    transition: {
+                      duration: 1.2,
+                      type: "spring",
+                      bounce: 0.3,
+                    },
+                  },
+                },
+              }}
+            >
+              <div className="relative grid place-content-center" id="ai">
+                <Android
+                  className="size-[400px] md:size-[800px] lg:size-[1200px] flex justify-center"
+                  src="https://res.cloudinary.com/dod3lmxm6/image/upload/v1762951954/Screenshot_2025-11-12-20-18-33-11_f625b1a6da067bd46fd7e1d052dd6b06_izcxja.jpg"
+                />
+              </div>
+            </AnimatedGroup>
           </div>
         </section>
         <section className="bg-background pb-16 pt-16 md:pb-32">
@@ -190,7 +224,7 @@ export default function HeroSection() {
                 to="/"
                 className="block text-sm duration-150 hover:opacity-75"
               >
-                <span> Meet Our Customers</span>
+                <span> Meet Our Sponsors</span>
 
                 <ChevronRight className="ml-1 inline-block size-3" />
               </Link>
