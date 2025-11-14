@@ -11,26 +11,25 @@ type PlayersType = {
 };
 
 export interface Team extends PlayersType {
-  team_id: string;
-  public_team_id: string;
-  user_id: string;
-  team_name: string;
-  team_address: string;
-  team_category: string | null;
-  contact_number: string;
-  team_motto: string | null;
-  team_logo_url: string;
-  championships_won: number;
-  coach_name: string;
-  assistant_coach_name: string | null;
-  total_wins: number;
-  total_losses: number;
-  total_draws: number;
-  total_points: number;
-  is_recruiting: boolean;
-  creator: User;
-  team_created_at: string;
-  team_updated_at: string;
+  readonly team_id: string;
+  readonly public_team_id: string;
+  readonly user_id: string;
+  readonly team_name: string;
+  readonly team_address: string;
+  readonly contact_number: string;
+  readonly team_motto: string | null;
+  readonly team_logo_url: string;
+  readonly championships_won: number;
+  readonly coach_name: string;
+  readonly assistant_coach_name: string | null;
+  readonly total_wins: number;
+  readonly total_losses: number;
+  readonly total_draws: number;
+  readonly total_points: number;
+  readonly is_recruiting: boolean;
+  readonly creator: User;
+  readonly team_created_at: string;
+  readonly team_updated_at: string;
 }
 
 export interface LeagueTeam extends Team {

@@ -13,8 +13,8 @@ import UpdateLeagueForm from "@/forms/UpdateLeagueForm";
 import { useNavigate } from "react-router-dom";
 import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
 import type { League } from "@/types/league";
-import { leagueService, LeagueStatus } from "@/service/leagueService";
-import { toast } from "sonner";
+import { LeagueStatus } from "@/service/leagueService";
+import { useLeaguePDF } from "@/hooks/usePrintLeagueDocument";
 export default function LeagueUpdatePage() {
   const {
     leagueId: activeLeagueId,
@@ -33,60 +33,12 @@ export default function LeagueUpdatePage() {
     },
   });
 
+  const { runPrint, preparePrint, downloadLeague } = useLeaguePDF();
+
   const handlePrint = async () => {
-    if (!activeLeagueId) {
-      toast.error("Unable to print");
-      return;
-    }
-
-    toast.promise(
-      (async () => {
-        const pdfBlob = await leagueService.getLeaguePDF(activeLeagueId);
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        iframe.src = pdfUrl;
-        document.body.appendChild(iframe);
-
-        iframe.onload = () => {
-          iframe.contentWindow?.focus();
-          iframe.contentWindow?.print();
-        };
-      })(),
-      {
-        loading: "Preparing print...",
-        success: "Document ready — printing...",
-        error: "Failed to generate document",
-      }
-    );
-  };
-  const handleDownload = async () => {
-    const leagueName = activeLeagueData?.league_title;
-    if (!activeLeagueId || !leagueName) {
-      toast.error("Unable to download");
-      return;
-    }
-
-    toast.promise(
-      (async () => {
-        const pdfBlob = await leagueService.getLeaguePDF(activeLeagueId);
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-
-        const a = document.createElement("a");
-        a.href = pdfUrl;
-        a.download = `${leagueName
-          .replaceAll(" ", "_")
-          .toLowerCase()}_document.pdf`;
-        a.click();
-        URL.revokeObjectURL(pdfUrl);
-      })(),
-      {
-        loading: "Downloading...",
-        success: "Download started!",
-        error: "Failed to download",
-      }
-    );
+    const result = await preparePrint(activeLeagueId);
+    const url = await result?.unwrap();
+    runPrint(url);
   };
 
   const navigate = useNavigate();
@@ -97,12 +49,23 @@ export default function LeagueUpdatePage() {
         <Button variant={"ghost"} size={"sm"}>
           <Info className="h-4 w-4" />
         </Button>
-        <Button variant={"outline"} size={"sm"} onClick={handlePrint}>
-          <Printer className="h-4 w-4" />
-        </Button>
-        <Button variant={"outline"} size={"sm"} onClick={handleDownload}>
-          <FileDown className="h-4 w-4" />
-        </Button>
+
+        {activeLeagueId && (
+          <>
+            <Button variant={"outline"} size={"sm"} onClick={handlePrint}>
+              <Printer className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={"outline"}
+              size={"sm"}
+              onClick={() =>
+                downloadLeague(activeLeagueId, activeLeagueData?.league_title)
+              }
+            >
+              <FileDown className="h-4 w-4" />
+            </Button>
+          </>
+        )}
       </ContentHeader>
 
       <ContentBody>

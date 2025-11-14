@@ -20,7 +20,6 @@ import TestGrid from "@/test/TestGrid";
 import { Permission } from "@/enums/permission";
 import {
   LayoutDashboard,
-  UsersRound,
   Settings,
   FolderKanban,
   Trophy,
@@ -31,13 +30,13 @@ import {
   Network,
   ChartNoAxesGantt,
   ClipboardClock,
+  UserStar,
 } from "lucide-react";
 import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
 import LoginPage from "@/pages/auth/LoginPage";
 import LandingPage from "@/pages/public/landing-page/LandingPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import StartScorebookPage from "@/pages/scorebook/StartNewBook";
-import LeagueAdminPagesLGU from "@/pages/LeagueAdminPagesLGU";
 import LeagueMatches from "@/pages/league-administrator/league/match/LeagueMatches";
 import LiveAdminPage from "@/pages/LiveAdminPage";
 import ManualMatchingPage from "@/pages/league-administrator/league/match/manual/ManualManagementPage";
@@ -46,6 +45,7 @@ import LeagueGuestPage from "@/pages/league-administrator/league/guest/LeagueGue
 import AutomaticMatchConfigPage from "@/pages/league-administrator/league/match/automatic/AutomaticMatchConfigXyFlowPage";
 import MatchSetupPage from "@/pages/league-administrator/league/match/MatchSetupPage";
 import MatchHistoryPage from "@/pages/league-administrator/league/match/MatchHistoryPage";
+import ManageLeagueAdministratorPage from "@/pages/ManageLeagueAdminPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -113,18 +113,18 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     element: <DashboardPage />,
     permissions: [Permission.ViewDashboard],
     showInSidebar: true,
-    sidebarTitle: "Dashboard",
+    sidebarTitle: "League Dashboard",
     icon: LayoutDashboard,
     sidebarGroup: "platform",
   },
 
   {
     path: "pages/league-admins",
-    element: <LeagueAdminPagesLGU />,
+    element: <ManageLeagueAdministratorPage />,
     permissions: [],
     showInSidebar: true,
-    sidebarTitle: "League Admins",
-    icon: UsersRound,
+    sidebarTitle: "LGU Admin Dashboard",
+    icon: UserStar,
     sidebarGroup: "platform",
   },
   {

@@ -2,7 +2,7 @@ import axiosClient from "@/lib/axiosClient"; // Your configured axios instance
 import type { GuestRegistrationRequest } from "@/types/guest";
 import type { LeagueTeam } from "@/types/team";
 
-type UpdateRequestParams = {
+export type UpdateRequestParams = {
   guestRequestId: string;
   action: "Accepted" | "Rejected";
   assignToTeamId?: string;
