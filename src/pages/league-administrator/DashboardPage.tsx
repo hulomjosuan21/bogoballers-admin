@@ -45,6 +45,7 @@ import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
 import { useLeagueStore } from "@/stores/leagueStore";
 import { LeagueStatus } from "@/service/leagueService";
+import useDateTime from "@/hooks/useDatetime";
 
 interface DashboardCardProps {
   title: string;
@@ -136,6 +137,7 @@ const AnalyticsCard = ({
 );
 
 export default function DashboardPage() {
+  const dateTime = useDateTime();
   const {
     leagueId: activeLeagueId,
     data,
@@ -199,7 +201,7 @@ export default function DashboardPage() {
 
   const { activeLeagueAnalyticsData, activeLeagueAnalyticsLoading } =
     useActiveLeagueAnalytics(activeLeagueId);
-  const [showUpdates, setShowUpdates] = useState(true);
+  const [showUpdates, _] = useState(true);
 
   const navigate = useNavigate();
 
@@ -218,21 +220,9 @@ export default function DashboardPage() {
   return (
     <ContentShell>
       <ContentHeader title="Dashboard">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowUpdates((prev) => !prev)}
-        >
-          {showUpdates ? (
-            <>
-              <EyeOff className="h-4 w-4 mr-1" /> Hide Updates
-            </>
-          ) : (
-            <>
-              <Eye className="h-4 w-4 mr-1" /> Show Updates
-            </>
-          )}
-        </Button>
+        <div className="">
+          <span className="text-xs font-medium">{dateTime}</span>
+        </div>
       </ContentHeader>
 
       <ContentBody>

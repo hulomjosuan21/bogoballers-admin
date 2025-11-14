@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronRight, Download, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HashLink as Link } from "react-router-hash-link";
 import { TextEffect } from "@/components/ui/text-effect";
@@ -7,6 +7,32 @@ import { AnimatedGroup } from "@/components/ui/animated-group";
 import { AppImage } from "@/assets";
 import LiveAdminPage from "@/pages/LiveAdminPage";
 import { Android } from "@/components/ui/android";
+import { Card } from "@/components/ui/card";
+import { Footer } from "@/components/Footer";
+
+const container = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 40, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 1.2,
+      bounce: 0.3,
+    },
+  },
+};
+
 export default function HeroSection() {
   return (
     <>
@@ -30,28 +56,8 @@ export default function HeroSection() {
               <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
                 <AnimatedGroup
                   variants={{
-                    container: {
-                      hidden: { opacity: 0 },
-                      visible: {
-                        opacity: 1,
-                        transition: {
-                          staggerChildren: 0.05,
-                        },
-                      },
-                    },
-                    item: {
-                      hidden: { opacity: 0, y: 40, filter: "blur(4px)" },
-                      visible: {
-                        opacity: 1,
-                        y: 0,
-                        filter: "blur(0px)",
-                        transition: {
-                          duration: 1.2,
-                          type: "spring",
-                          bounce: 0.3,
-                        },
-                      },
-                    },
+                    container: container,
+                    item: item,
                   }}
                 >
                   <Link
@@ -94,74 +100,13 @@ export default function HeroSection() {
                 >
                   Bogo Basketball League Management System
                 </TextEffect>
-
-                <AnimatedGroup
-                  variants={{
-                    container: {
-                      hidden: { opacity: 0 },
-                      visible: {
-                        opacity: 1,
-                        transition: {
-                          staggerChildren: 0.05,
-                        },
-                      },
-                    },
-                    item: {
-                      hidden: { opacity: 0, y: 40, filter: "blur(4px)" },
-                      visible: {
-                        opacity: 1,
-                        y: 0,
-                        filter: "blur(0px)",
-                        transition: {
-                          duration: 1.2,
-                          type: "spring",
-                          bounce: 0.3,
-                        },
-                      },
-                    },
-                  }}
-                  className="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row"
-                >
-                  <div key={1}>
-                    <Button asChild size="sm">
-                      <Link to="#">
-                        <span className="text-nowrap">Get Started</span>
-                      </Link>
-                    </Button>
-                  </div>
-                  <Button key={2} asChild size="sm" variant="ghost">
-                    <Link to="#">
-                      <span className="text-nowrap">Request a demo</span>
-                    </Link>
-                  </Button>
-                </AnimatedGroup>
               </div>
             </div>
 
             <AnimatedGroup
               variants={{
-                container: {
-                  hidden: { opacity: 0 },
-                  visible: {
-                    opacity: 1,
-                    transition: {
-                      staggerChildren: 0.05,
-                    },
-                  },
-                },
-                item: {
-                  hidden: { opacity: 0, y: 40, filter: "blur(4px)" },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    transition: {
-                      duration: 1.2,
-                      type: "spring",
-                      bounce: 0.3,
-                    },
-                  },
-                },
+                container: container,
+                item: item,
               }}
             >
               <div className="relative mt-8 overflow-hidden px-2 sm:mt-12 md:mt-20">
@@ -183,36 +128,62 @@ export default function HeroSection() {
             </AnimatedGroup>
 
             <AnimatedGroup
+              id="ai"
               variants={{
-                container: {
-                  hidden: { opacity: 0 },
-                  visible: {
-                    opacity: 1,
-                    transition: {
-                      staggerChildren: 0.05,
-                    },
-                  },
-                },
-                item: {
-                  hidden: { opacity: 0, y: 40, filter: "blur(4px)" },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    transition: {
-                      duration: 1.2,
-                      type: "spring",
-                      bounce: 0.3,
-                    },
-                  },
-                },
+                container: container,
+                item: item,
               }}
             >
-              <div className="relative grid place-content-center" id="ai">
+              <div className="flex justify-center items-center w-full px-2 pb-12">
                 <Android
-                  className="size-[400px] md:size-[800px] lg:size-[1200px] flex justify-center"
+                  className="w-[300px] md:w-[500px] lg:w-[700px]"
                   src="https://res.cloudinary.com/dod3lmxm6/image/upload/v1762951954/Screenshot_2025-11-12-20-18-33-11_f625b1a6da067bd46fd7e1d052dd6b06_izcxja.jpg"
                 />
+              </div>
+            </AnimatedGroup>
+            <AnimatedGroup
+              id="download"
+              variants={{
+                container: container,
+                item: item,
+              }}
+            >
+              <div className="flex items-center justify-center w-full px-4 py-6">
+                <Card className="bg-muted text-foreground flex flex-col border-0 p-6 w-full max-w-xl shadow-md rounded-xl">
+                  <div className="bg-foreground/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+                    <Smartphone className="h-6 w-6" />
+                  </div>
+
+                  {/* Title + Description */}
+                  <div className="mb-4 flex-1 space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Download BogoBallers Mobile App for Player and Team
+                      Manager
+                    </p>
+
+                    <h3 className="text-2xl font-bold leading-snug">
+                      This mobile application is designed for players and team
+                      managers to easily manage teams, handle game
+                      participation, and join league events.
+                    </h3>
+
+                    <p className="text-sm leading-relaxed">
+                      Access your team roster, upcoming matches, league
+                      standings, and game schedules. Stay updated with real-time
+                      notifications for game updates, announcements, and
+                      upcoming league activities — all within the app.
+                    </p>
+                  </div>
+
+                  <div>
+                    <Button className="w-fit" size="lg" asChild>
+                      <a href="">
+                        <Download className="h-4 w-4 mr-2" />
+                        Download now
+                      </a>
+                    </Button>
+                  </div>
+                </Card>
               </div>
             </AnimatedGroup>
           </div>
@@ -308,6 +279,9 @@ export default function HeroSection() {
           </div>
         </section>
         <LiveAdminPage />
+        <div className="mt-24">
+          <Footer />
+        </div>
       </main>
     </>
   );

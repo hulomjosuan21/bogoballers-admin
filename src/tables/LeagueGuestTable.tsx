@@ -310,7 +310,6 @@ function LeagueGuestTable({ leagueCategoryId }: Props) {
         const request = row.original;
         const details = request.details;
 
-        // Use the type guards for type-safe access
         if (request.request_type === "Team" && isTeam(details)) {
           return (
             <div className="flex flex-col">

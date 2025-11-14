@@ -6,7 +6,7 @@ const ManualMatchConfigGroupNode: React.FC<
   NodeProps<Node<ManualMatchConfigGroupNodeData>>
 > = ({ data }) => {
   return (
-    <div className="relative p-3 border rounded-md bg-secondary w-24">
+    <div className="relative p-3 border rounded-md rounded-tl-4xl bg-secondary w-24">
       <div className="font-semibold text-xs text-secondary-foreground">
         {data.group.display_name}
       </div>

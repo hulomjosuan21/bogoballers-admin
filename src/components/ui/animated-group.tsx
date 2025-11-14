@@ -15,6 +15,7 @@ export type PresetType =
   | "swing";
 
 export type AnimatedGroupProps = {
+  id?: string;
   children: ReactNode;
   className?: string;
   variants?: {
@@ -100,6 +101,7 @@ const addDefaultVariants = (variants: Variants) => ({
 });
 
 function AnimatedGroup({
+  id,
   children,
   className,
   variants,
@@ -125,6 +127,7 @@ function AnimatedGroup({
 
   return (
     <MotionComponent
+      id={id}
       initial="hidden"
       animate="visible"
       variants={containerVariants}

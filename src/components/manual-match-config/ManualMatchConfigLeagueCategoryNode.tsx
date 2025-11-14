@@ -54,7 +54,6 @@ const ManualMatchConfigLeagueCategoryNode: React.FC<
 
   return (
     <div className="relative">
-      {/* Node Shape */}
       <div className="p-4 border rounded-md bg-background w-64 text-foreground">
         <div className="font-bold text-lg text-primary">
           {data.league_category.category_name}

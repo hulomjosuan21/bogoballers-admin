@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { ModeToggleButton } from "@/components/mode-toggle";
+import { HashLink } from "react-router-hash-link";
 
 const menuItems = [
-  { name: "Leaderboard", href: "/leaderboard" },
-  { name: "Contact", href: "#link" },
-  { name: "About", href: "#link" },
+  { name: "Leaderboard", href: "/leaderboard", isHash: false },
+  { name: "Download", href: "#download", isHash: true },
 ];
 const logo = {
   url: "#",
@@ -67,12 +67,22 @@ export const HeroHeader = () => {
               <ul className="flex gap-4 text-sm">
                 {menuItems.map((item, index) => (
                   <li key={index}>
-                    <Link
-                      to={item.href}
-                      className="text-muted-foreground hover:text-accent-foreground block duration-150"
-                    >
-                      {item.name}
-                    </Link>
+                    {item.isHash ? (
+                      <HashLink
+                        smooth
+                        to={item.href}
+                        className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                      >
+                        {item.name}
+                      </HashLink>
+                    ) : (
+                      <Link
+                        to={item.href}
+                        className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                      >
+                        {item.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -89,12 +99,22 @@ export const HeroHeader = () => {
                 <ul className="space-y-4 text-base">
                   {menuItems.map((item, index) => (
                     <li key={index}>
-                      <Link
-                        to={item.href}
-                        className="text-muted-foreground hover:text-accent-foreground block duration-150"
-                      >
-                        {item.name}
-                      </Link>
+                      {item.isHash ? (
+                        <HashLink
+                          smooth
+                          to={item.href}
+                          className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                        >
+                          {item.name}
+                        </HashLink>
+                      ) : (
+                        <Link
+                          to={item.href}
+                          className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                        >
+                          {item.name}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>

@@ -77,7 +77,6 @@ export function LeagueTeamReadyForMatchSection({ data }: Props) {
               <span className="font-semibold">Players:</span>{" "}
               {data.league_players.length}
             </div>
-            <div>{/* Placeholder */}</div>
           </div>
         </div>
       </div>

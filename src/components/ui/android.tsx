@@ -1,97 +1,78 @@
 import type { SVGProps } from "react";
 
 export interface AndroidProps extends SVGProps<SVGSVGElement> {
-  width?: number;
-  height?: number;
   src?: string;
   videoSrc?: string;
 }
 
-export function Android({
-  width = 433,
-  height = 882,
-  src,
-  videoSrc,
-  ...props
-}: AndroidProps) {
+export function Android({ src, videoSrc, className, ...props }: AndroidProps) {
   return (
     <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      fill="none"
+      viewBox="0 0 433 882"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
       {...props}
     >
-            {/* SVG Paths for phone frame (untouched) */}     {" "}
-      <path
-        d="M376 153H378C379.105 153 380 153.895 380 155V249C380 250.105 379.105 251 378 251H376V153Z"
-        className="fill-[#E5E5E5] dark:fill-[#404040]"
+      {/* Phone Outer Frame */}
+      <rect
+        width="433"
+        height="882"
+        rx="55"
+        fill="#E5E5E5"
+        className="dark:fill-[#404040]"
       />
-           {" "}
-      <path
-        d="M376 301H378C379.105 301 380 301.895 380 303V351C380 352.105 379.105 353 378 353H376V301Z"
-        className="fill-[#E5E5E5] dark:fill-[#404040]"
+
+      {/* Inner Body */}
+      <rect
+        x="8"
+        y="10"
+        width="417"
+        height="862"
+        rx="50"
+        fill="white"
+        className="dark:fill-[#262626]"
       />
-           {" "}
-      <path
-        d="M0 42C0 18.8041 18.804 0 42 0H336C359.196 0 378 18.804 378 42V788C378 811.196 359.196 830 336 830H42C18.804 830 0 811.196 0 788V42Z"
-        className="fill-[#E5E5E5] dark:fill-[#404040]"
+
+      {/* Screen Background */}
+      <rect
+        x="26"
+        y="32"
+        width="380"
+        height="818"
+        rx="40"
+        fill="#E5E5E5"
+        className="dark:fill-[#404040]"
       />
-           {" "}
-      <path
-        d="M2 43C2 22.0132 19.0132 5 40 5H338C358.987 5 376 22.0132 376 43V787C376 807.987 358.987 825 338 825H40C19.0132 825 2 807.987 2 787V43Z"
-        className="fill-white dark:fill-[#262626]"
-      />
-           {" "}
-      <g clipPath="url(#clip0_514_20855)">
-               {" "}
-        <path
-          d="M9.25 48C9.25 29.3604 24.3604 14.25 43 14.25H335C353.64 14.25 368.75 29.3604 368.75 48V780C368.75 798.64 353.64 813.75 335 813.75H43C24.3604 813.75 9.25 798.64 9.25 780V48Z"
-          className="fill-[#E5E5E5] stroke-[#E5E5E5] stroke-[0.5] dark:fill-[#404040] dark:stroke-[#404040]"
-        />
-             {" "}
-      </g>
-           {" "}
-      <circle
-        cx="189"
-        cy="28"
-        r="9"
-        className="fill-white dark:fill-[#262626]"
-      />
-           {" "}
-      <circle
-        cx="189"
-        cy="28"
-        r="4"
-        className="fill-[#E5E5E5] dark:fill-[#404040]"
-      />
-           {/* 🖼️ CORRECTED IMAGE TAG */}     {" "}
+
+      {/* Screen Content Clipped */}
+      <clipPath id="android-screen">
+        <rect x="26" y="32" width="380" height="818" rx="40" />
+      </clipPath>
+
+      {/* Image Content */}
       {src && (
         <image
           href={src}
-          // Set width and height to cover the clip area defined below
-          width="360" // Match clipPath rect width
-          height="800" // Match clipPath rect height
+          x="26"
+          y="32"
+          width="380"
+          height="818"
           preserveAspectRatio="xMidYMid slice"
-          // Add x/y transform to center the image on the screen area
-          x="9"
-          y="14"
-          clipPath="url(#clip0_514_20855)"
+          clipPath="url(#android-screen)"
         />
       )}
-      {/* 📹 CORRECTED VIDEO TAG */}     {" "}
+
+      {/* Video Content */}
       {videoSrc && (
         <foreignObject
-          width="360" // Match clipPath rect width
-          height="800" // Match clipPath rect height
-          x="9"
-          y="14"
-          clipPath="url(#clip0_514_20855)"
-          preserveAspectRatio="xMidYMid slice"
+          x="26"
+          y="32"
+          width="380"
+          height="818"
+          clipPath="url(#android-screen)"
         >
           <video
-            className="size-full object-cover" // Ensure video covers the foreignObject
+            className="w-full h-full object-cover"
             src={videoSrc}
             autoPlay
             loop
@@ -100,18 +81,21 @@ export function Android({
           />
         </foreignObject>
       )}
-      <defs>
-        <clipPath id="clip0_514_20855">
-          <rect
-            width="360"
-            height="800"
-            rx="33"
-            ry="25"
-            className="fill-white dark:fill-[#262626]"
-            transform="translate(9 14)"
-          />
-        </clipPath>
-      </defs>
+
+      <circle
+        cx="216.5"
+        cy="20"
+        r="7"
+        fill="white"
+        className="dark:fill-[#262626]"
+      />
+      <circle
+        cx="216.5"
+        cy="20"
+        r="3.5"
+        fill="#C4C4C4"
+        className="dark:fill-[#404040]"
+      />
     </svg>
   );
 }
