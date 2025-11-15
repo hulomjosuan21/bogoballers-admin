@@ -1,6 +1,6 @@
 import CryptoJS from "crypto-js";
 import type { StateStorage } from "zustand/middleware";
-import { dexieDB } from "./db/dexieDb";
+import { dexieDB } from "@/lib/db/dexieDb";
 
 const SECRET_KEY = import.meta.env.VITE_SECRET_KEY ?? "YOUR_SECRET_KEY_HERE";
 
