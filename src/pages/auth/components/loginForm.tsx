@@ -21,6 +21,7 @@ import { useErrorToast } from "@/components/error-toast";
 import { AppImage } from "@/assets";
 import LeagueAdministratorService from "@/service/leagueAdminService";
 import { toast } from "sonner";
+const ON_NEW_WINDOW = import.meta.env.VITE_NEW_WINDOW === "true";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -44,22 +45,63 @@ export function LoginForm({
     },
   });
 
-  const onSubmit = async (data: LoginFormInputs) => {
-    setIsLoggingIn(true);
-    const formData = new FormData();
-    formData.append("email", data.email);
-    formData.append("password", data.password_str);
-    try {
-      const res = await LeagueAdministratorService.login(formData);
-      toast.success(res.message);
-      window.location.href = "/portal/league-administrator";
-      form.reset();
-    } catch (e) {
-      handleError(e);
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
+  let onSubmit: (data: {
+    email: string;
+    password_str: string;
+  }) => Promise<void>;
+
+  if (!ON_NEW_WINDOW) {
+    onSubmit = async (data: LoginFormInputs) => {
+      setIsLoggingIn(true);
+      const formData = new FormData();
+      formData.append("email", data.email);
+      formData.append("password", data.password_str);
+      try {
+        const res = await LeagueAdministratorService.login(formData);
+        toast.success(res.message);
+        window.location.href = "/portal/league-administrator";
+        form.reset();
+      } catch (e) {
+        handleError(e);
+      } finally {
+        setIsLoggingIn(false);
+      }
+    };
+  } else {
+    onSubmit = async (data: LoginFormInputs) => {
+      setIsLoggingIn(true);
+
+      const formData = new FormData();
+      formData.append("email", data.email);
+      formData.append("password", data.password_str);
+
+      try {
+        const res = await LeagueAdministratorService.login(formData);
+
+        toast.success(res.message);
+
+        const newWin = window.open(
+          "/portal/league-administrator",
+          "AdminPortal",
+          `toolbar=no,location=no,menubar=no,status=no,
+       width=${screen.availWidth},height=${screen.availHeight}`
+        );
+
+        if (newWin) {
+          newWin.moveTo(0, 0);
+          newWin.resizeTo(screen.availWidth, screen.availHeight);
+        } else {
+          window.location.href = "/portal/league-administrator";
+        }
+
+        form.reset();
+      } catch (e) {
+        handleError(e);
+      } finally {
+        setIsLoggingIn(false);
+      }
+    };
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

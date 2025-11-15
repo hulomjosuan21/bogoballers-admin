@@ -392,16 +392,16 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
   };
 
   return (
-    <div className="relative p-3 border rounded-md bg-secondary w-fit">
-      <div className="flex gap-2 items-center">
-        <div className="font-semibold text-xs text-secondary-foreground">
+    <div className="relative p-2 border rounded-md bg-background rounded-t-2xl w-fit">
+      <div className="flex gap-1 items-center">
+        <div className="font-semibold text-[10px] text-secondary-foreground">
           {formatName}
         </div>
 
         {data.format_obj.round_id && (
           <Sheet>
             <SheetTrigger asChild>
-              <div>
+              <div className="">
                 <Settings className="w-3 h-3 cursor-pointer text-muted-foreground" />
               </div>
             </SheetTrigger>
@@ -457,7 +457,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
         )}
       </div>
 
-      <div className="text-xs text-center text-muted-foreground">Format</div>
+      <div className="text-[8px] text-center text-muted-foreground">Format</div>
 
       <Handle type="source" position={Position.Bottom} id="format-out" />
     </div>

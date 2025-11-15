@@ -141,7 +141,7 @@ export default function PublicLeaguePage() {
           )}
 
           <div className="border-t border-b py-2">
-            <LeagueInfoComponent leagueId={league.league_id} />
+            <LeagueInfoComponent publicLeagueId={publicLeagueId} />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

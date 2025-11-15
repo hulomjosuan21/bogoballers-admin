@@ -9,7 +9,8 @@ import UpdateOrganizationTab from "@/components/UpdateOrganization";
 import { Suspense } from "react";
 import LeagueHistoryTable from "@/tables/LeagueHistoryTable";
 import { Spinner } from "@/components/ui/spinner";
-
+import { ShortcutItem } from "@/components/shortCutItem";
+const ON_NEW_WINDOW = import.meta.env.VITE_NEW_WINDOW === "true";
 export default function SettingsPage() {
   const tab1Content = () => (
     <div className="flex flex-col w-fit">
@@ -30,6 +31,11 @@ export default function SettingsPage() {
               <TabsTrigger value="preferences" className="tab-trigger">
                 Preferences
               </TabsTrigger>
+              {ON_NEW_WINDOW && (
+                <TabsTrigger value="controls" className="tab-trigger">
+                  Controls
+                </TabsTrigger>
+              )}
               <TabsTrigger value="leagues" className="tab-trigger">
                 Leagues
               </TabsTrigger>
@@ -61,6 +67,21 @@ export default function SettingsPage() {
           <TabsContent value="organization">
             <UpdateOrganizationTab />
           </TabsContent>
+          {!ON_NEW_WINDOW && (
+            <TabsContent value="controls" className="mt-4 space-y-4">
+              <h2 className="text-lg font-semibold">Keyboard Controls</h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ShortcutItem action="Refresh" keys="Ctrl + R" />
+                <ShortcutItem action="Undo" keys="Ctrl + Z" />
+                <ShortcutItem action="Redo" keys="Ctrl + Shift + Z" />
+                <ShortcutItem action="Save" keys="Ctrl + S" />
+                <ShortcutItem action="Search" keys="Ctrl + F" />
+                <ShortcutItem action="Toggle Sidebar" keys="Ctrl + B" />
+                {/* Add more here */}
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </ContentBody>
     </ContentShell>

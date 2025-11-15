@@ -7,7 +7,11 @@ import {
   ManualLeagueTeamNodeMenu,
   ManualRoundNodeMenu,
 } from "@/components/manual-match-config/ManualMatchConfigNodeMenus";
-import { ManualMatchingCanvas } from "./LeagueMatchManualXyFlowCanvas";
+import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
+
+import { useManageManualMatchConfigNode } from "@/hooks/useManualMatchConfigHook";
+import { manualMatchConfigNodeTypes } from "@/components/manual-match-config";
+import { useTheme } from "@/providers/theme-provider";
 
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
@@ -17,6 +21,19 @@ import type { LeagueStatus } from "@/service/leagueService";
 
 function ManualMatchingPageContent() {
   const { league, isLoading, leagueId } = useLeagueStore();
+
+  const {
+    changeType,
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onDrop,
+    onDragOver,
+    onNodeDragStop,
+  } = useManageManualMatchConfigNode(leagueId);
+  const { theme } = useTheme();
 
   if (isLoading) {
     return <SelectedLeagueStateScreen loading />;
@@ -67,11 +84,40 @@ function ManualMatchingPageContent() {
     </div>
   );
 
+  const changesText = () => {
+    switch (changeType) {
+      case "Position":
+        return <span className="text-xs font-medium">Position changed!</span>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <ContentShell>
-      <ContentHeader title="Manual Configuration" />
+      <ContentHeader title="Manual Configuration">
+        {changesText()}
+      </ContentHeader>
       <ContentBody className="flex-row flex">
-        <ManualMatchingCanvas activeLeagueId={leagueId} />
+        <div className="h-full border rounded-md w-full bg-background">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            onNodeDragStop={onNodeDragStop}
+            colorMode={theme}
+            nodeTypes={manualMatchConfigNodeTypes}
+            fitView
+          >
+            <Background />
+            <Controls />
+            <MiniMap />
+          </ReactFlow>
+        </div>
         {rightMenu}
       </ContentBody>
     </ContentShell>

@@ -34,6 +34,8 @@ export enum LeagueStatus {
 
 export interface FetchLeagueGenericDataParams {
   userId?: string;
+  leagueId?: string;
+  publicLeagueId?: string;
   status?: LeagueStatus | LeagueStatus[];
   filter?: string | keyof League;
   all?: boolean;
@@ -153,6 +155,8 @@ export class LeagueService {
         params: {
           user_id: params.userId,
           status: params.status,
+          league_id: params.leagueId,
+          public_league_id: params.publicLeagueId,
           filter: params.filter,
           all: params.all,
           active: params.active,

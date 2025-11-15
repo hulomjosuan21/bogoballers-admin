@@ -190,7 +190,7 @@ function UnscheduleTable({
     toast.promise(updateApi(), {
       loading: "Scheduling match...",
       success: "Match Scheduled",
-      error: (err) => err.message || "An error occurred.",
+      error: (err) => getErrorMessage(err) || "An error occurred.",
     });
   };
 

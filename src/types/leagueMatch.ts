@@ -29,7 +29,6 @@ export interface LeagueMatch {
   round_number: number | null;
   pairing_method: string;
   is_final: boolean;
-  is_runner_up: boolean;
   is_third_place: boolean;
   is_elimination: boolean;
   is_exhibition: boolean;

@@ -4,7 +4,10 @@ import axiosClient from "@/lib/axiosClient";
 import { useLeagueMatchSelectionStore } from "./useLeagueMatchSelectionStore";
 import { useFetchLeagueGenericData } from "./useFetchLeagueGenericData";
 import type { League } from "@/types/league";
-import { LeagueStatus } from "@/service/leagueService";
+import {
+  LeagueStatus,
+  type FetchLeagueGenericDataParams,
+} from "@/service/leagueService";
 
 export interface LeagueGroup {
   group_id: string;
@@ -23,22 +26,49 @@ export interface LeagueCategoryWithRounds {
   rounds: LeagueRound[];
 }
 
-export function useLeagueCategoriesRoundsGroups() {
-  const {
-    leagueId: activeLeagueId,
-    data: activeLeagueData,
-    isLoading: activeLeagueLoading,
-    error: activeLeagueError,
-  } = useFetchLeagueGenericData<League>({
-    key: ["is-active"],
-    params: {
+export function useLeagueCategoriesRoundsGroups(params?: {
+  leagueId?: string;
+  publicLeagueId?: string;
+}) {
+  const { leagueId, publicLeagueId } = params ?? {};
+
+  const hasLeagueId = !!leagueId;
+  const hasPublicId = !!publicLeagueId;
+  let queryKey: string[] = [];
+  let queryParams: FetchLeagueGenericDataParams = {};
+
+  if (hasLeagueId && hasPublicId) {
+    queryKey = ["league", leagueId];
+    queryParams = { leagueId: leagueId };
+  } else if (hasLeagueId) {
+    queryKey = ["league", leagueId];
+    queryParams = { leagueId: leagueId };
+  } else if (hasPublicId) {
+    queryKey = ["public-league", publicLeagueId];
+    queryParams = {
+      filter: "public",
+      publicLeagueId: publicLeagueId,
+    };
+  } else {
+    queryKey = ["is-active"];
+    queryParams = {
       active: true,
       status: [
         LeagueStatus.Pending,
         LeagueStatus.Scheduled,
         LeagueStatus.Ongoing,
       ],
-    },
+    };
+  }
+
+  const {
+    leagueId: activeLeagueId,
+    data: activeLeagueData,
+    isLoading: activeLeagueLoading,
+    error: activeLeagueError,
+  } = useFetchLeagueGenericData<League>({
+    key: queryKey,
+    params: queryParams,
   });
 
   const {

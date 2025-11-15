@@ -84,6 +84,23 @@ html {
   @apply text-xs py-1 border;
 }
 
+/* stat list */
+.stat-list {
+  @apply text-[10px] leading-tight space-y-1;
+}
+
+.stat-item {
+  @apply flex justify-between gap-2;
+}
+
+.stat-label {
+  @apply text-[10px] font-medium text-muted-foreground;
+}
+
+.stat-value {
+  @apply text-[10px] font-semibold text-foreground;
+}
+
 .react-flow__node-group {
   background: transparent !important;
   border: none !important;

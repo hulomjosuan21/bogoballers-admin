@@ -6,24 +6,56 @@ import type { LeagueTeam } from "@/types/team";
 import { manualLeagueService } from "@/service/manualLeagueManagementService";
 import { toast } from "sonner";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+
 const TeamDropZone = ({
   team,
+  side,
   placeholder,
 }: {
+  side: "left" | "right";
   team?: LeagueTeam | null;
   placeholder: string;
 }) => (
-  <div className="border border-dashed h-14 w-28 rounded-sm grid place-content-center text-center p-1 bg-background/50">
+  <>
     {team ? (
-      <span className="text-xs font-semibold text-foreground truncate">
-        {team.team_name}
-      </span>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="border border-dashed h-14 w-28 rounded-sm grid place-content-center text-center p-1 bg-background/50">
+              <span className="text-[11px] font-semibold text-foreground line-clamp-2">
+                {team.team_name}
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side={side}>
+            <div className="stat-list">
+              <div className="stat-item">
+                <span className="stat-label">Wins:</span>
+                <span className="stat-value">{team.wins}</span>
+              </div>
+
+              <div className="stat-item">
+                <span className="stat-label">Losses:</span>
+                <span className="stat-value">{team.losses}</span>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     ) : (
-      <span className="text-xs font-thin text-muted-foreground">
-        {placeholder}
-      </span>
+      <div className="border border-dashed h-14 w-28 rounded-sm grid place-content-center text-center p-1 bg-background/50">
+        <span className="text-xs font-thin text-muted-foreground">
+          {placeholder}
+        </span>
+      </div>
     )}
-  </div>
+  </>
 );
 
 const ManualMatchConfigLeagueMatchNode: React.FC<
@@ -151,15 +183,18 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
       <div className="text-xs text-muted-foreground mb-1 text-center">
         {rosolve()}
       </div>
-      <div className="flex gap-2 justify-between">
+      <div className="flex gap-2 justify-between items-center">
         <div onDragOver={onDragOver} onDrop={(e) => onDrop(e, "home")}>
           <TeamDropZone
+            side="left"
             team={data.league_match.home_team}
             placeholder="Home Team"
           />
         </div>
+        <span className="font-semibold text-xs text-primary">vs</span>
         <div onDragOver={onDragOver} onDrop={(e) => onDrop(e, "away")}>
           <TeamDropZone
+            side="right"
             team={data.league_match.away_team}
             placeholder="Away Team"
           />

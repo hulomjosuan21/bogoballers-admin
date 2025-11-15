@@ -7,7 +7,7 @@ const AutomaticMatchConfigLeagueCategoryNode: React.FC<
 > = ({ data }) => {
   const { league_category } = data;
   return (
-    <div className="p-3 border rounded-md bg-background w-fit text-center">
+    <div className="p-3 border rounded-md rounded-tl-4xl bg-background w-fit text-center">
       <div className="font-semibold text-xs">
         {league_category.category_name}
       </div>

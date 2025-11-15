@@ -139,7 +139,6 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
       {round.league_category_id ? (
         <div className="flex gap-2 items-center">
           <div className="flex gap-1 items-center">
-            {/* Info Sheet */}
             <Sheet>
               <SheetTrigger asChild>
                 <div>

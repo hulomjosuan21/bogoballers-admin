@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   useReactFlow,
   type OnNodesChange,
@@ -80,6 +80,8 @@ export function useManualMatchConfigDragAndDrop() {
 }
 
 export function useManageManualMatchConfigNode(activeLeagueId?: string) {
+  const [changeType, setChangeType] = useState<"Position" | undefined>();
+
   const { nodes, edges } = useManualMatchConfigFlowState();
   const dispatch = useManualMatchConfigFlowDispatch();
   const { openDialog } = useAlertDialog();
@@ -147,9 +149,12 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
           node.id,
           node.position
         );
+        setChangeType("Position");
       } catch (error) {
         toast.error("Failed to save new position.");
         console.error(error);
+      } finally {
+        setTimeout(() => setChangeType(undefined), 600);
       }
     }, []);
 
@@ -335,7 +340,6 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
       };
 
       try {
-        // Category -> Round
         if (
           sourceNode.type === "leagueCategory" &&
           targetNode.type === "leagueCategoryRound" &&
@@ -374,9 +378,7 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
             toast.success("New Round created.");
             await createAndReplaceEdge(source, newRoundFromServer.round_id);
           }
-        }
-        // Round -> Group
-        else if (
+        } else if (
           sourceNode.type === "leagueCategoryRound" &&
           targetNode.type === "group" &&
           sourceNode.data.type === "league_category_round" &&
@@ -433,9 +435,7 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
               await createAndReplaceEdge(sourceNode.id, targetNode.id);
             }
           }
-        }
-        // Group -> Match
-        else if (
+        } else if (
           sourceNode.type === "group" &&
           targetNode.type === "leagueMatch" &&
           sourceNode.data.type === "group" &&
@@ -514,9 +514,7 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
               await createAndReplaceEdge(sourceNode.id, targetNode.id);
             }
           }
-        }
-        // Round -> Match
-        else if (
+        } else if (
           sourceNode.type === "leagueCategoryRound" &&
           targetNode.type === "leagueMatch" &&
           sourceNode.data.type === "league_category_round" &&
@@ -577,7 +575,6 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
             await createAndReplaceEdge(sourceNode.id, finalNode.id);
           }
         }
-        // Match -> Match
         if (
           sourceNode.type === "leagueMatch" &&
           targetNode.type === "leagueMatch" &&
@@ -681,7 +678,6 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
 
             await createAndReplaceEdge(sourceNode.id, finalNode.id);
 
-            // progression update
             const isWinnerProgression = sourceHandle.startsWith("winner-");
             const updatedSourceMatch: Partial<LeagueMatch> = isWinnerProgression
               ? { next_match_id: finalNode.id }
@@ -767,6 +763,7 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
   );
 
   return {
+    changeType,
     nodes,
     edges,
     onNodeDragStop,
