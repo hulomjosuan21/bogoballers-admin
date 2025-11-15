@@ -10,6 +10,7 @@ export type CreateCategory = {
   team_entrance_fee_amount: number;
   allow_guest_player: boolean;
   guest_player_fee_amount: number;
+  guest_team_fee_amount: number;
   requires_valid_document: boolean;
   allowed_documents: string[] | null;
   document_valid_until: string | null;
@@ -28,6 +29,7 @@ export type Category = {
   allow_guest_player: boolean;
   guest_player_fee_amount: number;
   team_entrance_fee_amount: number;
+  guest_team_fee_amount: number;
   requires_valid_document: boolean;
   allowed_documents: string[] | null;
   document_valid_until: string | null;

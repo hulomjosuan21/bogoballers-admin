@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { encryptedStorage } from "@/lib/encryptedStorage";
+import { dexieEncryptedStorage } from "@/lib/encryptedStorage";
 import type { League } from "@/types/league";
 
 interface LeagueStore {
@@ -61,7 +61,7 @@ export const useLeagueStore = create<LeagueStore>()(
     }),
     {
       name: "league-store",
-      storage: createJSONStorage(() => encryptedStorage),
+      storage: createJSONStorage(() => dexieEncryptedStorage),
       partialize: (state) => ({
         league: state.league,
         leagueId: state.leagueId,

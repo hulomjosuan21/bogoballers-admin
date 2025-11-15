@@ -10,16 +10,17 @@ export enum LeagueStatus {
 }
 
 class ManageLeagueAdministratorService {
+  readonly base: string = "/manage-league-admins";
   async getAllAdmins(): Promise<LeagueAdministator[]> {
     const response = await axiosClient.get<LeagueAdministator[]>(
-      "/manage-league-admins/all-admins"
+      `${this.base}/all-admins`
     );
     return response.data;
   }
 
   async getAllLeagues(): Promise<League[]> {
     const response = await axiosClient.get<League[]>(
-      "/manage-league-admins/all-leagues"
+      `${this.base}/all-leagues`
     );
     return response.data;
   }
@@ -28,7 +29,7 @@ class ManageLeagueAdministratorService {
     leagueAdministratorId: string
   ): Promise<LeagueAdministator> {
     const response = await axiosClient.patch<LeagueAdministator>(
-      `/manage-league-admins/admin/${leagueAdministratorId}/toggle-operational`
+      `${this.base}/admin/${leagueAdministratorId}/toggle-operational`
     );
     return response.data;
   }
@@ -38,7 +39,7 @@ class ManageLeagueAdministratorService {
     status: LeagueStatus
   ): Promise<League> {
     const response = await axiosClient.patch<League>(
-      `/manage-league-admins/league/${leagueId}/update-status`,
+      `${this.base}/league/${leagueId}/update-status`,
       { status }
     );
     return response.data;

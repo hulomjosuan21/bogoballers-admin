@@ -128,6 +128,7 @@ export default function ManageCategories() {
     allow_guest_player: false,
     guest_player_fee_amount: 0,
     requires_valid_document: false,
+    guest_team_fee_amount: 0,
     allowed_documents: null,
     document_valid_until: null,
   });
@@ -169,6 +170,7 @@ export default function ManageCategories() {
       form.allow_guest_player !== originalFormData.allow_guest_player ||
       form.guest_player_fee_amount !==
         originalFormData.guest_player_fee_amount ||
+      form.guest_team_fee_amount !== originalFormData.guest_team_fee_amount ||
       form.requires_valid_document !==
         originalFormData.requires_valid_document ||
       JSON.stringify(form.allowed_documents) !==
@@ -195,6 +197,10 @@ export default function ManageCategories() {
 
       if (key === "allow_guest_player" && !value) {
         newForm.guest_player_fee_amount = 0;
+      }
+
+      if (key === "allow_guest_team" && !value) {
+        newForm.guest_team_fee_amount = 0;
       }
 
       if (key === "requires_valid_document" && !value) {
@@ -250,6 +256,9 @@ export default function ManageCategories() {
         allowed_address: form.check_address ? form.allowed_address : null,
         allow_guest_team: form.allow_guest_team,
         team_entrance_fee_amount: form.team_entrance_fee_amount || 0,
+        guest_team_fee_amount: form.allow_guest_team
+          ? form.guest_team_fee_amount
+          : 0,
         allow_guest_player: form.allow_guest_player,
         guest_player_fee_amount: form.allow_guest_player
           ? form.guest_player_fee_amount
@@ -308,6 +317,7 @@ export default function ManageCategories() {
       guest_player_fee_amount: 0,
       requires_valid_document: false,
       allowed_documents: null,
+      guest_team_fee_amount: 0,
       document_valid_until: null,
     });
     setEditCategoryId(null);
@@ -325,6 +335,7 @@ export default function ManageCategories() {
       check_address: category.check_address,
       allowed_address: category.allowed_address,
       allow_guest_team: category.allow_guest_team,
+      guest_team_fee_amount: category.guest_team_fee_amount,
       team_entrance_fee_amount: category.team_entrance_fee_amount,
       allow_guest_player: category.allow_guest_player,
       guest_player_fee_amount: category.guest_player_fee_amount,
@@ -573,12 +584,31 @@ export default function ManageCategories() {
     {
       accessorKey: "guest_player_fee_amount",
       header: () => (
-        <span className="block text-center text-xs font-medium">Guest Fee</span>
+        <span className="block text-center text-xs font-medium">
+          Guest Player Fee
+        </span>
       ),
       cell: ({ row }) => (
         <div className="text-center text-sm font-mono">
           {row.original.allow_guest_player ? (
             `₱${row.original.guest_player_fee_amount.toLocaleString()}`
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "guest_team_fee_amount",
+      header: () => (
+        <span className="block text-center text-xs font-medium">
+          Guest Team Fee
+        </span>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center text-sm font-mono">
+          {row.original.allow_guest_team ? (
+            `₱${row.original.guest_team_fee_amount.toLocaleString()}`
           ) : (
             <span className="text-muted-foreground">-</span>
           )}
@@ -927,6 +957,23 @@ export default function ManageCategories() {
                       onChange={(e) =>
                         handleChange(
                           "guest_player_fee_amount",
+                          parseFloat(e.target.value) || 0
+                        )
+                      }
+                      placeholder="0"
+                    />
+                  </div>
+                )}
+
+                {form.allow_guest_team && (
+                  <div className="grid gap-2">
+                    <Label>Guest Team Fee</Label>
+                    <Input
+                      type="number"
+                      value={form.guest_team_fee_amount}
+                      onChange={(e) =>
+                        handleChange(
+                          "guest_team_fee_amount",
                           parseFloat(e.target.value) || 0
                         )
                       }

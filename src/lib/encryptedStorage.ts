@@ -1,31 +1,37 @@
 import CryptoJS from "crypto-js";
+import type { StateStorage } from "zustand/middleware";
+import { dexieDB } from "./db/dexieDb";
 
 const SECRET_KEY = import.meta.env.VITE_SECRET_KEY ?? "YOUR_SECRET_KEY_HERE";
 
-export const encryptedStorage = {
-  getItem: (name: string): string | null => {
-    const data = localStorage.getItem(name);
-    if (!data) return null;
-
+export const dexieEncryptedStorage: StateStorage = {
+  getItem: async (name: string): Promise<string | null> => {
     try {
-      const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+      const entry = await dexieDB.store.get(name);
+      if (!entry?.value) return null;
+
+      const bytes = CryptoJS.AES.decrypt(entry.value, SECRET_KEY);
       return bytes.toString(CryptoJS.enc.Utf8);
     } catch (e) {
-      console.error("Decryption failed:", e);
+      console.error("Dexie getItem failed:", e);
       return null;
     }
   },
 
-  setItem: (name: string, value: string): void => {
+  setItem: async (name: string, value: string): Promise<void> => {
     try {
       const encrypted = CryptoJS.AES.encrypt(value, SECRET_KEY).toString();
-      localStorage.setItem(name, encrypted);
+      await dexieDB.store.put({ key: name, value: encrypted });
     } catch (e) {
-      console.error("Encryption failed:", e);
+      console.error("Dexie setItem failed:", e);
     }
   },
 
-  removeItem: (name: string): void => {
-    localStorage.removeItem(name);
+  removeItem: async (name: string): Promise<void> => {
+    try {
+      await dexieDB.store.delete(name);
+    } catch (e) {
+      console.error("Dexie removeItem failed:", e);
+    }
   },
 };
