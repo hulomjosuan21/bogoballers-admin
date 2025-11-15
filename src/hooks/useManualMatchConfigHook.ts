@@ -456,11 +456,7 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
 
             const matchData = targetNode.data.league_match;
             let newDisplayName: string;
-            if (
-              matchData.is_final ||
-              matchData.is_third_place ||
-              matchData.is_runner_up
-            ) {
+            if (matchData.is_final || matchData.is_third_place) {
               newDisplayName = matchData.display_name || "Special Match";
             } else {
               let matchType = "Match";
@@ -527,11 +523,7 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
 
             const matchData = targetNode.data.league_match;
             let newDisplayName: string;
-            if (
-              matchData.is_final ||
-              matchData.is_third_place ||
-              matchData.is_runner_up
-            ) {
+            if (matchData.is_final || matchData.is_third_place) {
               newDisplayName = matchData.display_name || "Special Match";
             } else {
               let matchType = "Match";
@@ -619,11 +611,7 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
             const matchData = targetNode.data.league_match;
 
             let newDisplayName: string;
-            if (
-              matchData.is_final ||
-              matchData.is_third_place ||
-              matchData.is_runner_up
-            ) {
+            if (matchData.is_final || matchData.is_third_place) {
               newDisplayName = matchData.display_name || "Special Match";
             } else {
               let matchType = "Match";
@@ -646,7 +634,6 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
             const payload = {
               is_final: matchData.is_final,
               is_third_place: matchData.is_third_place,
-              is_runner_up: matchData.is_runner_up,
               is_elimination: matchData.is_elimination,
               league_id: parentMatchData.league_id!,
               league_category_id: parentMatchData.league_category_id!,

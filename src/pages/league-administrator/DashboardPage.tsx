@@ -13,8 +13,6 @@ import {
   UserRound,
   UsersRound,
   type LucideIcon,
-  EyeOff,
-  Eye,
   Trophy,
   ArrowUpRightIcon,
 } from "lucide-react";
