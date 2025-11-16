@@ -125,9 +125,9 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
   const renderWinHandle = () => {
     if (!data) return null;
 
-    const { is_final, is_third_place } = data.league_match;
+    const { is_final } = data.league_match;
 
-    if (!(is_final || is_third_place)) {
+    if (!is_final) {
       return (
         <>
           <div className="absolute right-[-20px] top-[33%] text-xs text-blue-500 transform -translate-y-1/2">

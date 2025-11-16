@@ -14,8 +14,6 @@ const SelectedLeagueStateScreen = ({
   isError?: boolean;
   error?: Error | null;
 }) => {
-  // --- Loading State ---
-  // This state is simple and can return early.
   if (loading) {
     return (
       <div className="h-screen w-full grid place-items-center">
@@ -23,10 +21,6 @@ const SelectedLeagueStateScreen = ({
       </div>
     );
   }
-
-  // --- Content Switching ---
-  // We define the content for each state first,
-  // then render it inside a common layout wrapper.
   let content: React.ReactNode;
 
   switch (state) {
@@ -60,7 +54,7 @@ const SelectedLeagueStateScreen = ({
       content = (
         <>
           <span className="text-lg font-semibold">
-            {league?.league_title} is Live {/* Fixed typo "is is Live" */}
+            {league?.league_title} is Live
           </span>
           <span className="text-sm text-muted-foreground">
             Matches are currently ongoing.
@@ -132,7 +126,6 @@ const SelectedLeagueStateScreen = ({
 
   return (
     <div className="h-screen w-full grid place-items-center px-4">
-      {/* This inner div stacks the text, centers it, and adds a consistent gap. */}
       <div className="flex flex-col items-center text-center gap-2">
         {content}
       </div>

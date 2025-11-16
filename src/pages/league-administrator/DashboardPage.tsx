@@ -14,11 +14,10 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useActiveLeagueAnalytics } from "@/hooks/useActiveLeague";
 
 import type { League } from "@/types/league";
-import { Spinner } from "@/components/ui/spinner";
 import { SelectedMatchAlert } from "@/tables/LeagueMatchUpcomingTable";
 import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
 import {
@@ -128,41 +127,48 @@ const AnalyticsCard = ({
 export default function DashboardPage() {
   const dateTime = useDateTime();
   const { leagueAdmin, leagueAdminLoading } = useAuthLeagueAdmin(true);
-  const {
-    leagueId: activeLeagueId,
-    data,
-    isLoading,
-    refetch,
-    isError,
-    error,
-  } = useFetchLeagueGenericData<League>({
-    key: ["is-active"],
-    params: {
+
+  const activeLeagueParams = useMemo(
+    () => ({
       active: true,
       status: [
         LeagueStatus.Pending,
         LeagueStatus.Scheduled,
         LeagueStatus.Ongoing,
       ],
+    }),
+    []
+  );
+
+  const {
+    leagueId: activeLeagueId,
+    data,
+    isFetching,
+    refetch,
+    isError,
+    error,
+  } = useFetchLeagueGenericData<League>({
+    key: ["is-active"],
+    options: {
+      enabled: !!leagueAdmin && !leagueAdminLoading,
     },
+    params: activeLeagueParams,
   });
 
   const { setLeague, setQueryState } = useLeagueStore();
 
   useEffect(() => {
     setQueryState({
-      isLoading,
+      isLoading: false,
       isError,
       error: error ?? null,
       leagueId: activeLeagueId,
       refetch,
     });
-  }, [isLoading, isError, error, activeLeagueId, refetch, setQueryState]);
+  }, [isFetching, isError, error, activeLeagueId, refetch, setQueryState]);
 
   useEffect(() => {
-    if (data) {
-      setLeague(data);
-    }
+    if (data) setLeague(data);
   }, [data, setLeague]);
 
   const {
@@ -176,14 +182,24 @@ export default function DashboardPage() {
 
   const [upcomingMatch, completedMatch] = useQueries({
     queries: [
-      getLeagueMatchQueryOption(selectedCategory, selectedRound, {
-        condition: "Upcoming",
-        limit: 5,
-      }),
-      getLeagueMatchQueryOption(selectedCategory, selectedRound, {
-        condition: "Completed",
-        limit: 5,
-      }),
+      getLeagueMatchQueryOption(
+        selectedCategory,
+        selectedRound,
+        {
+          condition: "Upcoming",
+          limit: 5,
+        },
+        !!!leagueAdmin && leagueAdminLoading
+      ),
+      getLeagueMatchQueryOption(
+        selectedCategory,
+        selectedRound,
+        {
+          condition: "Completed",
+          limit: 5,
+        },
+        !!!leagueAdmin && leagueAdminLoading
+      ),
     ],
   });
 
@@ -191,22 +207,15 @@ export default function DashboardPage() {
 
   const { activeLeagueAnalyticsData, activeLeagueAnalyticsLoading } =
     useActiveLeagueAnalytics(activeLeagueId);
-  const [showUpdates, _] = useState(true);
 
-  if (isLoading || activeLeagueAnalyticsLoading || leagueAdminLoading) {
+  const [showUpdates] = useState(true);
+
+  if (isFetching || activeLeagueAnalyticsLoading || leagueAdminLoading) {
     return <SelectedLeagueStateScreen loading={true} />;
   }
 
-  if (!data || !activeLeagueAnalyticsData || !leagueAdmin) {
+  if (data == null || !activeLeagueAnalyticsData || !leagueAdmin) {
     return <SelectedLeagueStateScreen />;
-  }
-
-  if (activeLeagueAnalyticsLoading) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
-    );
   }
 
   const leagueStatus = data.status as LeagueStatus;

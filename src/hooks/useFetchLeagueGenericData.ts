@@ -4,6 +4,7 @@ import {
 } from "@/service/leagueService";
 import type { League } from "@/types/league";
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 type GenericQueryOptions<T> = Omit<
   UseQueryOptions<T, Error>,
@@ -19,12 +20,14 @@ export const useFetchLeagueGenericData = <T>({
   params: FetchLeagueGenericDataParams;
   options?: GenericQueryOptions<T | null>;
 }) => {
-  const queryKey = [...key, params];
+  const stableParams = useMemo(() => params, [JSON.stringify(params)]);
+
+  const queryKey = [...key, stableParams];
 
   const query = useQuery<T | null, Error>({
     queryKey,
-
-    queryFn: () => leagueService.fetchGenericData<T>(params),
+    initialData: null,
+    queryFn: () => leagueService.fetchGenericData<T>(stableParams),
     ...options,
   });
 
@@ -36,6 +39,6 @@ export const useFetchLeagueGenericData = <T>({
   return {
     ...query,
     hasData: !query.isError && query.data !== null,
-    leagueId: leagueId,
+    leagueId,
   };
 };

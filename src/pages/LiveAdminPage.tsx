@@ -36,7 +36,7 @@ const LiveAdminPage = () => {
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-md font-bold">Live Admin Matches</h1>
+        <h1 className="text-md font-bold">Live Matches</h1>
         {latencyBadge()}
       </div>
       <ul className="space-y-3">
