@@ -1,4 +1,4 @@
-import type { LeagueStatus } from "@/service/leagueService";
+import { LeagueStatus } from "@/service/leagueService";
 import type { League } from "@/types/league";
 import { Loader2 } from "lucide-react";
 import { Spinner } from "./ui/spinner";
@@ -30,7 +30,7 @@ const SelectedLeagueStateScreen = ({
   let content: React.ReactNode;
 
   switch (state) {
-    case "Pending":
+    case LeagueStatus.Pending:
       content = (
         <>
           <span className="text-lg font-semibold">
@@ -43,7 +43,7 @@ const SelectedLeagueStateScreen = ({
       );
       break;
 
-    case "Scheduled":
+    case LeagueStatus.Scheduled:
       content = (
         <>
           <span className="text-lg font-semibold">
@@ -56,7 +56,7 @@ const SelectedLeagueStateScreen = ({
       );
       break;
 
-    case "Ongoing":
+    case LeagueStatus.Ongoing:
       content = (
         <>
           <span className="text-lg font-semibold">
@@ -69,7 +69,7 @@ const SelectedLeagueStateScreen = ({
       );
       break;
 
-    case "Completed":
+    case LeagueStatus.Completed:
       content = (
         <>
           <span className="text-lg font-semibold">
@@ -82,7 +82,7 @@ const SelectedLeagueStateScreen = ({
       );
       break;
 
-    case "Postponed":
+    case LeagueStatus.Postponed:
       content = (
         <>
           <span className="text-lg font-semibold">
@@ -94,8 +94,19 @@ const SelectedLeagueStateScreen = ({
         </>
       );
       break;
-
-    case "Cancelled":
+    case LeagueStatus.Rejected:
+      content = (
+        <>
+          <span className="text-lg font-semibold">
+            {league?.league_title} is Rejected
+          </span>
+          <span className="text-sm text-muted-foreground">
+            No further schedules.
+          </span>
+        </>
+      );
+      break;
+    case LeagueStatus.Cancelled:
       content = (
         <>
           <span className="text-lg font-semibold">

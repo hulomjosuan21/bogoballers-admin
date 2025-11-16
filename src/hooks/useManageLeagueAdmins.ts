@@ -1,7 +1,6 @@
-import {
-  LeagueStatus,
-  manageLeagueAdministratorService,
-} from "@/service/manageLeagueAdmins";
+import { getErrorMessage } from "@/lib/error";
+import type { LeagueStatus } from "@/service/leagueService";
+import { manageLeagueAdministratorService } from "@/service/manageLeagueAdmins";
 import type { League } from "@/types/league";
 import type { LeagueAdministator } from "@/types/leagueAdmin";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,8 +20,6 @@ export const leagueQueryKeys = {
 export const useManageLeagueAdmins = () => {
   const queryClient = useQueryClient();
 
-  // === QUERIES ===
-
   const { data: admins, isLoading: isLoadingAdmins } = useQuery<
     LeagueAdministator[]
   >({
@@ -35,12 +32,10 @@ export const useManageLeagueAdmins = () => {
     queryFn: () => manageLeagueAdministratorService.getAllLeagues(),
   });
 
-  // === MUTATIONS ===
-
   const { mutate: toggleAdminOperational } = useMutation<
-    LeagueAdministator, // Type returned on success
-    Error, // Type for error
-    string // Type of variables passed to mutationFn (adminId)
+    LeagueAdministator,
+    Error,
+    string
   >({
     mutationFn: (adminId) =>
       manageLeagueAdministratorService.toggleAdminOperational(adminId),
@@ -50,7 +45,6 @@ export const useManageLeagueAdmins = () => {
           updatedAdmin.is_operational ? "operational" : "not operational"
         }.`
       );
-      // Refetch both admins and leagues, as league data embeds admin data
       queryClient.invalidateQueries({ queryKey: adminQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: leagueQueryKeys.lists() });
     },
@@ -62,9 +56,9 @@ export const useManageLeagueAdmins = () => {
   });
 
   const { mutate: updateLeagueStatus } = useMutation<
-    League, // Type returned on success
-    Error, // Type for error
-    { leagueId: string; status: LeagueStatus } // Type of variables
+    League,
+    Error,
+    { leagueId: string; status: LeagueStatus }
   >({
     mutationFn: ({ leagueId, status }) =>
       manageLeagueAdministratorService.updateLeagueStatus(leagueId, status),
@@ -72,12 +66,11 @@ export const useManageLeagueAdmins = () => {
       toast.success(
         `League ${updatedLeague.league_title} status updated to ${updatedLeague.status}.`
       );
-      // Only need to refetch leagues
       queryClient.invalidateQueries({ queryKey: leagueQueryKeys.lists() });
     },
     onError: (error) => {
       toast.error("Failed to update league status.", {
-        description: error.message,
+        description: getErrorMessage(error.message),
       });
     },
   });
@@ -87,7 +80,7 @@ export const useManageLeagueAdmins = () => {
     isLoadingAdmins,
     leagues,
     isLoadingLeagues,
-    toggleAdminOperational, // The mutate function
-    updateLeagueStatus, // The mutate function
+    toggleAdminOperational,
+    updateLeagueStatus,
   };
 };

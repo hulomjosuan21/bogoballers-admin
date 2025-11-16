@@ -10,6 +10,7 @@ export function useAuthLeagueAdmin(enabled: boolean = true) {
   const query = useQuery(authLeagueAdminQueryOption({ enabled }));
 
   return {
+    leagueAdminId: query.data?.league_administrator_id,
     leagueAdmin: query.data ?? null,
     leagueAdminLoading: query.isLoading || query.isPending || query.isFetching,
     refetchLeagueAdmin: query.refetch,

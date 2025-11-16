@@ -4,7 +4,7 @@ import { getLeagueColumns } from "@/components/manage-league-admins/manage-leagu
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useManageLeagueAdmins } from "@/hooks/useManageLeagueAdmins";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import type { LeagueStatus } from "@/service/manageLeagueAdmins";
+import type { LeagueStatus } from "@/service/leagueService";
 import { DataTable } from "@/tables/ManageLeagueAdminDataTable";
 import { useMemo, useState } from "react";
 

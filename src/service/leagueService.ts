@@ -27,6 +27,7 @@ export enum LeagueStatus {
   Pending = "Pending",
   Scheduled = "Scheduled",
   Ongoing = "Ongoing",
+  Rejected = "Rejected",
   Completed = "Completed",
   Postponed = "Postponed",
   Cancelled = "Cancelled",

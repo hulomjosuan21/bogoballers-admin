@@ -121,7 +121,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league-admins",
     element: <ManageLeagueAdministratorPage />,
-    permissions: [],
+    permissions: [Permission.ManagementLeagueAdmins],
     showInSidebar: true,
     sidebarTitle: "LGU Admin Dashboard",
     icon: UserStar,
@@ -249,7 +249,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     icon: ClipboardClock,
     sidebarGroup: "league",
     sidebarParent: "Match",
-    sidebarTitle: "History",
+    sidebarTitle: "Completed",
     permissions: [Permission.ViewScheduledMatches],
   },
   {

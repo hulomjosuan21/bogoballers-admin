@@ -25,6 +25,7 @@ export default function LeagueOfficialsPage() {
     Pending: false,
     Completed: true,
     Postponed: true,
+    Rejected: true,
     Cancelled: true,
     Scheduled: false,
     Ongoing: false,

@@ -82,7 +82,7 @@ export const getAdminColumns = ({
     header: "Verified",
     cell: ({ row }) =>
       row.original.account.is_verified ? (
-        <Badge variant="secondary">Verified</Badge>
+        <Badge>Verified</Badge>
       ) : (
         <Badge variant="destructive">Not Verified</Badge>
       ),

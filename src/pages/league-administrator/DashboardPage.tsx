@@ -13,21 +13,10 @@ import {
   UserRound,
   UsersRound,
   type LucideIcon,
-  Trophy,
-  ArrowUpRightIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useActiveLeagueAnalytics } from "@/hooks/useActiveLeague";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { useNavigate } from "react-router-dom";
+
 import type { League } from "@/types/league";
 import { Spinner } from "@/components/ui/spinner";
 import { SelectedMatchAlert } from "@/tables/LeagueMatchUpcomingTable";
@@ -44,6 +33,8 @@ import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
 import { useLeagueStore } from "@/stores/leagueStore";
 import { LeagueStatus } from "@/service/leagueService";
 import useDateTime from "@/hooks/useDatetime";
+import LeagueAdministratorDisplay from "@/components/LeagueAdministratorDisplay";
+import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 
 interface DashboardCardProps {
   title: string;
@@ -90,7 +81,7 @@ const LeagueSection = ({ league, wrap }: { league: League; wrap: boolean }) => {
           <img
             src={league.banner_url}
             alt="activeleague-banner"
-            className="max-h-96 w-full rounded-md object-cover"
+            className="max-h-96 w-full rounded-md border object-cover"
           />
         </ImageZoom>
 
@@ -136,6 +127,7 @@ const AnalyticsCard = ({
 
 export default function DashboardPage() {
   const dateTime = useDateTime();
+  const { leagueAdmin, leagueAdminLoading } = useAuthLeagueAdmin(true);
   const {
     leagueId: activeLeagueId,
     data,
@@ -155,7 +147,7 @@ export default function DashboardPage() {
     },
   });
 
-  const { hasData, setLeague, setQueryState } = useLeagueStore();
+  const { setLeague, setQueryState } = useLeagueStore();
 
   useEffect(() => {
     setQueryState({
@@ -168,10 +160,10 @@ export default function DashboardPage() {
   }, [isLoading, isError, error, activeLeagueId, refetch, setQueryState]);
 
   useEffect(() => {
-    if (!hasData && data) {
+    if (data) {
       setLeague(data);
     }
-  }, [data, hasData, setLeague]);
+  }, [data, setLeague]);
 
   const {
     categories,
@@ -201,10 +193,12 @@ export default function DashboardPage() {
     useActiveLeagueAnalytics(activeLeagueId);
   const [showUpdates, _] = useState(true);
 
-  const navigate = useNavigate();
-
-  if (isLoading) {
+  if (isLoading || activeLeagueAnalyticsLoading || leagueAdminLoading) {
     return <SelectedLeagueStateScreen loading={true} />;
+  }
+
+  if (!data || !activeLeagueAnalyticsData || !leagueAdmin) {
+    return <SelectedLeagueStateScreen />;
   }
 
   if (activeLeagueAnalyticsLoading) {
@@ -213,6 +207,22 @@ export default function DashboardPage() {
         <Spinner />
       </div>
     );
+  }
+
+  const leagueStatus = data.status as LeagueStatus;
+
+  const handledStates: Record<LeagueStatus, boolean> = {
+    Pending: false,
+    Completed: true,
+    Postponed: true,
+    Rejected: true,
+    Cancelled: true,
+    Scheduled: false,
+    Ongoing: false,
+  };
+
+  if (handledStates[leagueStatus]) {
+    return <SelectedLeagueStateScreen state={leagueStatus} league={data} />;
   }
 
   return (
@@ -224,120 +234,91 @@ export default function DashboardPage() {
       </ContentHeader>
 
       <ContentBody>
-        {data && activeLeagueAnalyticsData ? (
-          <div className="space-y-4">
-            {selectedMatch && (
-              <SelectedMatchAlert
-                match={selectedMatch}
-                onRemove={removeSelectedMatch}
-                onOtherPage={true}
+        <div className="space-y-4">
+          {selectedMatch && (
+            <SelectedMatchAlert
+              match={selectedMatch}
+              onRemove={removeSelectedMatch}
+              onOtherPage={true}
+            />
+          )}
+
+          {leagueAdmin && (
+            <LeagueAdministratorDisplay dashboard={true} data={leagueAdmin} />
+          )}
+          <div className="">
+            <span className="font-semibold font-md">Active League</span>
+          </div>
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            <LeagueSection
+              league={activeLeagueAnalyticsData.active_league}
+              wrap={showUpdates}
+            />
+
+            <div className="flex gap-4 items-center flex-wrap">
+              <AnalyticsCard
+                title="Total Teams"
+                value={activeLeagueAnalyticsData.total_accepted_teams.count}
+                lastUpdate={
+                  activeLeagueAnalyticsData.total_accepted_teams.last_update
+                }
+                icon={UsersRound}
               />
-            )}
-            <div className="lg:col-span-2 flex flex-col gap-6">
-              <LeagueSection
-                league={activeLeagueAnalyticsData.active_league}
-                wrap={showUpdates}
+              <AnalyticsCard
+                title="Total Players"
+                value={activeLeagueAnalyticsData.total_players.count}
+                lastUpdate={activeLeagueAnalyticsData.total_players.last_update}
+                icon={UserRound}
+              />
+              <AnalyticsCard
+                title="Total Categories"
+                value={activeLeagueAnalyticsData.total_categories.count}
+                lastUpdate={
+                  activeLeagueAnalyticsData.total_categories.last_update
+                }
+                icon={SendToBack}
+              />
+            </div>
+
+            <ProfitAreaChart data={activeLeagueAnalyticsData.total_profit} />
+
+            <div className="space-y-2">
+              <MatchHistoryFilter
+                label="Filter"
+                categories={categories}
+                rounds={rounds}
+                selectedCategory={selectedCategory}
+                selectedRound={selectedRound}
+                setSelectedCategory={setSelectedCategory}
+                setSelectedRound={setSelectedRound}
               />
 
-              <div className="flex gap-4 items-center flex-wrap">
-                <AnalyticsCard
-                  title="Total Teams"
-                  value={activeLeagueAnalyticsData.total_accepted_teams.count}
-                  lastUpdate={
-                    activeLeagueAnalyticsData.total_accepted_teams.last_update
-                  }
-                  icon={UsersRound}
-                />
-                <AnalyticsCard
-                  title="Total Players"
-                  value={activeLeagueAnalyticsData.total_players.count}
-                  lastUpdate={
-                    activeLeagueAnalyticsData.total_players.last_update
-                  }
-                  icon={UserRound}
-                />
-                <AnalyticsCard
-                  title="Total Categories"
-                  value={activeLeagueAnalyticsData.total_categories.count}
-                  lastUpdate={
-                    activeLeagueAnalyticsData.total_categories.last_update
-                  }
-                  icon={SendToBack}
-                />
-              </div>
+              <LeagueMatchTableWrapper
+                key={"upcoming"}
+                selectedCategory={selectedCategory}
+                selectedRound={selectedRound}
+                leagueMatchData={upcomingMatch.data ?? []}
+                leagueMatchLoading={upcomingMatch.isLoading}
+                refresh={upcomingMatch.refetch}
+                controlls={false}
+                label={"Upcoming Match"}
+                excludeFields={["home_team_score", "away_team_score"]}
+              />
 
-              <ProfitAreaChart data={activeLeagueAnalyticsData.total_profit} />
-
-              <div className="space-y-2">
-                <MatchHistoryFilter
-                  label="Filter"
-                  categories={categories}
-                  rounds={rounds}
-                  selectedCategory={selectedCategory}
-                  selectedRound={selectedRound}
-                  setSelectedCategory={setSelectedCategory}
-                  setSelectedRound={setSelectedRound}
-                />
-
-                <LeagueMatchTableWrapper
-                  key={"upcoming"}
-                  selectedCategory={selectedCategory}
-                  selectedRound={selectedRound}
-                  leagueMatchData={upcomingMatch.data ?? []}
-                  leagueMatchLoading={upcomingMatch.isLoading}
-                  refresh={upcomingMatch.refetch}
-                  controlls={false}
-                  label={"Upcoming Match"}
-                  excludeFields={["home_team_score", "away_team_score"]}
-                />
-
-                <LeagueMatchTableWrapper
-                  key={"completed"}
-                  selectedCategory={selectedCategory}
-                  selectedRound={selectedRound}
-                  leagueMatchData={completedMatch.data ?? []}
-                  leagueMatchLoading={completedMatch.isLoading}
-                  refresh={completedMatch.refetch}
-                  controlls={false}
-                  label={"Completed Match"}
-                  excludeFields={["scheduled_date"]}
-                />
-              </div>
+              <LeagueMatchTableWrapper
+                key={"completed"}
+                selectedCategory={selectedCategory}
+                selectedRound={selectedRound}
+                leagueMatchData={completedMatch.data ?? []}
+                leagueMatchLoading={completedMatch.isLoading}
+                refresh={completedMatch.refetch}
+                controlls={false}
+                label={"Completed Match"}
+                excludeFields={["scheduled_date"]}
+              />
             </div>
           </div>
-        ) : (
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <Trophy />
-              </EmptyMedia>
-              <EmptyTitle>No League Yet</EmptyTitle>
-              <EmptyDescription>
-                You haven&apos;t started league yet. Start by creating your new
-                league.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Button
-                onClick={() =>
-                  navigate("/portal/league-administrator/pages/league/new")
-                }
-              >
-                Create League
-              </Button>
-            </EmptyContent>
-            <Button
-              variant="ghost"
-              asChild
-              className="text-muted-foreground"
-              size="sm"
-            >
-              <a href="#">
-                Learn More <ArrowUpRightIcon />
-              </a>
-            </Button>
-          </Empty>
-        )}
+        </div>
       </ContentBody>
     </ContentShell>
   );

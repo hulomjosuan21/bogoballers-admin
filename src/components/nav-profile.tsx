@@ -1,4 +1,4 @@
-import { BadgeCheck, ChevronsUpDown, LogOut, Loader2 } from "lucide-react";
+import { ChevronsUpDown, LogOut, Loader2, Award } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -24,7 +24,13 @@ import { useErrorToast } from "./error-toast";
 import { useNavigate } from "react-router-dom";
 import { queryClient } from "@/lib/queryClient";
 import type { LeagueAdministator } from "@/types/leagueAdmin";
-
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import LeagueAdministratorDisplay from "./LeagueAdministratorDisplay";
 export function NavProfile({
   leagueAdmin,
 }: {
@@ -34,6 +40,7 @@ export function NavProfile({
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const handleError = useErrorToast();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -51,6 +58,15 @@ export function NavProfile({
 
   return (
     <SidebarMenu>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="top" aria-describedby={undefined}>
+          <SheetHeader>
+            <SheetTitle></SheetTitle>
+          </SheetHeader>
+
+          <LeagueAdministratorDisplay dashboard={false} data={leagueAdmin} />
+        </SheetContent>
+      </Sheet>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -108,19 +124,17 @@ export function NavProfile({
 
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem
-                onClick={() => window.open(`/${leagueAdmin.user_id}`, "_blank")}
-              >
-                <BadgeCheck />
+              <DropdownMenuItem onClick={() => setOpen(true)}>
+                <Award className="mr-2 h-4 w-4" />
                 About Organization
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
-              <LogOut className="mr-2" />
+              <LogOut className="mr-2 h-4 w-4" />
               Log out
               {isLoggingOut && (
-                <Loader2 className="ml-auto h-4 w-4 animate-spin text-muted-foreground" />
+                <Loader2 className="ml-auto h-3 w-3 animate-spin text-muted-foreground" />
               )}
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -3,7 +3,7 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageAffiliates from "@/tables/ManangeAffiliateTable";
 import { useLeagueStore } from "@/stores/leagueStore";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
-import { LeagueStatus } from "@/service/leagueService";
+import type { LeagueStatus } from "@/service/leagueService";
 
 export default function LeagueAffiliatePage() {
   const { league, isLoading, leagueId } = useLeagueStore();
@@ -24,6 +24,7 @@ export default function LeagueAffiliatePage() {
     Postponed: true,
     Cancelled: true,
     Scheduled: false,
+    Rejected: true,
     Ongoing: false,
   };
 

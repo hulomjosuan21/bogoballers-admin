@@ -1,13 +1,7 @@
 import axiosClient from "@/lib/axiosClient";
 import type { League } from "@/types/league";
 import type { LeagueAdministator } from "@/types/leagueAdmin";
-export enum LeagueStatus {
-  Pending = "Pending",
-  Approved = "Approved",
-  Rejected = "Rejected",
-  Ongoing = "Ongoing",
-  Completed = "Completed",
-}
+import type { LeagueStatus } from "./leagueService";
 
 class ManageLeagueAdministratorService {
   readonly base: string = "/manage-league-admins";

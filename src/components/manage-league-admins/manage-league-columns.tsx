@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { LeagueStatus } from "@/service/manageLeagueAdmins";
 import type { League } from "@/types/league";
 import { useLeaguePDF } from "@/hooks/usePrintLeagueDocument";
+import { LeagueStatus } from "@/service/leagueService";
 
 export type LeagueColumnsProps = {
   onUpdateStatus: (leagueId: string, status: LeagueStatus) => void;
@@ -47,7 +47,7 @@ export const getLeagueColumns = ({
       const status = row.original.status;
       let variant: "default" | "secondary" | "destructive" | "outline" =
         "outline";
-      if (status === LeagueStatus.Approved || status === LeagueStatus.Ongoing)
+      if (status === LeagueStatus.Scheduled || status === LeagueStatus.Ongoing)
         variant = "default";
       if (status === LeagueStatus.Pending) variant = "secondary";
       if (status === LeagueStatus.Rejected) variant = "destructive";
@@ -122,7 +122,7 @@ export const getLeagueColumns = ({
                 <DropdownMenuSubContent>
                   {Object.values(LeagueStatus)
                     .filter((status) =>
-                      [LeagueStatus.Approved, LeagueStatus.Rejected].includes(
+                      [LeagueStatus.Scheduled, LeagueStatus.Rejected].includes(
                         status
                       )
                     )
@@ -132,7 +132,8 @@ export const getLeagueColumns = ({
                         disabled={league.status === status}
                         onClick={() => onUpdateStatus(league.league_id, status)}
                       >
-                        Set as {status}
+                        Set as{" "}
+                        {status == LeagueStatus.Scheduled ? "Approved" : status}
                       </DropdownMenuItem>
                     ))}
                 </DropdownMenuSubContent>
