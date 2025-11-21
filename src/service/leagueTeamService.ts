@@ -69,8 +69,8 @@ export class LeagueTeamService {
     return response.data;
   }
 
-  static async getTeamsChecked(leagueCategoryId: string, roundId: string) {
-    const url = `/league-team/all-checked/${leagueCategoryId}/${roundId}`;
+  static async getTeamsChecked(leagueCategoryId: string) {
+    const url = `/league-team/all-checked/${leagueCategoryId}`;
 
     const response = await axiosClient.get<LeagueTeam[]>(url);
 

@@ -21,14 +21,11 @@ export default function LeagueTeamsPage() {
   const { state, data } = useToggleOfficialLeagueTeamSection();
   const {
     categories,
-    rounds,
     isLoading,
     activeLeagueData,
     error,
     selectedCategory,
-    selectedRound,
     setSelectedCategory,
-    setSelectedRound,
   } = useLeagueCategoriesRoundsGroups();
 
   if (activeLeagueData?.status === "Pending") {
@@ -77,31 +74,15 @@ export default function LeagueTeamsPage() {
                 ))}
               </SelectContent>
             </Select>
-
-            {rounds.length > 0 && (
-              <Select value={selectedRound} onValueChange={setSelectedRound}>
-                <SelectTrigger className="h-6 px-2 py-1 text-xs">
-                  <SelectValue placeholder="Round" />
-                </SelectTrigger>
-                <SelectContent className="text-xs">
-                  {rounds.map((r) => (
-                    <SelectItem key={r.round_id} value={r.round_id}>
-                      {r.round_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
           </div>
         )}
 
         {state === ToggleState.SHOW_LEAGUE_TEAM && data ? (
           <LeagueTeamReadyForMatchSection data={data} />
         ) : (
-          selectedCategory &&
-          selectedRound && (
+          selectedCategory && (
             <Suspense
-              key={`${selectedCategory}-${selectedRound}`}
+              key={`${selectedCategory}`}
               fallback={
                 <div className="h-40 grid place-content-center">
                   <Spinner />
@@ -111,7 +92,6 @@ export default function LeagueTeamsPage() {
               <LeagueTeamsTable
                 key={selectedCategory}
                 leagueCategoryId={selectedCategory}
-                roundId={selectedRound}
               />
             </Suspense>
           )

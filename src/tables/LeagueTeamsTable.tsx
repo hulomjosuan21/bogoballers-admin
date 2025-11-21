@@ -48,7 +48,6 @@ import { getOrdinal } from "@/lib/app_utils";
 
 type Props = {
   leagueCategoryId?: string;
-  roundId?: string;
   viewOnly?: boolean;
 };
 
@@ -93,7 +92,6 @@ export const renderPlacementBadges = (t: LeagueTeam) => {
 };
 export function LeagueTeamsTable({
   leagueCategoryId,
-  roundId,
   viewOnly = false,
 }: Props) {
   const {
@@ -101,8 +99,8 @@ export function LeagueTeamsTable({
     dynamicLeagueTeamLoading,
     refetchDynamicLeagueTeam,
   } = useLeagueTeamDynamicQuery(
-    QUERY_KEYS.DYNAMIC_KEY_LEAGUE_TEAM_FOR_CHECKED(leagueCategoryId, roundId),
-    () => LeagueTeamService.getTeamsChecked(leagueCategoryId!, roundId!)
+    QUERY_KEYS.DYNAMIC_KEY_LEAGUE_TEAM_FOR_CHECKED(leagueCategoryId),
+    () => LeagueTeamService.getTeamsChecked(leagueCategoryId!)
   );
 
   const [sorting, setSorting] = useState<SortingState>([]);
