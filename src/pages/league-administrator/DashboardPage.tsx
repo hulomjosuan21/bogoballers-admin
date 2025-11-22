@@ -254,7 +254,7 @@ export default function DashboardPage() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Dashboard">
+      <ContentHeader title="Active League Dashboard">
         <div className="">
           <span className="text-xs font-medium">{dateTime}</span>
         </div>
@@ -286,11 +286,6 @@ export default function DashboardPage() {
                 onOtherPage={true}
               />
             )}
-
-            <div className="border-b pb-1">
-              <span className="font-semibold font-md">Active League</span>
-            </div>
-
             <div className="flex flex-col gap-6">
               <LeagueSection
                 league={activeLeagueAnalyticsData.active_league}
