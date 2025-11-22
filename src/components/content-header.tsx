@@ -30,8 +30,6 @@ export default function ContentHeader({
         {ON_NEW_WINDOW && (
           <>
             <Button
-              data-sidebar="trigger"
-              data-slot="sidebar-trigger"
               variant="ghost"
               size="icon"
               className={"size-7"}
@@ -43,8 +41,6 @@ export default function ContentHeader({
               <span className="sr-only">Undo Sidebar</span>
             </Button>
             <Button
-              data-sidebar="trigger"
-              data-slot="sidebar-trigger"
               variant="ghost"
               size="icon"
               className={"size-7"}
@@ -56,8 +52,6 @@ export default function ContentHeader({
               <span className="sr-only">Redo Sidebar</span>
             </Button>
             <Button
-              data-sidebar="trigger"
-              data-slot="sidebar-trigger"
               variant="ghost"
               size="icon"
               className={"size-7"}

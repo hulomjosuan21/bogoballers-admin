@@ -24,20 +24,21 @@ import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import type { LeagueTeam } from "@/types/team";
-import { useLeagueTeam } from "@/hooks/useLeagueTeam";
+import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
 import { renderPlacementBadges } from "./LeagueTeamsTable";
+import { QUERY_KEYS } from "@/constants/queryKeys";
+import { LeagueTeamService } from "@/service/leagueTeamService";
 
 type Props = {
   leagueCategoryId?: string;
 };
 
 function LegueTeamTable({ leagueCategoryId }: Props) {
-  const { leagueTeamData, leagueTeamLoading } = useLeagueTeam(
-    leagueCategoryId,
-    {
-      condition: "RankAndFinalize",
-    }
-  );
+  const { dynamicLeagueTeamData, dynamicLeagueTeamLoading } =
+    useLeagueTeamDynamicQuery(
+      QUERY_KEYS.DYNAMIC_KEY_LEAGUE_TEAM_FOR_CHECKED(leagueCategoryId),
+      () => LeagueTeamService.getTeamsChecked(leagueCategoryId!)
+    );
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -89,8 +90,8 @@ function LegueTeamTable({ leagueCategoryId }: Props) {
   );
 
   const tableData = useMemo(() => {
-    return leagueTeamData;
-  }, [leagueTeamData]);
+    return dynamicLeagueTeamData;
+  }, [dynamicLeagueTeamData]);
 
   const table = useReactTable({
     data: tableData ?? [],
@@ -151,7 +152,7 @@ function LegueTeamTable({ leagueCategoryId }: Props) {
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
-                  {leagueTeamLoading ? "Loading..." : "No data."}
+                  {dynamicLeagueTeamLoading ? "Loading..." : "No data."}
                 </TableCell>
               </TableRow>
             )}

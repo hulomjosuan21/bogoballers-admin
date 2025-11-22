@@ -84,7 +84,6 @@ html {
   @apply text-xs py-1 border;
 }
 
-/* stat list */
 .stat-list {
   @apply text-[10px] leading-tight space-y-1;
 }
@@ -99,6 +98,23 @@ html {
 
 .stat-value {
   @apply text-[10px] font-semibold text-foreground;
+}
+
+.stat-list-compact {
+  @apply text-[10px] leading-tight space-y-1;
+}
+
+.stat-item-compact {
+  @apply flex items-center;
+}
+
+.stat-label-compact {
+  @apply text-[10px] font-medium text-muted-foreground;
+}
+
+/* One space gap using tailwind but visually aligned */
+.stat-value-compact {
+  @apply ml-1 text-[10px] font-semibold text-foreground;
 }
 
 .react-flow__node-group {

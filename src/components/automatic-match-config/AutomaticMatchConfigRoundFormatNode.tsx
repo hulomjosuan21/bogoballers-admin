@@ -28,6 +28,7 @@ import { Badge } from "../ui/badge";
 import { autoMatchConfigService } from "@/service/automaticMatchConfigService";
 import { toast } from "sonner";
 import { ScrollArea } from "../ui/scroll-area";
+import SeriesTeamSelector from "./AutomaticMatchConfigLeagueNodeComponents";
 
 type ConfigValue = string | number | boolean | object | null;
 
@@ -88,7 +89,6 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
       const val = cfg[key];
 
       if (typeof val === "string" && !isNaN(Number(val)) && val.trim() !== "") {
-        // convert numeric strings into numbers
         normalized[key] = Number(val);
       } else {
         normalized[key] = val;
@@ -214,37 +214,21 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
               />
             </div>
 
-            {config.series_config?.type === "TwiceToBeat" && (
-              <div className="space-y-2 mt-2">
-                <Label>Advantaged Team</Label>
-                <Input
-                  value={config.series_config.advantaged_team ?? ""}
-                  onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      series_config: {
-                        ...config.series_config,
-                        advantaged_team: e.target.value,
-                      },
-                    })
-                  }
-                  placeholder="Team ID or name"
-                />
-                <Label>Challenger Team</Label>
-                <Input
-                  value={config.series_config.challenger_team ?? ""}
-                  onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      series_config: {
-                        ...config.series_config,
-                        challenger_team: e.target.value,
-                      },
-                    })
-                  }
-                  placeholder="Team ID or name"
-                />
-              </div>
+            {config.series_config && (
+              <SeriesTeamSelector
+                leagueCategoryId={data.league_category_id}
+                advantagedTeamId={config.series_config.advantaged_team}
+                challengerTeamId={config.series_config.challenger_team}
+                onChange={(update) =>
+                  setConfig({
+                    ...config,
+                    series_config: {
+                      ...config.series_config,
+                      ...update,
+                    },
+                  })
+                }
+              />
             )}
           </>
         );
@@ -349,35 +333,20 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
             </div>
 
             {config.series_config && (
-              <div className="space-y-2 mt-2">
-                <Label>Advantaged Team</Label>
-                <Input
-                  value={config.series_config.advantaged_team ?? ""}
-                  onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      series_config: {
-                        ...config.series_config,
-                        advantaged_team: e.target.value,
-                      },
-                    })
-                  }
-                />
-
-                <Label>Challenger Team</Label>
-                <Input
-                  value={config.series_config.challenger_team ?? ""}
-                  onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      series_config: {
-                        ...config.series_config,
-                        challenger_team: e.target.value,
-                      },
-                    })
-                  }
-                />
-              </div>
+              <SeriesTeamSelector
+                leagueCategoryId={data.league_category_id}
+                advantagedTeamId={config.series_config.advantaged_team}
+                challengerTeamId={config.series_config.challenger_team}
+                onChange={(update) =>
+                  setConfig({
+                    ...config,
+                    series_config: {
+                      ...config.series_config,
+                      ...update,
+                    },
+                  })
+                }
+              />
             )}
           </>
         );
@@ -392,7 +361,7 @@ const AutomaticMatchConfigRoundFormatNode: React.FC<
   };
 
   return (
-    <div className="relative p-2 border rounded-md bg-background rounded-t-2xl w-fit">
+    <div className="relative p-2 border rounded-md bg-background w-fit">
       <div className="flex gap-1 items-center">
         <div className="font-semibold text-[10px] text-secondary-foreground">
           {formatName}

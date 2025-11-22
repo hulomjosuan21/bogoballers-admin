@@ -136,9 +136,6 @@ export function GuestActionCell({ request, refresh }: GuestActionCellProps) {
     setIsAssignOpen(false);
   };
 
-  // -----------------------------
-  // REJECT
-  // -----------------------------
   const confirmReject = async () => {
     await patchRequest(
       { status: "Rejected" },
@@ -146,9 +143,6 @@ export function GuestActionCell({ request, refresh }: GuestActionCellProps) {
     );
   };
 
-  // -----------------------------
-  // PAYMENT STATUS UPDATE
-  // -----------------------------
   const handleSetPayment = async (payment_status: string) => {
     await patchRequest(
       {
@@ -225,7 +219,6 @@ export function GuestActionCell({ request, refresh }: GuestActionCellProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Refund Dialog */}
       <RefundDialog
         isOpen={isRefundOpen}
         onClose={() => setIsRefundOpen(false)}
@@ -312,8 +305,6 @@ export function GuestActionCell({ request, refresh }: GuestActionCellProps) {
     </>
   );
 }
-
-/* ---------------- Refund Dialog ---------------- */
 
 type RefundDialogProps = {
   isOpen: boolean;

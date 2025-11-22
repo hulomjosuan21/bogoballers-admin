@@ -36,6 +36,9 @@ import { ActivityLogsFeed } from "../ActivityLogsFeed";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { leagueService } from "@/service/leagueService";
+import { queryClient } from "@/lib/queryClient";
+import { useLeagueStore } from "@/stores/leagueStore";
+import { useAlertDialog } from "@/hooks/userAlertDialog";
 
 const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
   NodeProps<Node<AutomaticMatchConfigLeagueCategoryRoundNodeData>> & {
@@ -44,9 +47,9 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
 > = ({ data }) => {
   const { round } = data;
   const roundId = round.round_id;
-
-  const queryKey = ["activity-logs", roundId];
-
+  const { leagueId } = useLeagueStore();
+  const queryKey = ["activity-logs-round", roundId];
+  const { openDialog } = useAlertDialog();
   const {
     data: logData,
     isLoading: logLoading,
@@ -73,6 +76,12 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
         round.round_id!
       );
       await refetchLog();
+      if (leagueId) {
+        await queryClient.refetchQueries({
+          queryKey: ["auto-match-config-flow", leagueId],
+          exact: true,
+        });
+      }
       return res;
     };
 
@@ -97,6 +106,12 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
     const asyncHandle = async () => {
       const res = await aiAutoMatchConfigService.progressRound(round.round_id!);
       await refetchLog();
+      if (leagueId) {
+        await queryClient.refetchQueries({
+          queryKey: ["auto-match-config-flow", leagueId],
+          exact: true,
+        });
+      }
       return res;
     };
 
@@ -117,18 +132,31 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
     });
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (!round.round_id) return;
-    if (!confirm("Are you sure? This will delete ALL matches in this round."))
-      return;
+
+    const confirm = await openDialog({
+      description: "Are you sure? This will delete ALL matches in this round.",
+      confirmText: "Proceed",
+      cancelText: "Cancel",
+    });
+    if (!confirm) return;
 
     const asyncHandle = async () => {
       const res = await aiAutoMatchConfigService.resetRound(round.round_id!);
       await refetchLog();
+
+      if (leagueId) {
+        await queryClient.refetchQueries({
+          queryKey: ["auto-match-config-flow", leagueId],
+          exact: true,
+        });
+      }
       return res;
     };
 
     setLoading("reset");
+    ``;
 
     toast.promise(asyncHandle(), {
       loading: "Resetting round and updating logs...",
@@ -197,7 +225,6 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
       {round.league_category_id ? (
         <div className="flex gap-3 items-center justify-between">
           <div className="flex gap-2 items-center flex-1">
-            {/* INFO SHEET */}
             <Sheet>
               <SheetTrigger asChild>
                 <div className="p-1.5 hover:bg-accent rounded-md cursor-pointer transition-colors text-muted-foreground hover:text-foreground">
@@ -226,7 +253,6 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
                   <ScrollArea className="h-[calc(100dvh-200px)] pr-4">
                     <div className="space-y-6">
                       <div className="grid grid-cols-2 gap-4">
-                        {/* Status Card */}
                         <div className="col-span-2 p-4 rounded-lg border bg-card shadow-sm">
                           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                             Current Status
@@ -365,7 +391,7 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
                       size="sm"
                       variant="ghost"
                       onClick={handleReset}
-                      disabled={loading === "reset"}
+                      disabled={loading === "reset" || !round.matches_generated}
                       className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
@@ -397,26 +423,11 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
         </span>
       </div>
 
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="round-in"
-        className="!bg-muted-foreground !w-3 !h-3 !-ml-1.5"
-      />
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="round-format-in"
-        className="!bg-blue-400 !w-3 !h-3 !-mt-1.5"
-      />
+      <Handle type="target" position={Position.Left} id="round-in" />
+      <Handle type="target" position={Position.Top} id="round-format-in" />
 
       {data.round.round_name !== RoundTypeEnum.Final && (
-        <Handle
-          type="source"
-          position={Position.Right}
-          id="round-out"
-          className="!bg-muted-foreground !w-3 !h-3 !-mr-1.5"
-        />
+        <Handle type="source" position={Position.Right} id="round-out" />
       )}
     </div>
   );

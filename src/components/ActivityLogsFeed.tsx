@@ -12,7 +12,14 @@ interface ActivityLogsFeedProps {
 
   error?: string | Error | null;
 
-  height?: "h-64" | "h-80" | "h-96" | "h-screen" | "h-full" | `h-[${string}]`;
+  height?:
+    | "h-64"
+    | "h-80"
+    | "h-96"
+    | "h-screen"
+    | "h-full"
+    | `h-[${string}]`
+    | "min-h-full";
   className?: string;
 }
 

@@ -32,6 +32,11 @@ export interface Team extends PlayersType {
   readonly team_updated_at: string;
 }
 
+interface UpcomingOpponent {
+  league_team_id: string;
+  team_name: string;
+}
+
 export interface LeagueTeam extends Team {
   league_team_id: string;
   league_team_public_id: string;
@@ -52,4 +57,6 @@ export interface LeagueTeam extends Team {
   league_team_created_at: string;
   league_team_updated_at: string;
   league_players: LeaguePlayer[];
+  matches_remaining: number;
+  upcoming_opponents: UpcomingOpponent[];
 }
