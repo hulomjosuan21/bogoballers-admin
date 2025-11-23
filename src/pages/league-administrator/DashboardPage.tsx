@@ -12,6 +12,8 @@ import {
   SendToBack,
   UserRound,
   UsersRound,
+  PanelRightOpen,
+  PanelRightClose,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -25,15 +27,17 @@ import {
   LeagueMatchTableWrapper,
 } from "./league/match/MatchHistoryPage";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { getLeagueMatchQueryOption } from "@/queries/leagueMatchQueryOption";
 import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
 import { useLeagueStore } from "@/stores/leagueStore";
-import { LeagueStatus } from "@/service/leagueService";
+import { leagueService, LeagueStatus } from "@/service/leagueService";
 import useDateTime from "@/hooks/useDatetime";
 import LeagueAdministratorDisplay from "@/components/LeagueAdministratorDisplay";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { ActivityLogsFeed } from "@/components/ActivityLogsFeed";
 
 interface DashboardCardProps {
   title: string;
@@ -208,7 +212,21 @@ export default function DashboardPage() {
   const { activeLeagueAnalyticsData, activeLeagueAnalyticsLoading } =
     useActiveLeagueAnalytics(activeLeagueId);
 
-  const [showUpdates] = useState(true);
+  const [showActivityFeed, setShowActivityFeed] = useState(true);
+
+  const queryKey = ["activity-logs", activeLeagueId];
+  const {
+    data: logData,
+    isLoading: logLoading,
+    error: logError,
+  } = useQuery({
+    queryKey,
+    queryFn: () =>
+      leagueService.getLogs({
+        league_id: activeLeagueId,
+      }),
+    enabled: !!activeLeagueId,
+  });
 
   if (isFetching || activeLeagueAnalyticsLoading || leagueAdminLoading) {
     return <SelectedLeagueStateScreen loading={true} />;
@@ -236,60 +254,77 @@ export default function DashboardPage() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Dashboard">
+      <ContentHeader title="Active League Dashboard">
         <div className="">
           <span className="text-xs font-medium">{dateTime}</span>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={() => setShowActivityFeed(!showActivityFeed)}
+        >
+          {showActivityFeed ? (
+            <PanelRightClose className="h-4 w-4" />
+          ) : (
+            <PanelRightOpen className="h-4 w-4" />
+          )}
+        </Button>
       </ContentHeader>
 
       <ContentBody>
-        <div className="space-y-4">
-          {selectedMatch && (
-            <SelectedMatchAlert
-              match={selectedMatch}
-              onRemove={removeSelectedMatch}
-              onOtherPage={true}
-            />
-          )}
+        <div
+          className={`grid gap-4 ${
+            showActivityFeed ? "lg:grid-cols-[1fr_20rem]" : "grid-cols-1"
+          }`}
+        >
+          <div className="min-w-0 space-y-4">
+            {selectedMatch && (
+              <SelectedMatchAlert
+                match={selectedMatch}
+                onRemove={removeSelectedMatch}
+                onOtherPage={true}
+              />
+            )}
+            <div className="flex flex-col gap-6">
+              <LeagueSection
+                league={activeLeagueAnalyticsData.active_league}
+                wrap={true}
+              />
 
-          {leagueAdmin && (
-            <LeagueAdministratorDisplay dashboard={true} data={leagueAdmin} />
-          )}
-          <div className="">
-            <span className="font-semibold font-md">Active League</span>
-          </div>
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            <LeagueSection
-              league={activeLeagueAnalyticsData.active_league}
-              wrap={showUpdates}
-            />
+              <div className="flex gap-4 items-center flex-wrap">
+                <AnalyticsCard
+                  title="Total Teams"
+                  value={activeLeagueAnalyticsData.total_accepted_teams.count}
+                  lastUpdate={
+                    activeLeagueAnalyticsData.total_accepted_teams.last_update
+                  }
+                  icon={UsersRound}
+                />
+                <AnalyticsCard
+                  title="Total Players"
+                  value={activeLeagueAnalyticsData.total_players.count}
+                  lastUpdate={
+                    activeLeagueAnalyticsData.total_players.last_update
+                  }
+                  icon={UserRound}
+                />
+                <AnalyticsCard
+                  title="Total Categories"
+                  value={activeLeagueAnalyticsData.total_categories.count}
+                  lastUpdate={
+                    activeLeagueAnalyticsData.total_categories.last_update
+                  }
+                  icon={SendToBack}
+                />
+              </div>
 
-            <div className="flex gap-4 items-center flex-wrap">
-              <AnalyticsCard
-                title="Total Teams"
-                value={activeLeagueAnalyticsData.total_accepted_teams.count}
-                lastUpdate={
-                  activeLeagueAnalyticsData.total_accepted_teams.last_update
-                }
-                icon={UsersRound}
-              />
-              <AnalyticsCard
-                title="Total Players"
-                value={activeLeagueAnalyticsData.total_players.count}
-                lastUpdate={activeLeagueAnalyticsData.total_players.last_update}
-                icon={UserRound}
-              />
-              <AnalyticsCard
-                title="Total Categories"
-                value={activeLeagueAnalyticsData.total_categories.count}
-                lastUpdate={
-                  activeLeagueAnalyticsData.total_categories.last_update
-                }
-                icon={SendToBack}
-              />
+              <ProfitAreaChart data={activeLeagueAnalyticsData.total_profit} />
             </div>
 
-            <ProfitAreaChart data={activeLeagueAnalyticsData.total_profit} />
+            {leagueAdmin && (
+              <LeagueAdministratorDisplay dashboard={true} data={leagueAdmin} />
+            )}
 
             <div className="space-y-2">
               <MatchHistoryFilter
@@ -327,6 +362,21 @@ export default function DashboardPage() {
               />
             </div>
           </div>
+
+          {showActivityFeed && (
+            <div className="hidden lg:block relative">
+              <div className="absolute inset-0">
+                <div className="h-full rounded-md bg-card border">
+                  <ActivityLogsFeed
+                    logs={logData?.data || []}
+                    isLoading={logLoading}
+                    error={logError}
+                    height="h-full"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </ContentBody>
     </ContentShell>

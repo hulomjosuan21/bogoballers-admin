@@ -333,7 +333,7 @@ interface RefundDialogProps {
   initialAmount: number;
 }
 
-function RefundDialog({
+export function RefundDialog({
   isOpen,
   onClose,
   onSubmit,

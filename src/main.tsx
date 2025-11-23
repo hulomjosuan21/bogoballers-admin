@@ -12,7 +12,7 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AppProvider>
         <App />
-        <Toaster />
+        <Toaster position="bottom-center" />
       </AppProvider>
     </BrowserRouter>
   </StrictMode>

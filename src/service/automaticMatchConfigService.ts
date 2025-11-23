@@ -4,7 +4,6 @@ import type {
   LeagueCategoryRound,
   RoundFormat,
 } from "@/types/leagueCategoryTypes";
-import type { LeagueMatch } from "@/types/leagueMatch";
 import type { Edge } from "@xyflow/react";
 
 export interface FlowStateResponse {
@@ -93,27 +92,6 @@ export class AutoMatchConfigService {
       formatObj
     );
     return response.data;
-  }
-
-  async generateMatches(roundId: string) {
-    const { data } = await axiosClient.post<LeagueMatch[]>(
-      `/auto-match-config/rounds/${roundId}/generate`
-    );
-    return data;
-  }
-
-  async progressRound(roundId: string) {
-    const { data } = await axiosClient.post<{ message: string }>(
-      `/auto-match-config/rounds/${roundId}/progress`
-    );
-    return data;
-  }
-
-  async resetRound(roundId: string) {
-    const { data } = await axiosClient.post<{ message: string }>(
-      `/auto-match-config/rounds/${roundId}/reset`
-    );
-    return data;
   }
 }
 

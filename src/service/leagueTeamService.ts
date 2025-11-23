@@ -69,8 +69,16 @@ export class LeagueTeamService {
     return response.data;
   }
 
-  static async getTeamsChecked(leagueCategoryId: string, roundId: string) {
-    const url = `/league-team/all-checked/${leagueCategoryId}/${roundId}`;
+  static async getTeamsChecked(leagueCategoryId: string) {
+    const url = `/league-team/all-checked/${leagueCategoryId}`;
+
+    const response = await axiosClient.get<LeagueTeam[]>(url);
+
+    return response.data;
+  }
+
+  static async getRemainingTeams(leagueCategoryId: string) {
+    const url = `/league-team/remaining-teams/${leagueCategoryId}`;
 
     const response = await axiosClient.get<LeagueTeam[]>(url);
 

@@ -33,6 +33,7 @@ function AutomaticMatchConfigPage() {
     Cancelled: true,
     Scheduled: false,
     Ongoing: false,
+    Rejected: true,
   };
 
   if (handledStates[leagueStatus]) {

@@ -6,6 +6,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type Row,
   type SortingState,
   useReactTable,
   type VisibilityState,
@@ -30,25 +31,30 @@ import {
 import { useState, useMemo, useCallback, memo, type JSX } from "react";
 import { getErrorMessage } from "@/lib/error";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreVertical } from "lucide-react";
+import { ArrowUpDown, MoreVertical, Trash2, Undo2, X } from "lucide-react";
 import { ImageZoom } from "@/components/ui/kibo-ui/image-zoom";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
 import { toast } from "sonner";
-import {
-  useRemoveLeagueTeamStore,
-  useToggleOfficialLeagueTeamSection,
-} from "@/stores/leagueTeamStores";
+import { useToggleOfficialLeagueTeamSection } from "@/stores/leagueTeamStores";
 import { ToggleState } from "@/stores/toggleStore";
 import type { LeagueTeam } from "@/types/team";
 import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { LeagueTeamService } from "@/service/leagueTeamService";
+import {
+  LeagueTeamService,
+  LeagueTeamSubmissionService,
+} from "@/service/leagueTeamService";
 import { Badge } from "@/components/ui/badge";
 import { getOrdinal } from "@/lib/app_utils";
+import { RefundDialog } from "./LeagueTeamSubmissionTable";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 type Props = {
   leagueCategoryId?: string;
-  roundId?: string;
   viewOnly?: boolean;
 };
 
@@ -93,7 +99,6 @@ export const renderPlacementBadges = (t: LeagueTeam) => {
 };
 export function LeagueTeamsTable({
   leagueCategoryId,
-  roundId,
   viewOnly = false,
 }: Props) {
   const {
@@ -101,8 +106,8 @@ export function LeagueTeamsTable({
     dynamicLeagueTeamLoading,
     refetchDynamicLeagueTeam,
   } = useLeagueTeamDynamicQuery(
-    QUERY_KEYS.DYNAMIC_KEY_LEAGUE_TEAM_FOR_CHECKED(leagueCategoryId, roundId),
-    () => LeagueTeamService.getTeamsChecked(leagueCategoryId!, roundId!)
+    QUERY_KEYS.DYNAMIC_KEY_LEAGUE_TEAM_FOR_CHECKED(leagueCategoryId),
+    () => LeagueTeamService.getTeamsChecked(leagueCategoryId!)
   );
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -153,6 +158,18 @@ export function LeagueTeamsTable({
         },
       },
       {
+        accessorKey: "status",
+      },
+      {
+        accessorKey: "final_rank",
+        header: "Rank",
+        cell: ({ row }) => {
+          const final_rank = row.original.final_rank;
+          if (!final_rank) return <span>N/A</span>;
+          return <span>#{final_rank}</span>;
+        },
+      },
+      {
         accessorKey: "league_players",
         header: "Players count",
         cell: ({ row }) => {
@@ -176,10 +193,61 @@ export function LeagueTeamsTable({
         ),
       },
       {
+        accessorKey: "amount_paid",
+        header: "Amount Paid",
+        cell: ({ row }) => {
+          const amount = row.original.amount_paid;
+          return (
+            <span>
+              {new Intl.NumberFormat("en-PH", {
+                style: "currency",
+                currency: "PHP",
+              }).format(amount)}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "matches_remaining",
+        header: "Remaining matches",
+      },
+      {
+        id: "upcoming_opponents",
+        header: "Upcoming Opponents",
+        cell: ({ row }) => {
+          const opponents = row.original.upcoming_opponents || [];
+
+          if (!opponents.length) return "N/A";
+
+          return (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Show Opponents ({opponents.length})
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent className="w-48">
+                <div className="stat-list-compact">
+                  {opponents.map((op, i) => (
+                    <div key={i} className="stat-item-compact">
+                      <span className="stat-label-compact">{i + 1}.</span>
+                      <span className="stat-value-compact">{op.team_name}</span>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          );
+        },
+      },
+      {
         id: "actions",
         enableHiding: false,
         columnVisibility: !viewOnly ? true : false,
-        cell: ({ row }) => <ActionCell row={row} />,
+        cell: ({ row }) => (
+          <ActionCell row={row} validate={refetchDynamicLeagueTeam} />
+        ),
       },
     ],
     [viewOnly]
@@ -281,82 +349,140 @@ export function LeagueTeamsTable({
 
 export default memo(LeagueTeamsTable);
 
-function ActionCell({ row }: { row: any }) {
+export function ActionCell({
+  row,
+  validate,
+}: {
+  row: Row<LeagueTeam>;
+  validate: () => Promise<any>;
+}) {
   const team = row.original;
-
   const { openDialog } = useAlertDialog();
-  const { deleteApi } = useRemoveLeagueTeamStore();
   const { toggle } = useToggleOfficialLeagueTeamSection();
 
-  const handleRemove = useCallback(async () => {
+  const [isRefundDialogOpen, setIsRefundDialogOpen] = useState(false);
+  const [refundParams, setRefundParams] = useState<{
+    remove: boolean;
+    title: string;
+  }>({
+    remove: false,
+    title: "",
+  });
+
+  const handleOpenDetails = () => toggle(team, ToggleState.SHOW_LEAGUE_TEAM);
+
+  const handleRemove = async () => {
     const confirm = await openDialog({
-      confirmText: "Confirm",
+      title: "Remove Team",
+      description: `Remove "${team.team_name}" from the league? This cannot be undone.`,
+      confirmText: "Remove",
       cancelText: "Cancel",
     });
     if (!confirm) return;
 
-    const removeTeam = async () => {
-      const result = await deleteApi(team.league_team_id);
+    const remove = async () => {
+      const result = await LeagueTeamSubmissionService.removeSubmission(
+        team.league_team_id
+      );
+      await validate();
       return result;
     };
 
-    toast.promise(removeTeam(), {
+    toast.promise(remove(), {
       loading: "Removing team...",
-      success: (res) => res,
-      error: (err) => getErrorMessage(err) ?? "Something went wrong!",
+      success: (res) => res.message ?? "Team removed",
+      error: (err) => getErrorMessage(err) ?? "Failed to remove team",
     });
-  }, [team.league_team_id, deleteApi, openDialog]);
+  };
 
-  const handleToggleLeague = useCallback(() => {
-    toggle(team, ToggleState.SHOW_LEAGUE_TEAM);
-  }, [team, toggle]);
-
-  const handleBan = useCallback(async () => {
-    const confirm = await openDialog({
-      confirmText: "Ban Team",
-      cancelText: "Cancel",
-      title: "Ban Team",
-      description: `Are you sure you want to ban "${team.team_name}"? This action may affect their league standings.`,
+  const openRefundDialog = (removeAfterRefund: boolean) => {
+    setRefundParams({
+      remove: removeAfterRefund,
+      title: removeAfterRefund
+        ? `Remove & Refund ${team.team_name}`
+        : `Refund ${team.team_name}`,
     });
-    if (!confirm) return;
+    setIsRefundDialogOpen(true);
+  };
 
-    toast.info("Ban functionality not implemented yet");
-  }, [team.team_name, openDialog]);
+  const handleProcessRefund = useCallback(
+    (details: { amount: number; reason: string }) => {
+      const processRefundAction = async () => {
+        const result = await LeagueTeamSubmissionService.processRefund({
+          league_team_id: team.league_team_id,
+          amount: details.amount,
+          remove: refundParams.remove,
+          reason: details.reason,
+        });
+        await validate();
+        return result;
+      };
 
-  const handleRemoveAndRefund = useCallback(async () => {
-    const confirm = await openDialog({
-      confirmText: "Remove & Refund",
-      cancelText: "Cancel",
-      title: "Remove Team and Process Refund",
-      description: `Are you sure you want to remove "${team.team_name}" and process a refund?`,
-    });
-    if (!confirm) return;
-
-    toast.info("Remove & Refund functionality not implemented yet");
-  }, [team.team_name, openDialog]);
+      toast.promise(processRefundAction(), {
+        loading: "Processing refund...",
+        success: (res) => res.message,
+        error: (err) => getErrorMessage(err) ?? "Something went wrong!",
+      });
+    },
+    [team.league_team_id, refundParams.remove, validate]
+  );
 
   return (
-    <div className="text-right">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={handleToggleLeague}>
-            Details
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleBan}>Ban</DropdownMenuItem>
-          <DropdownMenuItem onClick={handleRemove}>Remove</DropdownMenuItem>
-          <DropdownMenuItem onClick={handleRemoveAndRefund}>
-            Remove & Refund
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+    <>
+      <RefundDialog
+        isOpen={isRefundDialogOpen}
+        onClose={() => setIsRefundDialogOpen(false)}
+        onSubmit={handleProcessRefund}
+        title={refundParams.title}
+        initialAmount={team.amount_paid || 0}
+      />
+
+      <div className="text-right">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={handleOpenDetails}>
+              View Details
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuLabel>Payment & Refund</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => openRefundDialog(false)}>
+              <Undo2 className="mr-2 h-4 w-4" />
+              Refund Only
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuLabel className="text-destructive">
+              Danger Zone
+            </DropdownMenuLabel>
+
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={handleRemove}
+            >
+              <X className="mr-2 h-4 w-4" />
+              Ban Team
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => openRefundDialog(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Remove & Refund
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </>
   );
 }

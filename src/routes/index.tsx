@@ -141,7 +141,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     element: <LeagueUpdatePage />,
     permissions: [Permission.UpdateLeague],
     showInSidebar: true,
-    sidebarTitle: "Current",
+    sidebarTitle: "Active",
     icon: SquarePen,
     sidebarGroup: "league",
   },

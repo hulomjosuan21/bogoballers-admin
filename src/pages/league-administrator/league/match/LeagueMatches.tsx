@@ -34,6 +34,18 @@ export default function LeagueMatches() {
     setSelectedRound,
   } = useLeagueCategoriesRoundsGroups();
 
+  useEffect(() => {
+    if (rounds.length > 0) {
+      const isCurrentRoundValid = rounds.some(
+        (r) => r.round_id === selectedRound
+      );
+
+      if (!isCurrentRoundValid) {
+        setSelectedRound(rounds[0].round_id);
+      }
+    }
+  }, [rounds, selectedRound, setSelectedRound]);
+
   const [refereesOption, setRefereesOption] = useState<LeagueReferee[]>([]);
   const [courtOption, setCourtOption] = useState<LeagueCourt[]>([]);
 
@@ -101,7 +113,10 @@ export default function LeagueMatches() {
                   <div className="flex items-center gap-2">
                     <Select
                       value={selectedCategory}
-                      onValueChange={setSelectedCategory}
+                      onValueChange={(val) => {
+                        setSelectedCategory(val);
+                        setSelectedRound("");
+                      }}
                     >
                       <SelectTrigger className="h-6 px-2 py-1 text-xs">
                         <SelectValue placeholder="Category" />

@@ -96,10 +96,19 @@ function Component({ publicLeagueId }: Props) {
 
       <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
         {viewType === "Teams" ? (
-          <LeagueTeamsPublicTable leagueCategoryId={selectedCategory} />
+          <Suspense
+            key={`team-${selectedCategory}`}
+            fallback={
+              <div className="h-40 grid place-content-center">
+                <Spinner />
+              </div>
+            }
+          >
+            <LeagueTeamsPublicTable leagueCategoryId={selectedCategory} />
+          </Suspense>
         ) : selectedRound ? (
           <Suspense
-            key={`${selectedCategory}-${selectedRound}`}
+            key={`match-${selectedCategory}-${selectedRound}`}
             fallback={
               <div className="h-40 grid place-content-center">
                 <Spinner />

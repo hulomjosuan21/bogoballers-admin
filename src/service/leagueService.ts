@@ -12,6 +12,7 @@ import type { LeagueCreateOfficialCreate } from "@/tables/ManageOfficialsTable";
 import type { LeagueRefereeCreate } from "@/tables/ManageRefereesTable";
 import type { LeagueAffiliateCreate } from "@/tables/ManangeAffiliateTable";
 import type { LeagueUpdatePayload } from "@/forms/UpdateLeagueForm";
+import type { LeagueLog } from "@/types/leagueLogModel";
 
 type FieldKeyMap = {
   league_courts: LeagueCourt;
@@ -168,6 +169,20 @@ export class LeagueService {
     } catch {
       return null;
     }
+  }
+
+  async getLogs(params: {
+    league_id?: string;
+    round_id?: string;
+    team_id?: string;
+  }) {
+    const response = await axiosClient.get<{
+      status: string;
+      data: LeagueLog[];
+    }>("/league/logs", {
+      params,
+    });
+    return response.data;
   }
 }
 

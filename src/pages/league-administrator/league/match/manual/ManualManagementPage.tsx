@@ -52,6 +52,7 @@ function ManualMatchingPageContent() {
     Cancelled: true,
     Scheduled: false,
     Ongoing: false,
+    Rejected: true,
   };
 
   if (handledStates[leagueStatus]) {

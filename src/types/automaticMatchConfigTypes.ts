@@ -19,6 +19,7 @@ export type AutomaticMatchConfigLeagueCategoryRoundNodeData = {
 export type AutomaticMatchConfigRoundFormatData = {
   type: "league_category_round_format";
   format_name: string;
+  league_category_id: string;
   format_type: RoundFormatTypesEnum;
   format_obj: Partial<RoundFormat>;
 };
