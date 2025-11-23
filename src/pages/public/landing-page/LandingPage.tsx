@@ -180,7 +180,7 @@ export default function HeroSection() {
 
                   <div>
                     <Button className="w-fit" size="lg" asChild>
-                      <a href="">
+                      <a href="https://github.com/hulomjosuan21/bogoballers-admin/raw/refs/heads/main/public/app-builds/app-release.apk">
                         <Download className="h-4 w-4 mr-2" />
                         Download now
                       </a>
