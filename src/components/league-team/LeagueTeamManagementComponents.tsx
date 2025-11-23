@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { useCheckPlayerSheet } from "../../stores/leagueTeamStores";
 import { NoteBox } from "../nodebox";
-import { useMemo } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataGrid, DataGridContainer } from "@/components/ui/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid-table";
@@ -26,6 +26,8 @@ import { Badge } from "../ui/badge";
 import {
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
+  FileText,
   MoreVertical,
   PersonStanding,
 } from "lucide-react";
@@ -34,11 +36,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
 import type { PlayerTeam } from "@/types/player";
+import { Spinner } from "../ui/spinner";
 
 export function LeagueTeamSheetSheetSubmissionSheet() {
   const { isOpen, data, dialogClose } = useCheckPlayerSheet();
@@ -67,11 +73,17 @@ export function LeagueTeamSheetSheetSubmissionSheet() {
             </div>
           </SheetDescription>
         </SheetHeader>
-        <SheetBody className="max-h-[80vh] px-4 py-2 flex flex-col">
-          <ScrollArea className="flex-1">
+        <SheetBody className="px-4 py-2 flex flex-col">
+          <Suspense
+            key={`team-${data?.team_id}`}
+            fallback={
+              <div className="h-40 grid place-content-center">
+                <Spinner />
+              </div>
+            }
+          >
             <LeagueTeamPlayerDataGrid players={data?.accepted_players ?? []} />
-            <ScrollBar orientation="vertical" />
-          </ScrollArea>
+          </Suspense>
         </SheetBody>
       </SheetContent>
     </Sheet>
@@ -83,6 +95,11 @@ export function LeagueTeamPlayerDataGrid({
 }: {
   players: PlayerTeam[];
 }) {
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 5,
+  });
+
   const columns = useMemo<ColumnDef<PlayerTeam>[]>(
     () => [
       {
@@ -91,7 +108,13 @@ export function LeagueTeamPlayerDataGrid({
         cell: ({ row }) => {
           const isCaptain = row.original.is_team_captain;
           const documents = row.original.valid_documents;
-
+          const openWindow = (url: string) => {
+            window.open(
+              url,
+              "_blank",
+              "width=1000,height=800,resizable=yes,scrollbars=yes"
+            );
+          };
           return (
             <div className="flex items-center gap-2">
               <div className="text-left">
@@ -102,20 +125,61 @@ export function LeagueTeamPlayerDataGrid({
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="ml-2" align="end">
+                  <DropdownMenuContent className="ml-2 w-56" align="end">
                     <DropdownMenuLabel>Documents</DropdownMenuLabel>
-                    {documents &&
-                      documents.map((doc, i) => (
-                        <DropdownMenuItem key={i} asChild>
-                          <Link
-                            to={doc}
-                            target="_blank"
-                            className="block max-w-[200px] truncate"
-                          >
-                            {doc.length > 20 ? doc.slice(0, 20) + "…" : doc}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
+                    <DropdownMenuSeparator />
+
+                    {documents && documents.length > 0 ? (
+                      documents.map((doc) => {
+                        const urls = doc.document_urls;
+                        const isMultiple =
+                          Array.isArray(urls) && urls.length > 1;
+
+                        if (isMultiple) {
+                          return (
+                            <DropdownMenuSub key={doc.doc_id}>
+                              <DropdownMenuSubTrigger className="cursor-pointer">
+                                <FileText className="mr-2 h-4 w-4" />
+                                <span>{doc.document_type}</span>
+                                <span className="ml-auto text-xs text-muted-foreground">
+                                  {urls.length} pages
+                                </span>
+                              </DropdownMenuSubTrigger>
+                              <DropdownMenuSubContent>
+                                {urls.map((url, index) => (
+                                  <DropdownMenuItem
+                                    key={`${doc.doc_id}-${index}`}
+                                    className="cursor-pointer"
+                                    onClick={() => openWindow(url)}
+                                  >
+                                    <span>View Doc #{index + 1}</span>
+                                    <ExternalLink className="ml-auto h-3 w-3 opacity-50" />
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                          );
+                        } else {
+                          const singleUrl = Array.isArray(urls)
+                            ? urls[0]
+                            : urls;
+                          return (
+                            <DropdownMenuItem
+                              key={doc.doc_id}
+                              className="cursor-pointer"
+                              onClick={() => openWindow(singleUrl)}
+                            >
+                              <FileText className="mr-2 h-4 w-4" />
+                              <span>{doc.document_type}</span>
+                            </DropdownMenuItem>
+                          );
+                        }
+                      })
+                    ) : (
+                      <DropdownMenuItem disabled>
+                        No documents found
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -146,18 +210,44 @@ export function LeagueTeamPlayerDataGrid({
         },
         size: 250,
       },
+      {
+        accessorKey: "gender",
+        header: "Gender",
+        size: 60,
+      },
+      {
+        accessorKey: "birth_date",
+        header: "Age",
+        accessorFn: (row) => {
+          const birth = new Date(row.birth_date);
+          const today = new Date();
+
+          let age = today.getFullYear() - birth.getFullYear();
+          const m = today.getMonth() - birth.getMonth();
+
+          if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+          }
+          return age;
+        },
+        size: 60,
+      },
       { accessorKey: "jersey_name", header: "Jersey name", size: 80 },
       {
         accessorKey: "jersey_number",
         header: "Jersey #",
         cell: (info) => <span>{info.getValue() as number}</span>,
-        size: 80,
+        size: 60,
       },
       {
         accessorKey: "position",
         header: "Position",
         cell: (info) => <span>{(info.getValue() as string[]).join(", ")}</span>,
         size: 150,
+      },
+      {
+        accessorKey: "player_address",
+        header: "Address",
       },
     ],
     []
@@ -171,6 +261,10 @@ export function LeagueTeamPlayerDataGrid({
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    state: {
+      pagination,
+    },
+    onPaginationChange: setPagination,
   });
 
   return (
@@ -192,7 +286,7 @@ export function LeagueTeamPlayerDataGrid({
         <div className="flex items-center space-x-1">
           <Button
             size="sm"
-            variant={"outline"}
+            variant="outline"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -200,7 +294,7 @@ export function LeagueTeamPlayerDataGrid({
           </Button>
           <Button
             size="sm"
-            variant={"outline"}
+            variant="outline"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >

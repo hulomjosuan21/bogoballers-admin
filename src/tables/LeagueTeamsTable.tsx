@@ -158,6 +158,9 @@ export function LeagueTeamsTable({
         },
       },
       {
+        accessorKey: "status",
+      },
+      {
         accessorKey: "final_rank",
         header: "Rank",
         cell: ({ row }) => {

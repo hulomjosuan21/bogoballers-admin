@@ -6,6 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -35,7 +38,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Check, MoreVertical, X, Undo2 } from "lucide-react";
+import {
+  Check,
+  MoreVertical,
+  X,
+  Undo2,
+  FileText,
+  ExternalLink,
+} from "lucide-react";
 
 import { useLeagueTeams } from "@/hooks/useLeagueGuest";
 import { useGuestRequestMutation } from "@/hooks/useLeagueGuest";
@@ -51,6 +61,9 @@ type GuestActionCellProps = {
 
 export function GuestActionCell({ request, refresh }: GuestActionCellProps) {
   const { mutateAsync: updateRequest } = useGuestRequestMutation();
+  const documents = isPlayer(request.details)
+    ? request.details.valid_documents
+    : [];
 
   const { data: teams, isLoading: isLoadingTeams } = useLeagueTeams(
     request.league_category_id
@@ -153,6 +166,14 @@ export function GuestActionCell({ request, refresh }: GuestActionCellProps) {
     );
   };
 
+  const openWindow = (url: string) => {
+    window.open(
+      url,
+      "_blank",
+      "width=1000,height=800,resizable=yes,scrollbars=yes"
+    );
+  };
+
   const handleConfirm = async () => {
     if (confirmAction === "Accepted") return confirmAcceptTeam();
     if (confirmAction === "Rejected") return confirmReject();
@@ -167,7 +188,6 @@ export function GuestActionCell({ request, refresh }: GuestActionCellProps) {
 
   return (
     <>
-      {/* Assign Player Dialog */}
       <Dialog open={isAssignOpen} onOpenChange={setIsAssignOpen}>
         <DialogContent>
           <DialogHeader>
@@ -197,7 +217,6 @@ export function GuestActionCell({ request, refresh }: GuestActionCellProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Confirm Dialog */}
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -264,6 +283,55 @@ export function GuestActionCell({ request, refresh }: GuestActionCellProps) {
               <X className="mr-2 h-4 w-4" />
               Reject
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+
+            <DropdownMenuLabel>Documents</DropdownMenuLabel>
+            {documents && documents.length > 0 ? (
+              documents.map((doc) => {
+                const urls = doc.document_urls;
+                const isMultiple = Array.isArray(urls) && urls.length > 1;
+
+                if (isMultiple) {
+                  return (
+                    <DropdownMenuSub key={doc.doc_id}>
+                      <DropdownMenuSubTrigger className="cursor-pointer">
+                        <FileText className="mr-2 h-4 w-4" />
+                        <span>{doc.document_type}</span>
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          {urls.length} pages
+                        </span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        {urls.map((url, index) => (
+                          <DropdownMenuItem
+                            key={`${doc.doc_id}-${index}`}
+                            className="cursor-pointer"
+                            onClick={() => openWindow(url)}
+                          >
+                            <span>View Doc #{index + 1}</span>
+                            <ExternalLink className="ml-auto h-3 w-3 opacity-50" />
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  );
+                } else {
+                  const singleUrl = Array.isArray(urls) ? urls[0] : urls;
+                  return (
+                    <DropdownMenuItem
+                      key={doc.doc_id}
+                      className="cursor-pointer"
+                      onClick={() => openWindow(singleUrl)}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>{doc.document_type}</span>
+                    </DropdownMenuItem>
+                  );
+                }
+              })
+            ) : (
+              <DropdownMenuItem disabled>No documents found</DropdownMenuItem>
+            )}
 
             <DropdownMenuSeparator />
 

@@ -17,6 +17,15 @@ type PlayerStatistics = {
   platform_points_per_game: number;
 };
 
+export interface PlayerValidDocuments {
+  doc_id: string;
+  player_id: string;
+  document_type: string;
+  document_urls: string | string[];
+  document_format: string;
+  uploaded_at: string;
+}
+
 export interface Player extends PlayerStatistics {
   player_id: string;
   public_player_id: string;
@@ -33,7 +42,7 @@ export interface Player extends PlayerStatistics {
   weight_kg: number;
   is_ban: boolean;
   is_allowed: boolean;
-  valid_documents: string[] | null;
+  valid_documents: PlayerValidDocuments[];
   user: User;
   player_created_at: string;
   player_updated_at: string;
