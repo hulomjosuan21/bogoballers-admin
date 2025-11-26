@@ -78,6 +78,7 @@ export const transformApiDataToScorebookState = (
 
   const present: MatchBook = {
     match_id: apiMatch.league_match_id,
+    public_match_id: apiMatch.public_league_match_id,
     quarters: apiMatch.quarters,
     default_quarters: apiMatch.quarters,
     minutes_per_quarter: apiMatch.minutes_per_quarter,

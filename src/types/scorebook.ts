@@ -44,6 +44,7 @@ export interface TeamBook {
 
 export interface MatchBook {
   match_id: string;
+  public_match_id: string;
   home_total_score: number;
   away_total_score: number;
   is_overtime: boolean;

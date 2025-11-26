@@ -38,6 +38,8 @@ import LeagueAdministratorDisplay from "@/components/LeagueAdministratorDisplay"
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ActivityLogsFeed } from "@/components/ActivityLogsFeed";
+import { Skeleton } from "@/components/ui/skeleton";
+import ScheduleGraph from "@/components/ScheduleGraph";
 
 interface DashboardCardProps {
   title: string;
@@ -153,9 +155,7 @@ export default function DashboardPage() {
     error,
   } = useFetchLeagueGenericData<League>({
     key: ["is-active"],
-    options: {
-      enabled: !!leagueAdmin && !leagueAdminLoading,
-    },
+    options: { enabled: !!leagueAdmin && !leagueAdminLoading },
     params: activeLeagueParams,
   });
 
@@ -189,26 +189,19 @@ export default function DashboardPage() {
       getLeagueMatchQueryOption(
         selectedCategory,
         selectedRound,
-        {
-          condition: "Upcoming",
-          limit: 5,
-        },
-        !!!leagueAdmin && leagueAdminLoading
+        { condition: "Upcoming", limit: 5 },
+        !leagueAdmin && leagueAdminLoading
       ),
       getLeagueMatchQueryOption(
         selectedCategory,
         selectedRound,
-        {
-          condition: "Completed",
-          limit: 5,
-        },
-        !!!leagueAdmin && leagueAdminLoading
+        { condition: "Completed", limit: 5 },
+        !leagueAdmin && leagueAdminLoading
       ),
     ],
   });
 
   const { selectedMatch, removeSelectedMatch } = useSelectedMatchStore();
-
   const { activeLeagueAnalyticsData, activeLeagueAnalyticsLoading } =
     useActiveLeagueAnalytics(activeLeagueId);
 
@@ -221,23 +214,11 @@ export default function DashboardPage() {
     error: logError,
   } = useQuery({
     queryKey,
-    queryFn: () =>
-      leagueService.getLogs({
-        league_id: activeLeagueId,
-      }),
+    queryFn: () => leagueService.getLogs({ league_id: activeLeagueId }),
     enabled: !!activeLeagueId,
   });
 
-  if (isFetching || activeLeagueAnalyticsLoading || leagueAdminLoading) {
-    return <SelectedLeagueStateScreen loading={true} />;
-  }
-
-  if (data == null || !activeLeagueAnalyticsData || !leagueAdmin) {
-    return <SelectedLeagueStateScreen />;
-  }
-
-  const leagueStatus = data.status as LeagueStatus;
-
+  const leagueStatus = (data?.status ?? "Pending") as LeagueStatus;
   const handledStates: Record<LeagueStatus, boolean> = {
     Pending: false,
     Completed: true,
@@ -248,16 +229,14 @@ export default function DashboardPage() {
     Ongoing: false,
   };
 
-  if (handledStates[leagueStatus]) {
+  if (data && handledStates[leagueStatus]) {
     return <SelectedLeagueStateScreen state={leagueStatus} league={data} />;
   }
 
   return (
     <ContentShell>
       <ContentHeader title="Active League Dashboard">
-        <div className="">
-          <span className="text-xs font-medium">{dateTime}</span>
-        </div>
+        <span className="text-xs font-medium">{dateTime}</span>
         <Button
           variant="ghost"
           size="icon"
@@ -286,44 +265,97 @@ export default function DashboardPage() {
                 onOtherPage={true}
               />
             )}
-            <div className="flex flex-col gap-6">
+
+            {activeLeagueAnalyticsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-16 w-full rounded-md" />
+                <Skeleton className="h-10 w-2/3 rounded-md" />
+              </div>
+            ) : (
               <LeagueSection
-                league={activeLeagueAnalyticsData.active_league}
+                league={activeLeagueAnalyticsData?.active_league!}
                 wrap={true}
               />
+            )}
 
-              <div className="flex gap-4 items-center flex-wrap">
-                <AnalyticsCard
-                  title="Total Teams"
-                  value={activeLeagueAnalyticsData.total_accepted_teams.count}
-                  lastUpdate={
-                    activeLeagueAnalyticsData.total_accepted_teams.last_update
-                  }
-                  icon={UsersRound}
-                />
-                <AnalyticsCard
-                  title="Total Players"
-                  value={activeLeagueAnalyticsData.total_players.count}
-                  lastUpdate={
-                    activeLeagueAnalyticsData.total_players.last_update
-                  }
-                  icon={UserRound}
-                />
-                <AnalyticsCard
-                  title="Total Categories"
-                  value={activeLeagueAnalyticsData.total_categories.count}
-                  lastUpdate={
-                    activeLeagueAnalyticsData.total_categories.last_update
-                  }
-                  icon={SendToBack}
-                />
-              </div>
-
-              <ProfitAreaChart data={activeLeagueAnalyticsData.total_profit} />
+            <div className="flex gap-4 items-center flex-wrap">
+              {activeLeagueAnalyticsLoading ? (
+                <>
+                  <Skeleton className="h-24 w-40 rounded-xl" />
+                  <Skeleton className="h-24 w-40 rounded-xl" />
+                  <Skeleton className="h-24 w-40 rounded-xl" />
+                </>
+              ) : (
+                <>
+                  <AnalyticsCard
+                    title="Total Teams"
+                    value={
+                      activeLeagueAnalyticsData?.total_accepted_teams.count ?? 0
+                    }
+                    lastUpdate={
+                      activeLeagueAnalyticsData?.total_accepted_teams
+                        .last_update
+                    }
+                    icon={UsersRound}
+                  />
+                  <AnalyticsCard
+                    title="Total Players"
+                    value={activeLeagueAnalyticsData?.total_players.count ?? 0}
+                    lastUpdate={
+                      activeLeagueAnalyticsData?.total_players.last_update
+                    }
+                    icon={UserRound}
+                  />
+                  <AnalyticsCard
+                    title="Total Categories"
+                    value={
+                      activeLeagueAnalyticsData?.total_categories.count ?? 0
+                    }
+                    lastUpdate={
+                      activeLeagueAnalyticsData?.total_categories.last_update
+                    }
+                    icon={SendToBack}
+                  />
+                </>
+              )}
             </div>
 
-            {leagueAdmin && (
-              <LeagueAdministratorDisplay dashboard={true} data={leagueAdmin} />
+            {activeLeagueAnalyticsLoading ? (
+              <Skeleton className="h-[300px] w-full rounded-xl" />
+            ) : (
+              <ProfitAreaChart
+                data={activeLeagueAnalyticsData?.total_profit!}
+              />
+            )}
+
+            {activeLeagueAnalyticsLoading ? (
+              <Skeleton className="h-24 w-full rounded-md" />
+            ) : (
+              <ScheduleGraph
+                data={activeLeagueAnalyticsData?.matches_chart_data.chart ?? []}
+                endDate={
+                  activeLeagueAnalyticsData?.matches_chart_data.last_match_date
+                    ? new Date(
+                        activeLeagueAnalyticsData.matches_chart_data.last_match_date
+                      )
+                    : new Date()
+                }
+                days={
+                  activeLeagueAnalyticsData?.matches_chart_data.total_days ??
+                  365
+                }
+              />
+            )}
+
+            {leagueAdminLoading ? (
+              <Skeleton className="h-24 w-full rounded-md" />
+            ) : (
+              leagueAdmin && (
+                <LeagueAdministratorDisplay
+                  dashboard={true}
+                  data={leagueAdmin}
+                />
+              )
             )}
 
             <div className="space-y-2">
@@ -337,29 +369,35 @@ export default function DashboardPage() {
                 setSelectedRound={setSelectedRound}
               />
 
-              <LeagueMatchTableWrapper
-                key={"upcoming"}
-                selectedCategory={selectedCategory}
-                selectedRound={selectedRound}
-                leagueMatchData={upcomingMatch.data ?? []}
-                leagueMatchLoading={upcomingMatch.isLoading}
-                refresh={upcomingMatch.refetch}
-                controlls={false}
-                label={"Upcoming Match"}
-                excludeFields={["home_team_score", "away_team_score"]}
-              />
+              {upcomingMatch.isLoading ? (
+                <Skeleton className="h-64 w-full rounded-md" />
+              ) : (
+                <LeagueMatchTableWrapper
+                  selectedCategory={selectedCategory}
+                  selectedRound={selectedRound}
+                  leagueMatchData={upcomingMatch.data ?? []}
+                  leagueMatchLoading={upcomingMatch.isLoading}
+                  refresh={upcomingMatch.refetch}
+                  controlls={false}
+                  label="Upcoming Match"
+                  excludeFields={["home_team_score", "away_team_score"]}
+                />
+              )}
 
-              <LeagueMatchTableWrapper
-                key={"completed"}
-                selectedCategory={selectedCategory}
-                selectedRound={selectedRound}
-                leagueMatchData={completedMatch.data ?? []}
-                leagueMatchLoading={completedMatch.isLoading}
-                refresh={completedMatch.refetch}
-                controlls={false}
-                label={"Completed Match"}
-                excludeFields={["scheduled_date"]}
-              />
+              {completedMatch.isLoading ? (
+                <Skeleton className="h-64 w-full rounded-md" />
+              ) : (
+                <LeagueMatchTableWrapper
+                  selectedCategory={selectedCategory}
+                  selectedRound={selectedRound}
+                  leagueMatchData={completedMatch.data ?? []}
+                  leagueMatchLoading={completedMatch.isLoading}
+                  refresh={completedMatch.refetch}
+                  controlls={false}
+                  label="Completed Match"
+                  excludeFields={["scheduled_date"]}
+                />
+              )}
             </div>
           </div>
 
@@ -367,12 +405,21 @@ export default function DashboardPage() {
             <div className="hidden lg:block relative">
               <div className="absolute inset-0">
                 <div className="h-full rounded-md bg-card border">
-                  <ActivityLogsFeed
-                    logs={logData?.data || []}
-                    isLoading={logLoading}
-                    error={logError}
-                    height="h-full"
-                  />
+                  {logLoading || activeLeagueAnalyticsLoading ? (
+                    <div className="space-y-3 p-4">
+                      <Skeleton className="h-6 w-full" />
+                      <Skeleton className="h-6 w-5/6" />
+                      <Skeleton className="h-6 w-2/3" />
+                      <Skeleton className="h-6 w-full" />
+                    </div>
+                  ) : (
+                    <ActivityLogsFeed
+                      logs={logData?.data || []}
+                      isLoading={logLoading}
+                      error={logError}
+                      height="h-full"
+                    />
+                  )}
                 </div>
               </div>
             </div>

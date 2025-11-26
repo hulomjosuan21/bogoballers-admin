@@ -81,4 +81,13 @@ export interface LeagueAnalytics {
     count: number;
     last_update: string | null;
   };
+
+  matches_chart_data: {
+    chart: {
+      date: string;
+      count: number;
+    }[];
+    total_days: number;
+    last_match_date: string | null;
+  };
 }

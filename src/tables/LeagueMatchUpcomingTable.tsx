@@ -28,8 +28,9 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -53,6 +54,7 @@ import {
 } from "@/components/ui/alert";
 import { RiErrorWarningFill } from "@remixicon/react";
 import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
+import { printMatchScorebook } from "@/components/pdf/MatchScorebookPdf";
 
 type SavedMatchItem = { matchId: string; state: GameState };
 
@@ -241,20 +243,20 @@ function MainTable({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => handleSelectMatch(row.original)}
-                  >
-                    Select
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      toggleUpcomingMatch(m, ToggleState.CONFIG_UPCOMING)
-                    }
-                  >
-                    Setup
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => handleSelectMatch(row.original)}
+                >
+                  Select
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    toggleUpcomingMatch(m, ToggleState.CONFIG_UPCOMING)
+                  }
+                >
+                  Setup
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -265,7 +267,7 @@ function MainTable({
 
   const savedColumns: ColumnDef<SavedMatchItem>[] = [
     {
-      header: "Match",
+      header: "Continue",
       cell: ({ row }) =>
         `${row.original.state.present.home_team.team_name} vs ${row.original.state.present.away_team.team_name}`,
     },
@@ -280,28 +282,49 @@ function MainTable({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={() => handleContinue(row.original.matchId)}
-                >
-                  Continue
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleRemoveSaved(row.original.matchId)}
-                >
-                  Remove
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    toggleMatchBook(
-                      row.original.state.present,
-                      ToggleState.SHOW_SAVED_MATCH
-                    )
-                  }
-                >
-                  Finalize
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => handleContinue(row.original.matchId)}
+              >
+                Continue
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  toast.promise(
+                    printMatchScorebook(row.original.state.present),
+                    {
+                      loading: "Generating Scorebook PDF...",
+                      success: "PDF opened in new tab!",
+                      error: "Failed to generate PDF",
+                    }
+                  );
+                }}
+              >
+                Print
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  toggleMatchBook(
+                    row.original.state.present,
+                    ToggleState.SHOW_SAVED_MATCH
+                  )
+                }
+              >
+                Finalize
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-red-600 hover:text-red-700">
+                Danger
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => handleRemoveSaved(row.original.matchId)}
+                className="text-red-600 hover:text-red-700"
+              >
+                Remove
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -321,8 +344,9 @@ function MainTable({
         }}
       />
 
-      <span className="text-sm font-medium">Continue Matches</span>
-      <CustomDataTable data={savedMatches} columns={savedColumns} />
+      {savedMatches.length > 0 && (
+        <CustomDataTable data={savedMatches} columns={savedColumns} />
+      )}
 
       <span className="text-sm font-medium">Upcoming Matches</span>
       <div className="space-y-2">
