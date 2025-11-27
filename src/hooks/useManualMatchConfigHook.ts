@@ -635,6 +635,7 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
               is_final: matchData.is_final,
               is_third_place: matchData.is_third_place,
               is_elimination: matchData.is_elimination,
+              is_round_robin: matchData.is_round_robin,
               league_id: parentMatchData.league_id!,
               league_category_id: parentMatchData.league_category_id!,
               round_id: parentMatchData.round_id,

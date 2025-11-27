@@ -30,6 +30,7 @@ export interface LeagueMatch {
   pairing_method: string;
   is_final: boolean;
   is_third_place: boolean;
+  is_round_robin: boolean;
   is_elimination: boolean;
   is_exhibition: boolean;
   status: string;

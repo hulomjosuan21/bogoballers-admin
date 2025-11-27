@@ -13,9 +13,10 @@ export interface FlowStateResponse {
 }
 
 export class ManualLeagueManagementService {
+  readonly base = "/manual-league-management";
   async getFlowState(leagueId: string) {
     const response = await axiosClient.get<FlowStateResponse>(
-      `/manual-league-management/flow-state/${leagueId}`
+      `${this.base}/flow-state/${leagueId}`
     );
     return response.data;
   }
@@ -28,12 +29,13 @@ export class ManualLeagueManagementService {
     group_id?: string;
     position: { x: number; y: number };
     is_final?: boolean;
+    is_round_robin?: boolean;
     is_runner_up?: boolean;
     is_elimination?: boolean;
     is_third_place?: boolean;
   }) {
     const response = await axiosClient.post<LeagueMatch>(
-      "/manual-league-management/matches",
+      `${this.base}/matches`,
       payload
     );
     return response.data;
@@ -46,7 +48,7 @@ export class ManualLeagueManagementService {
     position: { x: number; y: number };
   }) {
     const response = await axiosClient.post<LeagueCategoryRound>(
-      "/manual-league-management/rounds",
+      `${this.base}/rounds`,
       payload
     );
     return response.data;
@@ -60,7 +62,7 @@ export class ManualLeagueManagementService {
     position: { x: number; y: number };
   }) {
     const response = await axiosClient.post<IManualMatchConfigGroup>(
-      "/manual-league-management/groups",
+      `${this.base}/groups`,
       payload
     );
     return response.data;
@@ -75,7 +77,7 @@ export class ManualLeagueManagementService {
     targetHandle?: string | null;
   }) {
     const response = await axiosClient.post<Edge>(
-      "/manual-league-management/edges",
+      `${this.base}/edges`,
       payload
     );
     return response.data;
@@ -83,7 +85,7 @@ export class ManualLeagueManagementService {
 
   async updateMatch(matchId: string, payload: Partial<LeagueMatch>) {
     const response = await axiosClient.put<LeagueMatch>(
-      `/manual-league-management/matches/${matchId}`,
+      `${this.base}/matches/${matchId}`,
       payload
     );
     return response.data;
@@ -94,7 +96,7 @@ export class ManualLeagueManagementService {
     position: { x: number; y: number }
   ) {
     const response = await axiosClient.put(
-      `/manual-league-management/nodes/${nodeType}/${nodeId}/position`,
+      `${this.base}/nodes/${nodeType}/${nodeId}/position`,
       { position }
     );
     return response.data;
@@ -104,7 +106,7 @@ export class ManualLeagueManagementService {
     payload: { team_id: string; slot: "home" | "away" }
   ) {
     const response = await axiosClient.put<LeagueMatch>(
-      `/manual-league-management/matches/${matchId}/assign-team`,
+      `${this.base}/matches/${matchId}/assign-team`,
       payload
     );
     return response.data;
@@ -115,30 +117,41 @@ export class ManualLeagueManagementService {
     payload: Partial<IManualMatchConfigGroup>
   ) {
     const response = await axiosClient.put<IManualMatchConfigGroup>(
-      `/manual-league-management/groups/${groupId}`,
+      `${this.base}/groups/${groupId}`,
       payload
     );
     return response.data;
   }
   async deleteEdge(edgeId: string) {
-    const response = await axiosClient.delete(
-      `/manual-league-management/edges/${edgeId}`
-    );
+    const response = await axiosClient.delete(`${this.base}/edges/${edgeId}`);
     return response.data;
   }
 
   async deleteSingleNode(nodeType: string, nodeId: string) {
     const response = await axiosClient.delete(
-      `/manual-league-management/nodes/${nodeType}/${nodeId}`
+      `${this.base}/nodes/${nodeType}/${nodeId}`
     );
     return response.data;
   }
 
   async synchronizeBracket(leagueCategoryId: string) {
     const response = await axiosClient.post<{ message: string }>(
-      `/manual-league-management/leagues/${leagueCategoryId}/synchronize`
+      `${this.base}/leagues/${leagueCategoryId}/synchronize`
     );
     return response.data;
+  }
+
+  async updateScore(matchId: string, data: { slot: string; score: number }) {
+    return await axiosClient.put<{ message: string }>(
+      `${this.base}/${matchId}/score`,
+      data
+    );
+  }
+
+  async eliminateTeam(league_team_id: string) {
+    return await axiosClient.put<{ message: string }>(
+      `${this.base}/${league_team_id}/eliminate`
+    );
   }
 }
 

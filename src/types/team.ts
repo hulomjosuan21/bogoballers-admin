@@ -44,6 +44,7 @@ export interface LeagueTeam extends Team {
   league_category_id: string;
   status: string;
   is_eliminated: boolean;
+  league_team_group_id: string | null;
   amount_paid: number;
   payment_status: string;
   wins: number;
@@ -56,6 +57,7 @@ export interface LeagueTeam extends Team {
   eliminated_in_round_id: string | null;
   league_team_created_at: string;
   league_team_updated_at: string;
+  group_label: string | null;
   league_players: LeaguePlayer[];
   matches_remaining: number;
   upcoming_opponents: UpcomingOpponent[];

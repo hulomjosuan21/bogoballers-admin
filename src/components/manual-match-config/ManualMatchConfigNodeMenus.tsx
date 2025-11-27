@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { type Node } from "@xyflow/react";
 import { v4 as uuidv4 } from "uuid";
-import { GripVertical, List, Shuffle } from "lucide-react";
+import { Filter, GripVertical, List, Settings2, Shuffle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -19,12 +17,17 @@ import {
   RoundTypeEnum,
   type LeagueCategory,
 } from "@/types/leagueCategoryTypes";
-import { useLeagueTeamDynamicQuery } from "@/hooks/useLeagueTeam";
-import { LeagueTeamService } from "@/service/leagueTeamService";
 import type { LeagueTeam } from "@/types/team";
 import type { LeagueMatch } from "@/types/leagueMatch";
 import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
 import { useLeagueStore } from "@/stores/leagueStore";
+import { Label } from "../ui/label";
+import { Separator } from "../ui/separator";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { LeagueTeamService } from "@/service/leagueTeamService";
+import { toast } from "sonner";
+import { queryClient } from "@/lib/queryClient";
+import { ScrollArea } from "../ui/scroll-area";
 
 export function ManualGroupNodeMenu() {
   const [groups, setGroups] = useState<IManualMatchConfigGroup[]>([]);
@@ -132,190 +135,342 @@ export function ManualRoundNodeMenu() {
   );
 }
 
-export function ManualLeagueTeamNodeMenu() {
-  const { leagueId: activeLeagueId } = useLeagueStore();
+export const ManualLeagueTeamNodeMenu = memo(() => {
+  {
+    const { leagueId: activeLeagueId } = useLeagueStore();
 
-  if (!activeLeagueId) {
-    return null;
-  }
+    if (!activeLeagueId) return null;
 
-  const {
-    activeLeagueCategories,
-    activeLeagueCategoriesLoading,
-    activeLeagueCategoriesError,
-  } = useActiveLeagueCategories(activeLeagueId, { condition: "Manual" });
-
-  const hasActiveLeague =
-    Array.isArray(activeLeagueCategories) &&
-    !activeLeagueCategoriesLoading &&
-    !activeLeagueCategoriesError &&
-    activeLeagueCategories.length > 0;
-
-  const [selectedCategory, setSelectedCategory] =
-    useState<LeagueCategory | null>(null);
-
-  useEffect(() => {
-    if (hasActiveLeague) {
-      const currentSelectionValid =
-        selectedCategory &&
-        activeLeagueCategories.find(
-          (c) => c.league_category_id === selectedCategory.league_category_id
-        );
-
-      if (!currentSelectionValid) {
-        setSelectedCategory(activeLeagueCategories[0] || null);
+    const { activeLeagueCategories } = useActiveLeagueCategories(
+      activeLeagueId,
+      {
+        condition: "Manual",
       }
-    } else {
-      setSelectedCategory(null);
-    }
-  }, [hasActiveLeague, activeLeagueCategories, selectedCategory]);
-
-  const { dynamicLeagueTeamData, dynamicLeagueTeamLoading } =
-    useLeagueTeamDynamicQuery(
-      [
-        "league-teams-manual",
-        selectedCategory?.league_category_id ?? "none",
-        "NotEliminated",
-      ],
-      () =>
-        selectedCategory
-          ? LeagueTeamService.getMany(selectedCategory.league_category_id, {
-              condition: "NotEliminated",
-            })
-          : Promise.resolve([]),
-      { enabled: !!selectedCategory }
     );
 
-  const [teamPool, setTeamPool] = useState<LeagueTeam[]>([]);
-  const [currentRoll, setCurrentRoll] = useState<LeagueTeam[]>([]);
-  const [showAll, setShowAll] = useState(false);
+    const [selectedCategory, setSelectedCategory] =
+      useState<LeagueCategory | null>(null);
 
-  useEffect(() => {
-    setTeamPool([]);
-    setCurrentRoll([]);
-    setShowAll(false);
-  }, [selectedCategory]);
+    useEffect(() => {
+      if (
+        activeLeagueCategories &&
+        activeLeagueCategories.length > 0 &&
+        !selectedCategory
+      ) {
+        setSelectedCategory(activeLeagueCategories[0]);
+      }
+    }, [activeLeagueCategories, selectedCategory]);
 
-  const onDragStart = useCallback(
-    (event: React.DragEvent<HTMLDivElement>, team: LeagueTeam) => {
-      event.dataTransfer.setData(
-        "application/reactflow-team",
-        JSON.stringify(team)
-      );
-      event.dataTransfer.effectAllowed = "move";
-    },
-    []
-  );
+    const queryKey = [
+      "league-teams-grouped",
+      selectedCategory?.league_category_id,
+    ];
+    const { data: teamData } = useSuspenseQuery({
+      queryKey: queryKey,
+      queryFn: async () => {
+        if (!selectedCategory) return [];
+        return await LeagueTeamService.getGrouped(
+          selectedCategory.league_category_id
+        );
+      },
+    });
 
-  const rollTwo = useCallback(() => {
-    if (teamPool.length === 0) {
-      setTeamPool(dynamicLeagueTeamData || []);
+    const { mutate: saveGroups, isPending: isSaving } = useMutation({
+      mutationFn: (
+        payload: { league_team_id: string; group_label: string }[]
+      ) => {
+        if (!selectedCategory) throw new Error("No category");
+        return LeagueTeamService.updateGroups(
+          selectedCategory.league_category_id,
+          payload
+        );
+      },
+      onSuccess: (updatedTeams) => {
+        queryClient.setQueryData(queryKey, updatedTeams);
+        toast.success("Groups updated");
+        handleLocalReset(updatedTeams);
+      },
+      onError: () => toast.error("Failed to update groups"),
+    });
+
+    const [groupCount, setGroupCount] = useState<number>(1);
+    const [targetGroup, setTargetGroup] = useState<string>("all"); // NEW: Filter for Roll
+    const [currentRoll, setCurrentRoll] = useState<LeagueTeam[]>([]);
+    const [lastRolledGroupIndex, setLastRolledGroupIndex] = useState<
+      string | null
+    >(null);
+    const [showAll, setShowAll] = useState(false);
+    const [teamPool, setTeamPool] = useState<Record<string, LeagueTeam[]>>({});
+
+    const handleLocalReset = useCallback((teams: LeagueTeam[]) => {
+      const groups: Record<string, LeagueTeam[]> = {};
+      teams.forEach((team) => {
+        const gLabel = team.group_label || "0";
+        if (!groups[gLabel]) groups[gLabel] = [];
+        groups[gLabel].push(team);
+      });
+      setTeamPool(groups);
       setCurrentRoll([]);
-      return;
-    }
-    const shuffled = [...teamPool].sort(() => Math.random() - 0.5);
-    const picked = shuffled.slice(0, 2);
-    const remaining = teamPool.filter(
-      (t) => !picked.find((p) => p.league_team_id === t.league_team_id)
+      setLastRolledGroupIndex(null);
+      setShowAll(false);
+    }, []);
+
+    useEffect(() => {
+      if (teamData) handleLocalReset(teamData);
+    }, [teamData, handleLocalReset]);
+
+    useEffect(() => {
+      setTargetGroup("all");
+    }, [groupCount]);
+
+    const handleRedistributeAndSave = () => {
+      if (!teamData || teamData.length === 0) return;
+      const shuffled = [...teamData].sort(() => Math.random() - 0.5);
+      const updates: { league_team_id: string; group_label: string }[] = [];
+      shuffled.forEach((team, index) => {
+        const gIndex = index % groupCount;
+        updates.push({
+          league_team_id: team.league_team_id,
+          group_label: gIndex.toString(),
+        });
+      });
+      saveGroups(updates);
+    };
+
+    const rollTwo = useCallback(() => {
+      const allTeamsCount = Object.values(teamPool).flat().length;
+      if (allTeamsCount === 0) {
+        handleLocalReset(teamData || []);
+        return;
+      }
+
+      let validGroupKeys = Object.keys(teamPool).filter(
+        (key) => teamPool[key].length >= 2
+      );
+
+      if (targetGroup !== "all") {
+        if (validGroupKeys.includes(targetGroup)) {
+          validGroupKeys = [targetGroup];
+        } else {
+          toast.info(`No pairs left in Group ${parseInt(targetGroup) + 1}`);
+          return;
+        }
+      }
+
+      if (validGroupKeys.length === 0) {
+        if (targetGroup === "all") {
+          handleLocalReset(teamData || []);
+        }
+        return;
+      }
+
+      const randomKeyIndex = Math.floor(Math.random() * validGroupKeys.length);
+      const selectedGroupKey = validGroupKeys[randomKeyIndex];
+      const groupTeams = teamPool[selectedGroupKey];
+
+      const shuffled = [...groupTeams].sort(() => Math.random() - 0.5);
+      const picked = shuffled.slice(0, 2);
+      const remainingInGroup = groupTeams.filter(
+        (t) => !picked.find((p) => p.league_team_id === t.league_team_id)
+      );
+
+      setCurrentRoll(picked);
+      setLastRolledGroupIndex(selectedGroupKey);
+      setTeamPool((prev) => ({
+        ...prev,
+        [selectedGroupKey]: remainingInGroup,
+      }));
+      setShowAll(false);
+    }, [teamPool, teamData, handleLocalReset, targetGroup]);
+
+    const onDragStart = useCallback(
+      (event: React.DragEvent<HTMLDivElement>, team: LeagueTeam) => {
+        event.dataTransfer.setData(
+          "application/reactflow-team",
+          JSON.stringify(team)
+        );
+        event.dataTransfer.effectAllowed = "move";
+      },
+      []
     );
-    setCurrentRoll(picked);
-    setTeamPool(remaining);
-    setShowAll(false);
-  }, [teamPool, dynamicLeagueTeamData]);
 
-  const displayedTeams = useMemo(() => {
-    if (showAll) return dynamicLeagueTeamData || [];
-    if (currentRoll.length > 0) return currentRoll;
-    return [];
-  }, [showAll, dynamicLeagueTeamData, currentRoll]);
+    const totalTeamsRemaining = useMemo(
+      () => Object.values(teamPool).flat().length,
+      [teamPool]
+    );
 
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <Select
-        onValueChange={(catId) => {
-          const category = activeLeagueCategories?.find(
-            (c) => c.league_category_id === catId
-          );
-          setSelectedCategory(category || null);
-        }}
-        value={selectedCategory?.league_category_id || ""}
-        disabled={!hasActiveLeague}
+    const TeamCard = ({ team }: { team: LeagueTeam }) => (
+      <div
+        onDragStart={(evt) => onDragStart(evt, team)}
+        draggable
+        className="w-48 flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab hover:opacity-80"
       >
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select League Category" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Active League Categories</SelectLabel>
-            {activeLeagueCategories?.map((category) => (
+        <GripVertical className="w-4 h-4 text-muted-foreground" />
+        <span className="text-sm font-medium text-card-foreground truncate">
+          {team.team_name}
+        </span>
+      </div>
+    );
+
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <Select
+          onValueChange={(catId) => {
+            const cat = activeLeagueCategories?.find(
+              (c) => c.league_category_id === catId
+            );
+            setSelectedCategory(cat || null);
+          }}
+          value={selectedCategory?.league_category_id || ""}
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Select Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {activeLeagueCategories?.map((c) => (
               <SelectItem
-                key={category.league_category_id}
-                value={category.league_category_id}
+                key={c.league_category_id}
+                value={c.league_category_id}
               >
-                {category.category_name}
+                {c.category_name}
               </SelectItem>
             ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+          </SelectContent>
+        </Select>
 
-      {/* Buttons */}
-      <div className="flex gap-2">
-        <Button
-          onClick={rollTwo}
-          size="sm"
-          disabled={dynamicLeagueTeamLoading || !dynamicLeagueTeamData?.length}
-          className="flex items-center gap-2"
-        >
-          <Shuffle className="w-4 h-4" />
-          {teamPool.length === 0 ? "Reset" : "Roll"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-muted/20">
+            <Label className="text-xs font-semibold text-muted-foreground">
+              Groups:
+            </Label>
+            <Input
+              type="number"
+              min={1}
+              max={10}
+              value={groupCount}
+              onChange={(e) => setGroupCount(parseInt(e.target.value) || 1)}
+              className="h-6 w-10 text-center text-xs p-0 border-none focus-visible:ring-0 bg-transparent"
+            />
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleRedistributeAndSave}
+            disabled={isSaving || !teamData?.length}
+            className="h-8 text-xs"
+          >
+            {isSaving ? "Saving..." : "Shuffle & Save"}
+            <Settings2 className="w-3 h-3 ml-2" />
+          </Button>
+        </div>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => setShowAll((prev) => !prev)}
-          disabled={dynamicLeagueTeamLoading || !dynamicLeagueTeamData?.length}
-          className="flex items-center gap-2"
-        >
-          <List className="w-4 h-4" />
-          {showAll ? "Hide All" : "Show All"}
-        </Button>
-      </div>
+        <Separator className="w-full max-w-[200px]" />
 
-      {/* Teams */}
-      <div className="flex flex-col gap-2 items-center max-h-96 overflow-y-auto">
-        {dynamicLeagueTeamLoading && (
-          <span className="text-sm text-muted-foreground">
-            Loading teams...
-          </span>
+        {groupCount > 1 && (
+          <div className="w-[200px]">
+            <Select value={targetGroup} onValueChange={setTargetGroup}>
+              <SelectTrigger className="h-8 text-xs">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-3 h-3 text-muted-foreground" />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any Group (Random)</SelectItem>
+                {Array.from({ length: groupCount }).map((_, idx) => (
+                  <SelectItem key={idx} value={idx.toString()}>
+                    Group {idx + 1} Only
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
 
-        {displayedTeams.length > 0
-          ? displayedTeams.map((team) => (
-              <div
-                key={team.league_team_id}
-                onDragStart={(event) => onDragStart(event, team)}
-                draggable
-                className="w-48 flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab hover:opacity-80"
-              >
-                <GripVertical className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-card-foreground">
-                  {team.team_name}
+        <div className="flex gap-2">
+          <Button
+            onClick={rollTwo}
+            size="sm"
+            disabled={isSaving || !teamData?.length}
+            className="flex items-center gap-2 w-24"
+          >
+            <Shuffle className="w-4 h-4" />
+            {totalTeamsRemaining === 0 ? "Reset" : "Roll"}
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowAll((prev) => !prev)}
+            disabled={!teamData?.length}
+            className="flex items-center gap-2 w-24"
+          >
+            <List className="w-4 h-4" />
+            {showAll ? "Hide" : "Show All"}
+          </Button>
+        </div>
+
+        <ScrollArea className="flex flex-col gap-4 items-center w-full max-h-64 px-2 mt-2">
+          {!showAll && currentRoll.length > 0 && (
+            <div className="flex flex-col items-center gap-2 animate-in slide-in-from-bottom-2 duration-300">
+              {lastRolledGroupIndex !== null && (
+                <span className="text-xs font-bold text-primary uppercase tracking-wide">
+                  Group {parseInt(lastRolledGroupIndex) + 1}
                 </span>
-              </div>
-            ))
-          : !dynamicLeagueTeamLoading && (
-              <span className="text-sm text-muted-foreground">
-                {teamPool.length === 0
-                  ? "All teams rolled. Press Reset."
-                  : "Click Roll to pick teams."}
-              </span>
-            )}
+              )}
+              {currentRoll.map((team) => (
+                <TeamCard key={team.league_team_id} team={team} />
+              ))}
+            </div>
+          )}
+
+          {showAll && (
+            <div className="flex flex-col gap-4 w-full items-center animate-in fade-in zoom-in duration-300">
+              {Object.entries(teamPool)
+                .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                .map(([groupKey, teams]) => {
+                  if (teams.length === 0) return null;
+                  return (
+                    <div
+                      key={groupKey}
+                      className="w-full flex flex-col items-center gap-2"
+                    >
+                      <div className="flex items-center w-full gap-2">
+                        <Separator className="flex-1" />
+                        <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">
+                          Group {parseInt(groupKey) + 1}
+                        </span>
+                        <Separator className="flex-1" />
+                      </div>
+                      {teams.map((team) => (
+                        <TeamCard key={team.league_team_id} team={team} />
+                      ))}
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+
+          {!showAll && currentRoll.length === 0 && (
+            <div className="text-center text-sm text-muted-foreground p-4">
+              {teamData?.length === 0 ? "No teams found." : "Ready to roll."}
+            </div>
+          )}
+        </ScrollArea>
       </div>
-    </div>
-  );
-}
+    );
+  }
+});
+
+const formatMatchTemplates: { label: string; data: Partial<LeagueMatch> }[] = [
+  {
+    label: "Round Robin Match",
+    data: {
+      display_name: "Round Robin Match",
+      is_round_robin: true,
+    },
+  },
+];
 
 const matchTemplates: { label: string; data: Partial<LeagueMatch> }[] = [
   {
@@ -338,13 +493,6 @@ const matchTemplates: { label: string; data: Partial<LeagueMatch> }[] = [
       is_third_place: true,
     },
   },
-  // {
-  //   label: "Runner-Up Match",
-  //   data: {
-  //     display_name: "Runner-Up Match",
-  //     is_runner_up: true,
-  //   },
-  // },
   {
     label: "Final Match",
     data: {
@@ -353,6 +501,7 @@ const matchTemplates: { label: string; data: Partial<LeagueMatch> }[] = [
     },
   },
 ];
+
 const DraggableMatchItem = ({
   label,
   matchData,
@@ -397,6 +546,21 @@ export function ManualMatchNodeMenu() {
   return (
     <div className="">
       <div className="flex flex-col items-center gap-2">
+        <span className="w-48 text-[10px] uppercase font-bold text-muted-foreground text-left mt-2">
+          Format Template
+        </span>
+        {formatMatchTemplates.map((template) => (
+          <DraggableMatchItem
+            key={template.label}
+            label={template.label}
+            matchData={template.data}
+          />
+        ))}
+
+        <div className="w-48 my-1 border-t border-border" />
+        <span className="w-48 text-[10px] uppercase font-bold text-muted-foreground text-left">
+          None Format Templates
+        </span>
         {matchTemplates.map((template) => (
           <DraggableMatchItem
             key={template.label}
