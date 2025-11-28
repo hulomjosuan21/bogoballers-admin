@@ -252,7 +252,7 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
   };
 
   const renderWinHandle = () => {
-    const { is_final, is_round_robin } = match;
+    const { is_final, is_round_robin, is_third_place } = match;
 
     if (is_round_robin) {
       return (
@@ -261,6 +261,8 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
     }
 
     if (is_final) return null;
+
+    if (is_third_place) return null;
 
     return (
       <>

@@ -254,7 +254,7 @@ export default function ManageAffiliates({
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Affiliate Name</Label>
+                  <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
                     value={form.name}
@@ -262,7 +262,7 @@ export default function ManageAffiliates({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="value">Affiliate Value</Label>
+                  <Label htmlFor="value">Contribution</Label>
                   <Input
                     id="value"
                     value={form.value}

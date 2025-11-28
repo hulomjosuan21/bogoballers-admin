@@ -14,13 +14,18 @@ import { manualMatchConfigNodeTypes } from "@/components/manual-match-config";
 import { useTheme } from "@/providers/theme-provider";
 
 import { Spinner } from "@/components/ui/spinner";
-import { Suspense } from "react";
+import { Suspense, useTransition } from "react";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
 import { useLeagueStore } from "@/stores/leagueStore";
 import type { LeagueStatus } from "@/service/leagueService";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
+import { toast } from "sonner";
 
 function ManualMatchingPageContent() {
   const { league, isLoading, leagueId } = useLeagueStore();
+  const [isPending, startTransition] = useTransition();
 
   const {
     changeType,
@@ -45,6 +50,15 @@ function ManualMatchingPageContent() {
 
   const leagueStatus = league.status as LeagueStatus;
 
+  const handleRefresh = () => {
+    startTransition(async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["your-key"],
+      });
+
+      toast.success("Data refreshed!");
+    });
+  };
   const handledStates: Record<LeagueStatus, boolean> = {
     Pending: true,
     Completed: true,
@@ -98,6 +112,14 @@ function ManualMatchingPageContent() {
     <ContentShell>
       <ContentHeader title="Manual Configuration">
         {changesText()}
+        <Button
+          className="size-7"
+          variant="ghost"
+          onClick={handleRefresh}
+          disabled={isPending}
+        >
+          <RefreshCw className={`w-3 h-3 ${isPending ? "animate-spin" : ""}`} />
+        </Button>
       </ContentHeader>
       <ContentBody className="flex-row flex">
         <div className="h-full border rounded-md w-full bg-background">
