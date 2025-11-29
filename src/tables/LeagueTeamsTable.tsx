@@ -52,6 +52,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   leagueCategoryId?: string;
@@ -357,6 +358,8 @@ export function ActionCell({
   validate: () => Promise<any>;
 }) {
   const team = row.original;
+  const navigate = useNavigate();
+  const linkPath = `/portal/league-administrator/start-chat/${row.original.user_id}/${row.original.team_name}`;
   const { openDialog } = useAlertDialog();
   const { toggle } = useToggleOfficialLeagueTeamSection();
 
@@ -447,6 +450,15 @@ export function ActionCell({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                navigate(linkPath);
+              }}
+            >
+              Chat
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleOpenDetails}>
               View Details
             </DropdownMenuItem>

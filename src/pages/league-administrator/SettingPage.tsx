@@ -78,7 +78,6 @@ export default function SettingsPage() {
                 <ShortcutItem action="Save" keys="Ctrl + S" />
                 <ShortcutItem action="Search" keys="Ctrl + F" />
                 <ShortcutItem action="Toggle Sidebar" keys="Ctrl + B" />
-                {/* Add more here */}
               </div>
             </TabsContent>
           )}

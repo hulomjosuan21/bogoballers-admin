@@ -85,7 +85,13 @@ function UnscheduleTable({
   refetchLeagueMatch,
 }: Props) {
   const { league: activeLeagueData } = useLeagueStore();
-
+  const toLocalISOString = (date: Date) => {
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(date.getTime() - tzOffset)
+      .toISOString()
+      .slice(0, -1);
+    return localISOTime;
+  };
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
@@ -176,7 +182,7 @@ function UnscheduleTable({
       minutes_per_quarter: sheetFormData.minutes_per_quarter,
       minutes_per_overtime: sheetFormData.minutes_per_overtime,
       referees: sheetFormData.referees?.map((opt) => opt.value),
-      scheduled_date: sheetFormData.scheduled_date.toISOString(),
+      scheduled_date: toLocalISOString(sheetFormData.scheduled_date),
       status: "Scheduled",
     };
     const updateApi = async () => {
@@ -184,6 +190,7 @@ function UnscheduleTable({
         selectedMatch.league_match_id,
         payload
       );
+
       await refetchLeagueMatch();
     };
 

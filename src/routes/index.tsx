@@ -31,6 +31,7 @@ import {
   ChartNoAxesGantt,
   ClipboardClock,
   UserStar,
+  MessageSquare,
 } from "lucide-react";
 import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
 import LoginPage from "@/pages/auth/LoginPage";
@@ -46,6 +47,8 @@ import AutomaticMatchConfigPage from "@/pages/league-administrator/league/match/
 import MatchSetupPage from "@/pages/league-administrator/league/match/MatchSetupPage";
 import MatchHistoryPage from "@/pages/league-administrator/league/match/MatchHistoryPage";
 import ManageLeagueAdministratorPage from "@/pages/ManageLeagueAdminPage";
+import ConversationPage from "@/pages/messenger/ConversationPage";
+import ChatScreen from "@/pages/messenger/ChatScreen";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -118,6 +121,22 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "platform",
   },
 
+  {
+    path: "pages/messages",
+    element: <ConversationPage />,
+    permissions: [],
+    showInSidebar: true,
+    sidebarTitle: "Chats",
+    icon: MessageSquare,
+    sidebarGroup: "platform",
+  },
+
+  {
+    path: "start-chat/:recipientId/:recipientName?",
+    element: <ChatScreen />,
+    permissions: [],
+    showInSidebar: false,
+  },
   {
     path: "pages/league-admins",
     element: <ManageLeagueAdministratorPage />,

@@ -15,6 +15,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import {
@@ -29,6 +30,7 @@ import type { LeaguePlayer } from "@/types/player";
 import { useMemo } from "react";
 import { Badge } from "../ui/badge";
 import type { LeagueTeam } from "@/types/team";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   data: LeagueTeam;
@@ -87,6 +89,8 @@ export function LeagueTeamReadyForMatchSection({ data }: Props) {
 }
 
 export function LeaguePlayerDataGrid({ players }: { players: LeaguePlayer[] }) {
+  const navigate = useNavigate();
+
   const columns = useMemo<ColumnDef<LeaguePlayer>[]>(
     () => [
       {
@@ -94,6 +98,8 @@ export function LeaguePlayerDataGrid({ players }: { players: LeaguePlayer[] }) {
         header: "Player",
         cell: ({ row }) => {
           const isCaptain = row.original.is_team_captain;
+          const linkPath = `/portal/league-administrator/start-chat/${row.original.user_id}/${row.original.full_name}`;
+
           return (
             <div className="flex items-center gap-2">
               <div className="text-left">
@@ -106,6 +112,15 @@ export function LeaguePlayerDataGrid({ players }: { players: LeaguePlayer[] }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="ml-2" align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        navigate(linkPath);
+                      }}
+                    >
+                      Chat
+                    </DropdownMenuItem>
                     <DropdownMenuItem>Ban</DropdownMenuItem>
                     <DropdownMenuItem>Remove</DropdownMenuItem>
                   </DropdownMenuContent>

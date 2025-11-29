@@ -64,6 +64,7 @@ import type {
 } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 interface TeamSubmissionTableProps {
   leagueId?: string;
@@ -418,6 +419,8 @@ export function ActionCell({
     options?: RefetchOptions | undefined
   ) => Promise<QueryObserverResult<LeagueTeam[] | null, Error>>;
 }) {
+  const navigate = useNavigate();
+  const linkPath = `/portal/league-administrator/start-chat/${row.original.user_id}/${row.original.team_name}`;
   const team = row.original;
   const { dialogOpen } = useCheckPlayerSheet();
   const { openDialog } = useAlertDialog();
@@ -550,6 +553,14 @@ export function ActionCell({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                navigate(linkPath);
+              }}
+            >
+              Chat
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => dialogOpen(team)}>
               Details
             </DropdownMenuItem>

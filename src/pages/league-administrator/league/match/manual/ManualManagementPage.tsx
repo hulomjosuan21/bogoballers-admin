@@ -93,7 +93,16 @@ function ManualMatchingPageContent() {
           <ManualRoundNodeMenu />
         </TabsContent>
         <TabsContent value="teams">
-          <ManualLeagueTeamNodeMenu />
+          <Suspense
+            key="team"
+            fallback={
+              <div className="flex items-center justify-center py-8">
+                <Spinner />
+              </div>
+            }
+          >
+            <ManualLeagueTeamNodeMenu />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

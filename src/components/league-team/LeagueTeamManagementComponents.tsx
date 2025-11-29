@@ -45,6 +45,7 @@ import {
 import { Button } from "../ui/button";
 import type { PlayerTeam } from "@/types/player";
 import { Spinner } from "../ui/spinner";
+import { useNavigate } from "react-router-dom";
 
 export function LeagueTeamSheetSheetSubmissionSheet() {
   const { isOpen, data, dialogClose } = useCheckPlayerSheet();
@@ -95,6 +96,7 @@ export function LeagueTeamPlayerDataGrid({
 }: {
   players: PlayerTeam[];
 }) {
+  const navigate = useNavigate();
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 5,
@@ -115,6 +117,9 @@ export function LeagueTeamPlayerDataGrid({
               "width=1000,height=800,resizable=yes,scrollbars=yes"
             );
           };
+
+          const linkPath = `/portal/league-administrator/start-chat/${row.original.user_id}/${row.original.full_name}`;
+
           return (
             <div className="flex items-center gap-2">
               <div className="text-left">
@@ -126,6 +131,18 @@ export function LeagueTeamPlayerDataGrid({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="ml-2 w-56" align="end">
+                    <DropdownMenuLabel>Action</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        navigate(linkPath);
+                      }}
+                    >
+                      Chat
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
                     <DropdownMenuLabel>Documents</DropdownMenuLabel>
                     <DropdownMenuSeparator />
 
@@ -150,7 +167,10 @@ export function LeagueTeamPlayerDataGrid({
                                   <DropdownMenuItem
                                     key={`${doc.doc_id}-${index}`}
                                     className="cursor-pointer"
-                                    onClick={() => openWindow(url)}
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      openWindow(url);
+                                    }}
                                   >
                                     <span>View Doc #{index + 1}</span>
                                     <ExternalLink className="ml-auto h-3 w-3 opacity-50" />
@@ -167,7 +187,10 @@ export function LeagueTeamPlayerDataGrid({
                             <DropdownMenuItem
                               key={doc.doc_id}
                               className="cursor-pointer"
-                              onClick={() => openWindow(singleUrl)}
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                openWindow(singleUrl);
+                              }}
                             >
                               <FileText className="mr-2 h-4 w-4" />
                               <span>{doc.document_type}</span>

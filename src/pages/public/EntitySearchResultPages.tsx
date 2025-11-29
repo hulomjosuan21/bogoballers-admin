@@ -30,7 +30,9 @@ interface PlayerSearchResultProps extends BaseSearchResultScreen<Player> {}
 const PlayerSearchResultListItem: React.FC<PlayerSearchResultProps> = ({
   result,
 }) => {
-  const handleClick = () => {};
+  const navigate = useNavigate();
+  const linkPath = `/portal/league-administrator/start-chat/${result.user_id}/${result.full_name}`;
+  const handleClick = () => navigate(linkPath);
 
   return (
     <div
@@ -59,7 +61,9 @@ interface TeamSearchResultProps extends BaseSearchResultScreen<Team> {}
 const TeamSearchResultListItem: React.FC<TeamSearchResultProps> = ({
   result,
 }) => {
-  const handleClick = () => {};
+  const navigate = useNavigate();
+  const linkPath = `/portal/league-administrator/start-chat/${result.user_id}/${result.team_name}`;
+  const handleClick = () => navigate(linkPath);
 
   return (
     <div
@@ -89,7 +93,9 @@ interface LeagueAdminSearchResultProps
 const LeagueAdministratorSearchResultListItem: React.FC<
   LeagueAdminSearchResultProps
 > = ({ result }) => {
-  const handleClick = () => {};
+  const navigate = useNavigate();
+  const linkPath = `/portal/league-administrator/start-chat/${result.user_id}/${result.organization_name}`;
+  const handleClick = () => navigate(linkPath);
 
   return (
     <div
