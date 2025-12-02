@@ -24,6 +24,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
+import { queryClient } from "@/lib/queryClient";
 
 const TeamDropZone = ({
   team,
@@ -33,6 +34,7 @@ const TeamDropZone = ({
   matchId,
   slot,
   currentScore = 0,
+  leagueId,
 }: {
   side: "left" | "right";
   team?: LeagueTeam | null;
@@ -41,6 +43,7 @@ const TeamDropZone = ({
   matchId: string;
   slot: "home" | "away";
   currentScore?: number;
+  leagueId: string;
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [scoreInput, setScoreInput] = useState("");
@@ -48,7 +51,11 @@ const TeamDropZone = ({
   const updateScoreMutation = useMutation({
     mutationFn: (score: number) =>
       manualLeagueService.updateScore(matchId, { slot, score }),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
+      await queryClient.invalidateQueries({
+        queryKey: ["manual-match-config-flow", leagueId],
+        exact: true,
+      });
       toast.success(response.data.message || "Score updated");
       setScoreInput("");
     },
@@ -313,6 +320,7 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
         <div onDragOver={onDragOver} onDrop={(e) => onDrop(e, "home")}>
           <TeamDropZone
             team={match.home_team}
+            leagueId={data.league_match.league_id!}
             side="left"
             placeholder="Home Team"
             is_round_robin={match.is_round_robin}
@@ -327,6 +335,7 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
         <div onDragOver={onDragOver} onDrop={(e) => onDrop(e, "away")}>
           <TeamDropZone
             team={match.away_team}
+            leagueId={data.league_match.league_id!}
             side="right"
             placeholder="Away Team"
             is_round_robin={match.is_round_robin}

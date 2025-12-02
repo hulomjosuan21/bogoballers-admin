@@ -2,6 +2,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PlayerLeaderboard from "./player/PlayerLeaderboard";
 import { HeroHeader } from "../public/landing-page/header";
+import TeamLeaderboardPage from "./team/TeamLeaderboard";
 
 export default function LeaderboardPage() {
   return (
@@ -28,7 +29,9 @@ export default function LeaderboardPage() {
             <TabsContent value="player">
               <PlayerLeaderboard />
             </TabsContent>
-            <TabsContent value="team"></TabsContent>
+            <TabsContent value="team">
+              <TeamLeaderboardPage />
+            </TabsContent>
           </Tabs>
         </div>
       </div>

@@ -6,16 +6,35 @@ import {
   AutomaticRoundNodeMenu,
 } from "@/components/automatic-match-config/AutomaticMatchConfigNodeMenu";
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
-import { AutomaticMatchConfigXyFlowCanvas } from "./AutomaticMatchConfigXyFlowCanvas";
 import { Spinner } from "@/components/ui/spinner";
-import { Suspense } from "react";
+import { Suspense, useTransition } from "react";
 import { useLeagueStore } from "@/stores/leagueStore";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
 import type { LeagueStatus } from "@/service/leagueService";
+import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
+import { automaticMatchConfigNodeTypes } from "@/components/automatic-match-config";
+import { useManageAutomaticMatchConfigNode } from "@/hooks/useAutomaticMatchConfigHook";
+import { useTheme } from "@/providers/theme-provider";
+import { queryClient } from "@/lib/queryClient";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 function AutomaticMatchConfigPage() {
   const { league, isLoading, leagueId } = useLeagueStore();
+  const [isPending, startTransition] = useTransition();
+  const {
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onDrop,
+    onDragOver,
+    onNodeDragStop,
+  } = useManageAutomaticMatchConfigNode(leagueId);
 
+  const { theme } = useTheme();
   if (isLoading) {
     return <SelectedLeagueStateScreen loading />;
   }
@@ -25,7 +44,16 @@ function AutomaticMatchConfigPage() {
   }
 
   const leagueStatus = league.status as LeagueStatus;
+  const handleRefresh = () => {
+    startTransition(async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["auto-match-config-flow", leagueId],
+        exact: true,
+      });
 
+      toast.success("Data refreshed!");
+    });
+  };
   const handledStates: Record<LeagueStatus, boolean> = {
     Pending: true,
     Completed: true,
@@ -59,9 +87,36 @@ function AutomaticMatchConfigPage() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Automatic Configuration" />
+      <ContentHeader title="Automatic Configuration">
+        <Button
+          className="size-7"
+          variant="ghost"
+          onClick={handleRefresh}
+          disabled={isPending}
+        >
+          <RefreshCw className={`w-3 h-3 ${isPending ? "animate-spin" : ""}`} />
+        </Button>
+      </ContentHeader>
       <ContentBody className="flex flex-row">
-        <AutomaticMatchConfigXyFlowCanvas activeLeagueId={leagueId} />
+        <div className="h-full w-full border rounded-md bg-background">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodeDragStop={onNodeDragStop}
+            nodeTypes={automaticMatchConfigNodeTypes}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onDrop={onDrop}
+            colorMode={theme}
+            onDragOver={onDragOver}
+            fitView
+          >
+            <Background />
+            <Controls />
+            <MiniMap />
+          </ReactFlow>
+        </div>
         {menu}
       </ContentBody>
     </ContentShell>

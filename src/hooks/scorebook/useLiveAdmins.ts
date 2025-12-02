@@ -18,13 +18,22 @@ export const useLiveAdmins = () => {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const socket = io(`${API_BASE_URL}/live`);
-    socketRef.current = socket;
+    const socket = io(`${API_BASE_URL}/live`, {
+      autoConnect: false,
+      transports: ["websocket"], // Optional: Forces websocket to avoid polling delays
+    });
 
+    socketRef.current = socket;
     let pingInterval: NodeJS.Timeout;
 
+    // 2. Setup all listeners FIRST
     socket.on("connect", () => {
+      console.log("Socket connected, requesting admins...");
       socket.emit("get_live_admins");
+
+      // Clear existing interval just in case
+      if (pingInterval) clearInterval(pingInterval);
+
       pingInterval = setInterval(() => {
         const start = Date.now();
         socket.emit("ping", { timestamp: start });
@@ -32,6 +41,7 @@ export const useLiveAdmins = () => {
     });
 
     socket.on("live_admins", (admins: LiveAdmin[]) => {
+      console.log("Received admins:", admins);
       setLiveAdmins(admins);
     });
 
@@ -41,13 +51,17 @@ export const useLiveAdmins = () => {
     });
 
     socket.on("disconnect", () => {
+      console.log("Socket disconnected");
       setLatency(null);
       clearInterval(pingInterval);
     });
 
+    socket.connect();
+
+    // Cleanup
     return () => {
-      socket.disconnect();
       clearInterval(pingInterval);
+      socket.disconnect();
     };
   }, []);
 

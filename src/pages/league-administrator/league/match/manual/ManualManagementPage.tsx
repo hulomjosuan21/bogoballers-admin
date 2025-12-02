@@ -53,7 +53,8 @@ function ManualMatchingPageContent() {
   const handleRefresh = () => {
     startTransition(async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["your-key"],
+        queryKey: ["manual-match-config-flow", leagueId],
+        exact: true,
       });
 
       toast.success("Data refreshed!");

@@ -103,11 +103,11 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
         return manualLeagueService.getFlowState(activeLeagueId);
       },
       enabled: !!activeLeagueId,
-      staleTime: Infinity,
-      gcTime: Infinity,
+      staleTime: 0,
+      refetchOnMount: true,
+      gcTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      refetchOnMount: false,
     });
 
   useEffect(() => {

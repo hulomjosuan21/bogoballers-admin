@@ -2,6 +2,7 @@ import type { MatchBook } from "@/types/scorebook";
 
 export const initialMatchData: MatchBook = {
   match_id: "match-123",
+  public_match_id: "public-match-123",
   home_total_score: 0,
   away_total_score: 0,
   default_quarters: 4,

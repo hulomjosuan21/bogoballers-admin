@@ -9,7 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { CheckIcon, MoreVertical, X } from "lucide-react";
+import { CheckIcon, MoreVertical, X, Trophy } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import MultipleSelector from "@/components/ui/multiselect";
 import { DateTimePicker } from "@/components/datetime-picker";
@@ -52,11 +60,19 @@ import { Label } from "@/components/ui/label";
 import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import { LeagueMatchService } from "@/service/leagueMatchService";
 import { getErrorMessage } from "@/lib/error";
-import type {
-  QueryObserverResult,
-  RefetchOptions,
+import {
+  useMutation,
+  type QueryObserverResult,
+  type RefetchOptions,
 } from "@tanstack/react-query";
 import { useLeagueStore } from "@/stores/leagueStore";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type SheetFormData = {
   scheduled_date?: Date;
@@ -65,6 +81,13 @@ type SheetFormData = {
   quarters?: number;
   minutes_per_quarter?: number;
   minutes_per_overtime?: number;
+};
+
+type ScoreDialogState = {
+  isOpen: boolean;
+  match: LeagueMatch | null;
+  homeScore: string;
+  awayScore: string;
 };
 
 type Props = {
@@ -78,6 +101,8 @@ type Props = {
   ) => Promise<QueryObserverResult<LeagueMatch[] | null, Error>>;
 };
 
+// --- Main Component ---
+
 function UnscheduleTable({
   leagueMatchData,
   leagueMatchLoading,
@@ -85,6 +110,27 @@ function UnscheduleTable({
   refetchLeagueMatch,
 }: Props) {
   const { league: activeLeagueData } = useLeagueStore();
+
+  // --- State ---
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState({});
+
+  // Scheduling Sheet State
+  const [refereesOption, setRefereesOption] = useState<LeagueReferee[]>([]);
+  const [courtOption, setCourtOption] = useState<LeagueCourt[]>([]);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<LeagueMatch | null>(null);
+  const [sheetFormData, setSheetFormData] = useState<SheetFormData>({});
+
+  // Score Dialog State
+  const [scoreDialog, setScoreDialog] = useState<ScoreDialogState>({
+    isOpen: false,
+    match: null,
+    homeScore: "",
+    awayScore: "",
+  });
+
   const toLocalISOString = (date: Date) => {
     const tzOffset = date.getTimezoneOffset() * 60000;
     const localISOTime = new Date(date.getTime() - tzOffset)
@@ -92,16 +138,29 @@ function UnscheduleTable({
       .slice(0, -1);
     return localISOTime;
   };
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [rowSelection, setRowSelection] = useState({});
 
-  const [refereesOption, setRefereesOption] = useState<LeagueReferee[]>([]);
-  const [courtOption, setCourtOption] = useState<LeagueCourt[]>([]);
-
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState<LeagueMatch | null>(null);
-  const [sheetFormData, setSheetFormData] = useState<SheetFormData>({});
+  const updateScoreMutation = useMutation({
+    mutationFn: ({
+      matchId,
+      homeScore,
+      awayScore,
+    }: {
+      matchId: string;
+      homeScore: number;
+      awayScore: number;
+    }) =>
+      LeagueMatchService.updateScore(matchId, {
+        home_score: homeScore,
+        away_score: awayScore,
+      }),
+    onSuccess: async (response) => {
+      toast.success(response.message || "Scores updated");
+      setScoreDialog((prev) => ({ ...prev, isOpen: false }));
+      await refetchLeagueMatch();
+    },
+    onError: (error) =>
+      toast.error(getErrorMessage(error) || "Failed to update scores"),
+  });
 
   useEffect(() => {
     const referees = (activeLeagueData?.league_referees ?? []).filter(
@@ -134,9 +193,37 @@ function UnscheduleTable({
     }
   }, [selectedMatch]);
 
+  // --- Handlers ---
   const handleOpenSheet = (match: LeagueMatch) => {
     setSelectedMatch(match);
     setIsSheetOpen(true);
+  };
+
+  const handleOpenScoreDialog = (match: LeagueMatch) => {
+    setScoreDialog({
+      isOpen: true,
+      match,
+      homeScore: String((match as any).home_score ?? 0),
+      awayScore: String((match as any).away_score ?? 0),
+    });
+  };
+
+  const handleUpdateScores = () => {
+    if (!scoreDialog.match) return;
+
+    const homeScore = parseInt(scoreDialog.homeScore);
+    const awayScore = parseInt(scoreDialog.awayScore);
+
+    if (isNaN(homeScore) || isNaN(awayScore)) {
+      toast.error("Please enter valid numeric scores");
+      return;
+    }
+
+    updateScoreMutation.mutate({
+      matchId: scoreDialog.match.league_match_id,
+      homeScore,
+      awayScore,
+    });
   };
 
   const handleFormChange = (field: keyof SheetFormData, value: any) => {
@@ -339,18 +426,32 @@ function UnscheduleTable({
     },
     {
       id: "actions",
-      cell: ({ row }) => (
-        <div className="text-right">
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0"
-            onClick={() => handleOpenSheet(row.original)}
-          >
-            <span className="sr-only">Open menu</span>
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const match = row.original;
+
+        return (
+          <div className="text-right">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => handleOpenSheet(match)}>
+                  Manage Schedule
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleOpenScoreDialog(match)}>
+                  Update Scores
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
     },
   ];
 
@@ -373,6 +474,113 @@ function UnscheduleTable({
 
   return (
     <div className="space-y-2">
+      <Dialog
+        open={scoreDialog.isOpen}
+        onOpenChange={(open) => {
+          if (!open) setScoreDialog((prev) => ({ ...prev, isOpen: false }));
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              Update Match Scores
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="grid grid-cols-2 gap-6 py-4">
+            {/* Home Team Input */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground uppercase font-semibold">
+                Home Team
+              </Label>
+              <div className="flex items-center gap-2 mb-2">
+                {scoreDialog.match?.home_team ? (
+                  <>
+                    <img
+                      src={scoreDialog.match.home_team.team_logo_url}
+                      alt="Home"
+                      className="h-6 w-6 rounded object-cover"
+                    />
+                    <span className="text-sm font-medium truncate">
+                      {scoreDialog.match.home_team.team_name}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm text-muted-foreground">TBD</span>
+                )}
+              </div>
+              <Input
+                type="number"
+                min="0"
+                className="text-center text-lg font-bold"
+                placeholder="0"
+                value={scoreDialog.homeScore}
+                onChange={(e) =>
+                  setScoreDialog((prev) => ({
+                    ...prev,
+                    homeScore: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            {/* Away Team Input */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground uppercase font-semibold">
+                Away Team
+              </Label>
+              <div className="flex items-center gap-2 mb-2">
+                {scoreDialog.match?.away_team ? (
+                  <>
+                    <img
+                      src={scoreDialog.match.away_team.team_logo_url}
+                      alt="Away"
+                      className="h-6 w-6 rounded object-cover"
+                    />
+                    <span className="text-sm font-medium truncate">
+                      {scoreDialog.match.away_team.team_name}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm text-muted-foreground">TBD</span>
+                )}
+              </div>
+              <Input
+                type="number"
+                min="0"
+                className="text-center text-lg font-bold"
+                placeholder="0"
+                value={scoreDialog.awayScore}
+                onChange={(e) =>
+                  setScoreDialog((prev) => ({
+                    ...prev,
+                    awayScore: e.target.value,
+                  }))
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setScoreDialog((prev) => ({ ...prev, isOpen: false }))
+              }
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateScores}
+              disabled={updateScoreMutation.isPending}
+            >
+              {updateScoreMutation.isPending ? "Saving..." : "Save Scores"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>

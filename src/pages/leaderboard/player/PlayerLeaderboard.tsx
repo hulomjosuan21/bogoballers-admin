@@ -57,7 +57,7 @@ export default function PlayerLeaderboardTable() {
                 <div className="font-medium text-foreground">
                   {row.original.full_name}
                 </div>
-                <div className="text-muted-foreground">
+                <div className="text-muted-foreground text-[10px]">
                   {row.original.user.email}
                 </div>
               </div>

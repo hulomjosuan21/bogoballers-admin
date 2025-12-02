@@ -45,4 +45,18 @@ export class LeagueMatchService {
 
     return response.data;
   }
+
+  static async updateScore(
+    matchId: string,
+    data: {
+      home_score: number;
+      away_score: number;
+    }
+  ) {
+    const url = `/league-match/${matchId}/score`;
+
+    const response = await axiosClient.patch<{ message: string }>(url, data);
+
+    return response.data;
+  }
 }
