@@ -11,7 +11,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import { Suspense, useEffect, useState } from "react";
-import { useLeagueMatch } from "@/hooks/leagueMatch";
 import {
   useToggleMatchBookSection,
   useToggleUpcomingMatchSection,
@@ -23,6 +22,7 @@ import ScheduleMatchTable from "@/tables/LeagueMatchUpcomingTable";
 import { SetupSelectedMatch } from "./SetupSelectedMatch";
 import { LeagueService } from "@/service/leagueService";
 import { useQuery } from "@tanstack/react-query";
+import { leagueMatchService } from "@/service/leagueMatchService";
 
 export default function LeagueMatches() {
   const {
@@ -56,10 +56,16 @@ export default function LeagueMatches() {
   const [refereesOption, setRefereesOption] = useState<LeagueReferee[]>([]);
   const [courtOption, setCourtOption] = useState<LeagueCourt[]>([]);
 
-  const { leagueMatchData, leagueMatchLoading, refetchLeagueMatch } =
-    useLeagueMatch(selectedCategory, selectedRound, {
-      condition: "Scheduled",
-    });
+  const {
+    data: leagueMatchData,
+    isLoading: leagueMatchLoading,
+    refetch: refetchLeagueMatch,
+  } = useQuery({
+    queryKey: ["scheduled-matches", selectedCategory, selectedRound],
+    queryFn: () =>
+      leagueMatchService.fetchScheduled(selectedCategory, selectedRound),
+    enabled: !!selectedCategory && !!selectedRound,
+  });
 
   const { state: stateMatchBook, data: selectedMatchBookData } =
     useToggleMatchBookSection();

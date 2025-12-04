@@ -1,4 +1,4 @@
-import { ChevronsUpDown, LogOut, Loader2, Award } from "lucide-react";
+import { ChevronsUpDown, LogOut, Loader2 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -124,9 +124,14 @@ export function NavProfile({
 
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => setOpen(true)}>
-                <Award className="mr-2 h-4 w-4" />
-                About Organization
+              <DropdownMenuItem
+                onClick={() =>
+                  navigate(
+                    "/portal/league-administrator/pages/settings?tab=organization"
+                  )
+                }
+              >
+                Profile
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

@@ -9,7 +9,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { CheckIcon, MoreVertical, X, Trophy } from "lucide-react";
+import {
+  CheckIcon,
+  MoreVertical,
+  X,
+  Trophy,
+  AlertTriangle,
+} from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +49,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "@/components/data-table-pagination";
@@ -73,6 +78,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type SheetFormData = {
   scheduled_date?: Date;
@@ -101,8 +107,6 @@ type Props = {
   ) => Promise<QueryObserverResult<LeagueMatch[] | null, Error>>;
 };
 
-// --- Main Component ---
-
 function UnscheduleTable({
   leagueMatchData,
   leagueMatchLoading,
@@ -110,20 +114,15 @@ function UnscheduleTable({
   refetchLeagueMatch,
 }: Props) {
   const { league: activeLeagueData } = useLeagueStore();
-
-  // --- State ---
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
-
-  // Scheduling Sheet State
   const [refereesOption, setRefereesOption] = useState<LeagueReferee[]>([]);
   const [courtOption, setCourtOption] = useState<LeagueCourt[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<LeagueMatch | null>(null);
   const [sheetFormData, setSheetFormData] = useState<SheetFormData>({});
 
-  // Score Dialog State
   const [scoreDialog, setScoreDialog] = useState<ScoreDialogState>({
     isOpen: false,
     match: null,
@@ -162,6 +161,38 @@ function UnscheduleTable({
       toast.error(getErrorMessage(error) || "Failed to update scores"),
   });
 
+  const saveChangesMutation = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Partial<LeagueMatch>;
+    }) => LeagueMatchService.updateOne(id, payload),
+    onSuccess: async () => {
+      toast.success("Match details updated successfully");
+      await refetchLeagueMatch();
+    },
+    onError: (error) =>
+      toast.error(getErrorMessage(error) || "Failed to save changes"),
+  });
+  const scheduleMatchMutation = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Partial<LeagueMatch>;
+    }) => LeagueMatchService.updateOne(id, payload),
+    onSuccess: async () => {
+      toast.success("Match Scheduled Successfully");
+      setIsSheetOpen(false);
+      await refetchLeagueMatch();
+    },
+    onError: (error) =>
+      toast.error(getErrorMessage(error) || "Failed to schedule match"),
+  });
+
   useEffect(() => {
     const referees = (activeLeagueData?.league_referees ?? []).filter(
       (ref) => ref.is_available
@@ -193,7 +224,6 @@ function UnscheduleTable({
     }
   }, [selectedMatch]);
 
-  // --- Handlers ---
   const handleOpenSheet = (match: LeagueMatch) => {
     setSelectedMatch(match);
     setIsSheetOpen(true);
@@ -232,6 +262,7 @@ function UnscheduleTable({
 
   const handleSaveChanges = () => {
     if (!selectedMatch) return;
+
     const payload: Partial<LeagueMatch> = {
       court: sheetFormData.court,
       quarters: sheetFormData.quarters,
@@ -242,27 +273,21 @@ function UnscheduleTable({
         ? sheetFormData.scheduled_date.toISOString()
         : undefined,
     };
-    const updateApi = async () => {
-      await LeagueMatchService.updateOne(
-        selectedMatch.league_match_id,
-        payload
-      );
-      await refetchLeagueMatch();
-    };
 
-    toast.promise(updateApi(), {
-      loading: "Saving changes...",
-      success: "Update successful",
-      error: (err) => err.message || "An error occurred.",
+    saveChangesMutation.mutate({
+      id: selectedMatch.league_match_id,
+      payload,
     });
   };
 
   const handleSaveSchedule = () => {
     if (!selectedMatch) return;
+
     if (!sheetFormData.scheduled_date) {
       toast.error("Please select a date and time to schedule the match.");
       return;
     }
+
     const payload: Partial<LeagueMatch> = {
       court: sheetFormData.court,
       quarters: sheetFormData.quarters,
@@ -272,19 +297,10 @@ function UnscheduleTable({
       scheduled_date: toLocalISOString(sheetFormData.scheduled_date),
       status: "Scheduled",
     };
-    const updateApi = async () => {
-      await LeagueMatchService.updateOne(
-        selectedMatch.league_match_id,
-        payload
-      );
 
-      await refetchLeagueMatch();
-    };
-
-    toast.promise(updateApi(), {
-      loading: "Scheduling match...",
-      success: "Match Scheduled",
-      error: (err) => getErrorMessage(err) || "An error occurred.",
+    scheduleMatchMutation.mutate({
+      id: selectedMatch.league_match_id,
+      payload,
     });
   };
 
@@ -443,9 +459,8 @@ function UnscheduleTable({
                 <DropdownMenuItem onClick={() => handleOpenSheet(match)}>
                   Manage Schedule
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handleOpenScoreDialog(match)}>
-                  Update Scores
+                  Record Result
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -484,12 +499,21 @@ function UnscheduleTable({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-yellow-500" />
-              Update Match Scores
+              Record Match Result
             </DialogTitle>
           </DialogHeader>
 
+          <Alert variant={"warning"}>
+            <AlertTriangle />
+            <AlertTitle>Manual Entry</AlertTitle>
+            <AlertDescription className="text-xs">
+              Use this only if the Match Scorebook was not used. This sets the
+              team totals but <strong>does not</strong> track individual player
+              stats.
+            </AlertDescription>
+          </Alert>
+
           <div className="grid grid-cols-2 gap-6 py-4">
-            {/* Home Team Input */}
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground uppercase font-semibold">
                 Home Team
@@ -525,7 +549,6 @@ function UnscheduleTable({
               />
             </div>
 
-            {/* Away Team Input */}
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground uppercase font-semibold">
                 Away Team
@@ -642,6 +665,7 @@ function UnscheduleTable({
         </Button>
       </div>
 
+      {/* Manage Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent aria-describedby={undefined}>
           <SheetHeader>
@@ -737,11 +761,26 @@ function UnscheduleTable({
               />
             </div>
           </div>
-          <SheetFooter className="mt-auto">
-            <Button variant="outline" onClick={handleSaveChanges}>
-              Save Changes
+          <SheetFooter className="mt-auto gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={handleSaveChanges}
+              disabled={
+                saveChangesMutation.isPending || scheduleMatchMutation.isPending
+              }
+            >
+              {saveChangesMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
-            <Button onClick={handleSaveSchedule}>Save Schedule</Button>
+            <Button
+              onClick={handleSaveSchedule}
+              disabled={
+                saveChangesMutation.isPending || scheduleMatchMutation.isPending
+              }
+            >
+              {scheduleMatchMutation.isPending
+                ? "Scheduling..."
+                : "Save Schedule"}
+            </Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

@@ -40,7 +40,6 @@ export default function LeagueAdministratorDisplay({
             <p className="text-sm opacity-70">{data.organization_type}</p>
           </div>
 
-          {/* Address */}
           <div className="flex-1">
             <p className="text-sm font-semibold">Address</p>
             <p className="text-sm opacity-80 break-words">
@@ -55,9 +54,6 @@ export default function LeagueAdministratorDisplay({
             </p>
             <p className="text-sm opacity-80">
               Contact: {data.account.contact_number}
-            </p>
-            <p className="text-sm opacity-80">
-              Account Type: {data.account.account_type}
             </p>
           </div>
         </div>

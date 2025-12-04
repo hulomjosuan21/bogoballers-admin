@@ -1,6 +1,4 @@
-import type { League } from "@/types/league";
 import { useToggleStore } from "./toggleStore";
+import type { LeagueWithRecord } from "@/types/leagueRecord";
 
-export const useToggleLeagueHistorySection = useToggleStore<
-  League & { league_match_records: {} }
->();
+export const useToggleLeagueHistorySection = useToggleStore<LeagueWithRecord>();

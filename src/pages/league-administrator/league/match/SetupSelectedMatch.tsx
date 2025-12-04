@@ -258,7 +258,6 @@ export const SetupSelectedMatch = memo(
                             { condition: "Include first 5" }
                           );
 
-                        // ✅ update local state for away team
                         setAwayPlayers((prev) =>
                           prev.map((pl) =>
                             pl.league_player_id ===
@@ -292,7 +291,6 @@ export const SetupSelectedMatch = memo(
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        {/* Match config form */}
         <div>
           <div className="bg-card rounded-md px-2 pb-2 pt-4 border grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             <div className="space-y-2">

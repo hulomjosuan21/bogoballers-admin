@@ -272,7 +272,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     permissions: [Permission.ViewScheduledMatches],
   },
   {
-    path: "pages/settings",
+    path: "pages/settings/:tab?",
     element: <SettingsPage />,
     permissions: [Permission.ManageSettings],
     showInSidebar: true,

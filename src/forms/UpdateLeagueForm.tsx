@@ -372,6 +372,23 @@ export default function UpdateLeagueForm({
           value={leagueDescription}
           onChange={(e) => setLeagueDescription(e.target.value)}
           className="h-24"
+          onKeyDown={(e) => {
+            if (e.key === "Tab") {
+              e.preventDefault();
+              const textarea = e.currentTarget;
+              const start = textarea.selectionStart;
+              const end = textarea.selectionEnd;
+              const newValue =
+                leagueDescription.substring(0, start) +
+                "\t" +
+                leagueDescription.substring(end);
+
+              setLeagueDescription(newValue);
+              setTimeout(() => {
+                textarea.selectionStart = textarea.selectionEnd = start + 1;
+              }, 0);
+            }
+          }}
         />
       </div>
 

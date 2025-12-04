@@ -39,8 +39,6 @@ import {
   LeagueStatus,
 } from "@/service/leagueService";
 import useDateTime from "@/hooks/useDatetime";
-import LeagueAdministratorDisplay from "@/components/LeagueAdministratorDisplay";
-import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ActivityLogsFeed } from "@/components/ActivityLogsFeed";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -171,7 +169,6 @@ const DashboardFallback = ({
 
 export default function DashboardPage() {
   const dateTime = useDateTime();
-  const { leagueAdmin, leagueAdminLoading } = useAuthLeagueAdmin(true);
 
   const { data, isLoading, refetch, isError, error } = useQuery({
     queryKey: ["active-league-data"],
@@ -179,7 +176,7 @@ export default function DashboardPage() {
     enabled: true,
     retry: 1,
   });
-
+  const hasActiveLeague = !!data;
   const activeLeagueId = data?.league_id;
 
   const { setLeague, setQueryState } = useLeagueStore();
@@ -213,13 +210,13 @@ export default function DashboardPage() {
         selectedCategory,
         selectedRound,
         { condition: "Upcoming", limit: 5 },
-        !leagueAdmin && leagueAdminLoading
+        hasActiveLeague
       ),
       getLeagueMatchQueryOption(
         selectedCategory,
         selectedRound,
         { condition: "Completed", limit: 5 },
-        !leagueAdmin && leagueAdminLoading
+        hasActiveLeague
       ),
     ],
   });
@@ -299,12 +296,11 @@ export default function DashboardPage() {
                 <Skeleton className="h-10 w-2/3 rounded-md" />
               </div>
             ) : (
-              // We can safely assert data! here because the Fallback above catches nulls
               <LeagueSection league={data!} wrap={true} />
             )}
 
             <div className="flex gap-4 items-center flex-wrap">
-              {activeLeagueAnalyticsLoading ? (
+              {!activeLeagueAnalyticsData && activeLeagueAnalyticsLoading ? (
                 <>
                   <Skeleton className="h-24 w-40 rounded-xl" />
                   <Skeleton className="h-24 w-40 rounded-xl" />
@@ -345,7 +341,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {activeLeagueAnalyticsLoading ? (
+            {!activeLeagueAnalyticsData && activeLeagueAnalyticsLoading ? (
               <Skeleton className="h-[300px] w-full rounded-xl" />
             ) : (
               <ProfitAreaChart
@@ -370,17 +366,6 @@ export default function DashboardPage() {
                   365
                 }
               />
-            )}
-
-            {leagueAdminLoading ? (
-              <Skeleton className="h-24 w-full rounded-md" />
-            ) : (
-              leagueAdmin && (
-                <LeagueAdministratorDisplay
-                  dashboard={true}
-                  data={leagueAdmin}
-                />
-              )
             )}
 
             <div className="space-y-2">

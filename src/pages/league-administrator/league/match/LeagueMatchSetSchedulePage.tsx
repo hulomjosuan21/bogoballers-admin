@@ -13,7 +13,8 @@ import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoun
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
 import { UnscheduleMatchTable } from "@/tables/LeagueMatchUnscheduledTable";
-import { useLeagueMatch } from "@/hooks/leagueMatch";
+import { useQuery } from "@tanstack/react-query";
+import { leagueMatchService } from "@/service/leagueMatchService";
 
 export default function LeagueMatchSetUnSchedulePage() {
   const {
@@ -29,12 +30,15 @@ export default function LeagueMatchSetUnSchedulePage() {
   } = useLeagueCategoriesRoundsGroups();
 
   const {
-    leagueMatchData,
-    leagueMatchLoading,
-    leagueMatchError,
-    refetchLeagueMatch,
-  } = useLeagueMatch(selectedCategory, selectedRound, {
-    condition: "Unscheduled",
+    data: leagueMatchData,
+    isLoading: leagueMatchLoading,
+    error: leagueMatchError,
+    refetch: refetchLeagueMatch,
+  } = useQuery({
+    queryKey: ["unscheduled-matches", selectedCategory, selectedRound],
+    queryFn: () =>
+      leagueMatchService.fetchUnscheduled(selectedCategory, selectedRound),
+    enabled: !!selectedCategory && !!selectedRound,
   });
 
   if (activeLeagueStatus === "Pending") {
