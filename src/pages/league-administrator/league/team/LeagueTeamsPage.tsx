@@ -21,14 +21,14 @@ export default function LeagueTeamsPage() {
   const { state, data } = useToggleOfficialLeagueTeamSection();
   const {
     categories,
+    activeLeagueStatus,
     isLoading,
-    activeLeagueData,
     error,
     selectedCategory,
     setSelectedCategory,
   } = useLeagueCategoriesRoundsGroups();
 
-  if (activeLeagueData?.status === "Pending") {
+  if (activeLeagueStatus === "Pending") {
     return <LeagueNotApproveYet />;
   }
 

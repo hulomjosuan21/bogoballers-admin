@@ -11,27 +11,21 @@ import { RiSpamFill } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 import UpdateLeagueForm from "@/forms/UpdateLeagueForm";
 import { useNavigate } from "react-router-dom";
-import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
-import type { League } from "@/types/league";
-import { LeagueStatus } from "@/service/leagueService";
+import { LeagueService } from "@/service/leagueService";
 import { useLeaguePDF } from "@/hooks/usePrintLeagueDocument";
+import { useQuery } from "@tanstack/react-query";
 export default function LeagueUpdatePage() {
-  const {
-    leagueId: activeLeagueId,
-    data: activeLeagueData,
-    isLoading: activeLeagueLoading,
-    hasData,
-  } = useFetchLeagueGenericData<League>({
-    key: ["is-active"],
-    params: {
-      active: true,
-      status: [
-        LeagueStatus.Pending,
-        LeagueStatus.Scheduled,
-        LeagueStatus.Ongoing,
-      ],
-    },
+  const { data, refetch } = useQuery({
+    queryKey: ["active-league-data"],
+    queryFn: () => LeagueService.fetchActive(),
+    enabled: true,
+    retry: 1,
   });
+  const activeLeagueData = data;
+  const hasData = !!activeLeagueData;
+
+  const activeLeagueId = activeLeagueData?.league_id;
+  const activeLeagueLoading = false;
 
   const { runPrint, preparePrint, downloadLeague } = useLeaguePDF();
 
@@ -95,6 +89,7 @@ export default function LeagueUpdatePage() {
           <UpdateLeagueForm
             leagueId={activeLeagueId!}
             hasActive={!hasData}
+            refetch={refetch}
             activeLeague={activeLeagueData}
             activeLeagueLoading={activeLeagueLoading}
           />

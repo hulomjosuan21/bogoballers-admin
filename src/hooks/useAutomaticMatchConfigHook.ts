@@ -63,7 +63,10 @@ export function useAutomaticMatchConfigDragAndDrop() {
   return { onDrop, onDragOver };
 }
 
-export function useManageAutomaticMatchConfigNode(activeLeagueId?: string) {
+export function useManageAutomaticMatchConfigNode(
+  activeLeagueId?: string,
+  enabled = true
+) {
   const { nodes, edges } = useAutomaticMatchConfigFlowState();
   const dispatch = useAutomaticMatchConfigFlowDispatch();
   const { onDrop, onDragOver } = useAutomaticMatchConfigDragAndDrop();
@@ -82,7 +85,7 @@ export function useManageAutomaticMatchConfigNode(activeLeagueId?: string) {
         if (!activeLeagueId) return null;
         return autoMatchConfigService.getFlowState(activeLeagueId);
       },
-      enabled: !!activeLeagueId,
+      enabled: !!activeLeagueId && enabled,
       staleTime: Infinity,
       gcTime: Infinity,
       refetchOnWindowFocus: false,

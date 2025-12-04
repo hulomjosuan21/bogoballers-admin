@@ -9,21 +9,15 @@ import {
   AlertToolbar,
 } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
-import type { League } from "@/types/league";
-import { LeagueStatus } from "@/service/leagueService";
+import { LeagueService } from "@/service/leagueService";
+import { useQuery } from "@tanstack/react-query";
 
 export default function CreateLeaguePage() {
-  const { data, refetch } = useFetchLeagueGenericData<League>({
-    key: ["is-active"],
-    params: {
-      active: true,
-      status: [
-        LeagueStatus.Pending,
-        LeagueStatus.Scheduled,
-        LeagueStatus.Ongoing,
-      ],
-    },
+  const { data, refetch } = useQuery({
+    queryKey: ["active-league-data"],
+    queryFn: () => LeagueService.fetchActive(),
+    enabled: true,
+    retry: 1,
   });
 
   return (

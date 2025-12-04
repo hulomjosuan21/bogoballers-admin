@@ -123,9 +123,7 @@ export class LeagueService {
   }
 
   static async fetchActive() {
-    const response = await axiosClient.post<League>("/league/active", {
-      condition: "Active",
-    });
+    const response = await axiosClient.get<League>("/league/active");
 
     return response.data;
   }

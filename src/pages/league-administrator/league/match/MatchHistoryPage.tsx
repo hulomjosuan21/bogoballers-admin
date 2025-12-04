@@ -116,9 +116,6 @@ export const LeagueMatchTableWrapper = ({
   );
 };
 
-// ---------------------------
-// Main Page Component
-// ---------------------------
 const MatchHistoryPage = () => {
   const {
     categories,

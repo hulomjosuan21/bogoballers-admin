@@ -21,18 +21,25 @@ import FinalizaMatchSection from "@/components/FinalizeMatch";
 import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import ScheduleMatchTable from "@/tables/LeagueMatchUpcomingTable";
 import { SetupSelectedMatch } from "./SetupSelectedMatch";
+import { LeagueService } from "@/service/leagueService";
+import { useQuery } from "@tanstack/react-query";
 
 export default function LeagueMatches() {
   const {
     categories,
     rounds,
     isLoading,
-    activeLeagueData,
     selectedCategory,
     selectedRound,
     setSelectedCategory,
     setSelectedRound,
   } = useLeagueCategoriesRoundsGroups();
+
+  const { data: activeLeagueData } = useQuery({
+    queryKey: ["active-league-data"],
+    queryFn: () => LeagueService.fetchActive(),
+    enabled: true,
+  });
 
   useEffect(() => {
     if (rounds.length > 0) {

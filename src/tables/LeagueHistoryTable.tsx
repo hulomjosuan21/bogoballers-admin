@@ -23,24 +23,22 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import type { League } from "@/types/league";
-import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
 import { Spinner } from "@/components/ui/spinner";
 import { formatDate12h } from "@/lib/app_utils";
 import type { LeagueTeam } from "@/types/team";
-import { useLeagueStore } from "@/stores/leagueStore";
+import { useQuery } from "@tanstack/react-query";
+import axiosClient from "@/lib/axiosClient";
 
 type LeagueWithTeam = League & { teams: LeagueTeam[] };
+async function fetchRecords() {
+  const response = await axiosClient.get<LeagueWithTeam[]>("/league/records");
 
+  return response.data;
+}
 const LeagueHistoryTable = () => {
-  const { leagueId, setLeague } = useLeagueStore();
-  const { data, isLoading, refetch } = useFetchLeagueGenericData<
-    LeagueWithTeam[]
-  >({
-    key: ["league-record"],
-    params: {
-      all: true,
-      filter: "record",
-    },
+  const { data, isLoading, refetch } = useQuery<LeagueWithTeam[]>({
+    queryKey: ["league-history-table"],
+    queryFn: fetchRecords,
   });
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -58,11 +56,38 @@ const LeagueHistoryTable = () => {
   const columns: ColumnDef<LeagueWithTeam>[] = [
     {
       accessorKey: "league_title",
+      header: "League Title",
     },
     {
       accessorKey: "teams_count",
       header: "Total Teams",
       cell: ({ row }) => <span>{row.original.teams.length ?? []}</span>,
+    },
+    {
+      accessorKey: "registration_deadline",
+      header: "Registration deadline",
+      cell: ({ row }) => (
+        <span>{formatDate12h(row.original.registration_deadline)}</span>
+      ),
+    },
+    {
+      accessorKey: "opening_date",
+      header: "Opening date",
+      cell: ({ row }) => (
+        <span>{formatDate12h(row.original.opening_date)}</span>
+      ),
+    },
+    {
+      accessorKey: "teams_count",
+      header: "Total Teams",
+      cell: ({ row }) => <span>{row.original.teams.length ?? []}</span>,
+    },
+    {
+      accessorKey: "league_categories",
+      header: "Total Categories",
+      cell: ({ row }) => (
+        <span>{row.original.league_categories.length ?? []}</span>
+      ),
     },
     {
       accessorKey: "league_created_at",
@@ -72,22 +97,13 @@ const LeagueHistoryTable = () => {
       ),
     },
     {
-      accessorKey: "actions",
+      accessorKey: "action",
       header: "",
-      cell: ({ row }) => {
-        const dataLeague = row.original;
-
-        const isSelected = dataLeague.league_id != leagueId;
-
+      cell: () => {
         return (
           <div className="text-right">
-            <Button
-              variant={"outline"}
-              size={"sm"}
-              disabled={isSelected}
-              onClick={() => setLeague(dataLeague)}
-            >
-              {isSelected ? "Already selected" : "Select"}
+            <Button variant="outline" size={"sm"}>
+              Select
             </Button>
           </div>
         );

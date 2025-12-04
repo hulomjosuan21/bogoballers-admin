@@ -2,12 +2,6 @@ import { useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axiosClient from "@/lib/axiosClient";
 import { useLeagueMatchSelectionStore } from "./useLeagueMatchSelectionStore";
-import { useFetchLeagueGenericData } from "./useFetchLeagueGenericData";
-import type { League } from "@/types/league";
-import {
-  LeagueStatus,
-  type FetchLeagueGenericDataParams,
-} from "@/service/leagueService";
 
 export interface LeagueGroup {
   group_id: string;
@@ -26,51 +20,15 @@ export interface LeagueCategoryWithRounds {
   rounds: LeagueRound[];
 }
 
+interface LeagueCategoriesResponse {
+  league_id: string;
+  league_status: string;
+  payload: LeagueCategoryWithRounds[];
+}
+
 export function useLeagueCategoriesRoundsGroups(params?: {
-  leagueId?: string;
   publicLeagueId?: string;
 }) {
-  const { leagueId, publicLeagueId } = params ?? {};
-
-  const hasLeagueId = !!leagueId;
-  const hasPublicId = !!publicLeagueId;
-  let queryKey: string[] = [];
-  let queryParams: FetchLeagueGenericDataParams = {};
-
-  if (hasLeagueId && hasPublicId) {
-    queryKey = ["league", leagueId];
-    queryParams = { leagueId: leagueId };
-  } else if (hasLeagueId) {
-    queryKey = ["league", leagueId];
-    queryParams = { leagueId: leagueId };
-  } else if (hasPublicId) {
-    queryKey = ["public-league", publicLeagueId];
-    queryParams = {
-      filter: "public",
-      publicLeagueId: publicLeagueId,
-    };
-  } else {
-    queryKey = ["is-active"];
-    queryParams = {
-      active: true,
-      status: [
-        LeagueStatus.Pending,
-        LeagueStatus.Scheduled,
-        LeagueStatus.Ongoing,
-      ],
-    };
-  }
-
-  const {
-    leagueId: activeLeagueId,
-    data: activeLeagueData,
-    isLoading: activeLeagueLoading,
-    error: activeLeagueError,
-  } = useFetchLeagueGenericData<League>({
-    key: queryKey,
-    params: queryParams,
-  });
-
   const {
     selectedCategory,
     selectedRound,
@@ -80,24 +38,33 @@ export function useLeagueCategoriesRoundsGroups(params?: {
     setSelectedGroup,
   } = useLeagueMatchSelectionStore();
 
+  const publicLeagueId = params?.publicLeagueId;
+
+  const queryKey = ["league-categories-rounds-groups", publicLeagueId];
+
   const {
-    data: categories = [],
+    data,
     isLoading: queryLoading,
     error: queryError,
-  } = useQuery<LeagueCategoryWithRounds[]>({
-    queryKey: ["league-categories-rounds-groups", activeLeagueId],
+  } = useQuery<LeagueCategoriesResponse>({
+    queryKey: queryKey,
     queryFn: async () => {
-      if (!activeLeagueId) return [];
-      const { data } = await axiosClient.get<LeagueCategoryWithRounds[]>(
-        `/league-category/rounds-groups-names/${activeLeagueId}`
+      const { data } = await axiosClient.get<LeagueCategoriesResponse>(
+        `/league-category/rounds-groups-names`,
+        {
+          params: publicLeagueId ? { public_league_id: publicLeagueId } : {},
+        }
       );
       return data;
     },
-    enabled: !!activeLeagueId,
   });
 
-  const isLoading = activeLeagueLoading || queryLoading;
-  const error = activeLeagueError || queryError;
+  const categories = data?.payload || [];
+  const activeLeagueId = data?.league_id;
+  const activeLeagueStatus = data?.league_status;
+
+  const isLoading = queryLoading;
+  const error = queryError;
 
   const rounds = useMemo(() => {
     return (
@@ -110,20 +77,30 @@ export function useLeagueCategoriesRoundsGroups(params?: {
     return rounds.find((r) => r.round_id === selectedRound)?.groups ?? [];
   }, [rounds, selectedRound]);
 
-  const initialized = useRef(false);
+  const lastInitializedLeagueId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (initialized.current) return;
-    if (!categories.length) return;
+    if (!categories.length || !activeLeagueId) return;
+    if (lastInitializedLeagueId.current === activeLeagueId) return;
 
     const firstCategory = categories[0];
     const firstRound = firstCategory.rounds?.[0];
-
     setSelectedCategory(firstCategory.league_category_id);
-    if (firstRound) setSelectedRound(firstRound.round_id);
 
-    initialized.current = true;
-  }, [categories, setSelectedCategory, setSelectedRound]);
+    if (firstRound) {
+      setSelectedRound(firstRound.round_id);
+    } else {
+      setSelectedRound("");
+    }
+    setSelectedGroup("");
+    lastInitializedLeagueId.current = activeLeagueId;
+  }, [
+    activeLeagueId,
+    categories,
+    setSelectedCategory,
+    setSelectedRound,
+    setSelectedGroup,
+  ]);
 
   useEffect(() => {
     if (!categories.length) return;
@@ -161,7 +138,7 @@ export function useLeagueCategoriesRoundsGroups(params?: {
 
   return {
     activeLeagueId,
-    activeLeagueData,
+    activeLeagueStatus,
     categories,
     rounds,
     groups,

@@ -15,8 +15,10 @@ import {
   PanelRightOpen,
   PanelRightClose,
   type LucideIcon,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useActiveLeagueAnalytics } from "@/hooks/useActiveLeague";
 
 import type { League } from "@/types/league";
@@ -29,10 +31,13 @@ import {
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { getLeagueMatchQueryOption } from "@/queries/leagueMatchQueryOption";
-import { useFetchLeagueGenericData } from "@/hooks/useFetchLeagueGenericData";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
 import { useLeagueStore } from "@/stores/leagueStore";
-import { leagueService, LeagueStatus } from "@/service/leagueService";
+import {
+  LeagueService,
+  leagueService,
+  LeagueStatus,
+} from "@/service/leagueService";
 import useDateTime from "@/hooks/useDatetime";
 import LeagueAdministratorDisplay from "@/components/LeagueAdministratorDisplay";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
@@ -130,34 +135,52 @@ const AnalyticsCard = ({
   </Card>
 );
 
+const DashboardFallback = ({
+  error,
+  reset,
+}: {
+  error?: Error | null;
+  reset: () => void;
+}) => {
+  return (
+    <ContentShell>
+      <ContentHeader title="Active League Dashboard" />
+      <ContentBody>
+        <div className="flex h-[50vh] w-full flex-col items-center justify-center gap-4 text-center">
+          <div className="rounded-full bg-destructive/10 p-4 text-destructive">
+            <AlertCircle className="h-10 w-10" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold tracking-tight">
+              Dashboard Unavailable
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-sm">
+              {error?.message ||
+                "We couldn't load the active league data. This might be a connection issue or the league data is missing."}
+            </p>
+          </div>
+          <Button onClick={reset} variant="outline" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Try Again
+          </Button>
+        </div>
+      </ContentBody>
+    </ContentShell>
+  );
+};
+
 export default function DashboardPage() {
   const dateTime = useDateTime();
   const { leagueAdmin, leagueAdminLoading } = useAuthLeagueAdmin(true);
 
-  const activeLeagueParams = useMemo(
-    () => ({
-      active: true,
-      status: [
-        LeagueStatus.Pending,
-        LeagueStatus.Scheduled,
-        LeagueStatus.Ongoing,
-      ],
-    }),
-    []
-  );
-
-  const {
-    leagueId: activeLeagueId,
-    data,
-    isFetching,
-    refetch,
-    isError,
-    error,
-  } = useFetchLeagueGenericData<League>({
-    key: ["is-active"],
-    options: { enabled: !!leagueAdmin && !leagueAdminLoading },
-    params: activeLeagueParams,
+  const { data, isLoading, refetch, isError, error } = useQuery({
+    queryKey: ["active-league-data"],
+    queryFn: () => LeagueService.fetchActive(),
+    enabled: true,
+    retry: 1,
   });
+
+  const activeLeagueId = data?.league_id;
 
   const { setLeague, setQueryState } = useLeagueStore();
 
@@ -169,7 +192,7 @@ export default function DashboardPage() {
       leagueId: activeLeagueId,
       refetch,
     });
-  }, [isFetching, isError, error, activeLeagueId, refetch, setQueryState]);
+  }, [isLoading, isError, error, activeLeagueId, refetch, setQueryState]);
 
   useEffect(() => {
     if (data) setLeague(data);
@@ -233,6 +256,10 @@ export default function DashboardPage() {
     return <SelectedLeagueStateScreen state={leagueStatus} league={data} />;
   }
 
+  if (!isLoading && (isError || !data)) {
+    return <DashboardFallback error={error} reset={() => refetch()} />;
+  }
+
   return (
     <ContentShell>
       <ContentHeader title="Active League Dashboard">
@@ -266,16 +293,14 @@ export default function DashboardPage() {
               />
             )}
 
-            {activeLeagueAnalyticsLoading ? (
+            {isLoading ? (
               <div className="space-y-3">
                 <Skeleton className="h-16 w-full rounded-md" />
                 <Skeleton className="h-10 w-2/3 rounded-md" />
               </div>
             ) : (
-              <LeagueSection
-                league={activeLeagueAnalyticsData?.active_league!}
-                wrap={true}
-              />
+              // We can safely assert data! here because the Fallback above catches nulls
+              <LeagueSection league={data!} wrap={true} />
             )}
 
             <div className="flex gap-4 items-center flex-wrap">

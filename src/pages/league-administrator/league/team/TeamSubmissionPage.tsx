@@ -17,15 +17,15 @@ import { Spinner } from "@/components/ui/spinner";
 export default function TeamSubmissionPage() {
   const {
     activeLeagueId,
+    activeLeagueStatus,
     categories,
     isLoading,
-    activeLeagueData,
     error,
     selectedCategory,
     setSelectedCategory,
   } = useLeagueCategoriesRoundsGroups();
 
-  if (activeLeagueData?.status === "Pending") {
+  if (activeLeagueStatus === "Pending") {
     return <LeagueNotApproveYet />;
   }
 

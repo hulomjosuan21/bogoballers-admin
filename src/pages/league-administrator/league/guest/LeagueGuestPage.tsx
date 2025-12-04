@@ -1,7 +1,5 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-
-import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import {
   Select,
@@ -18,13 +16,13 @@ import { Suspense } from "react";
 export default function LeagueGuestPage() {
   const {
     categories,
+    activeLeagueStatus,
     isLoading,
-    activeLeagueData,
     selectedCategory,
     setSelectedCategory,
   } = useLeagueCategoriesRoundsGroups();
 
-  if (activeLeagueData?.status === "Pending") {
+  if (activeLeagueStatus === "Pending") {
     return <LeagueNotApproveYet />;
   }
 
@@ -58,20 +56,16 @@ export default function LeagueGuestPage() {
           </Select>
         </div>
 
-        {!activeLeagueData ? (
-          <NoActiveLeagueAlert />
-        ) : (
-          <Suspense
-            key={selectedCategory}
-            fallback={
-              <div className="h-40 grid place-content-center">
-                <Spinner />
-              </div>
-            }
-          >
-            <LeagueGuestTable leagueCategoryId={selectedCategory} />
-          </Suspense>
-        )}
+        <Suspense
+          key={selectedCategory}
+          fallback={
+            <div className="h-40 grid place-content-center">
+              <Spinner />
+            </div>
+          }
+        >
+          <LeagueGuestTable leagueCategoryId={selectedCategory} />
+        </Suspense>
       </ContentBody>
     </ContentShell>
   );

@@ -40,7 +40,6 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import type { BasicMultiSelectOption } from "@/components/ui/types";
 import { getErrorMessage } from "@/lib/error";
 import { useCategories } from "@/hooks/useLeagueAdmin";
-import { refetchActiveLeague } from "@/hooks/useActiveLeague";
 import type { League } from "@/types/league";
 import { LeagueService } from "@/service/leagueService";
 import { useUpdateEntityImage } from "@/hooks/useUpdateEntityImage";
@@ -62,11 +61,13 @@ export default function UpdateLeagueForm({
   hasActive,
   activeLeague,
   activeLeagueLoading,
+  refetch,
   leagueId,
 }: {
   leagueId: string;
   hasActive: boolean;
   activeLeague: League;
+  refetch: () => Promise<any>;
   activeLeagueLoading: boolean;
 }) {
   const leagueAdmin = useQuery(authLeagueAdminQueryOption({ enabled: true }));
@@ -135,7 +136,6 @@ export default function UpdateLeagueForm({
         const categoryIds = selectedCategories.map((opt) => opt.value);
         const payload: Partial<LeagueUpdatePayload> = {};
 
-        // Only include changed fields
         if (leagueTitle !== activeLeague.league_title) {
           payload.league_title = leagueTitle;
         }
@@ -161,14 +161,12 @@ export default function UpdateLeagueForm({
           registrationDadline.toISOString() !==
             activeLeague.registration_deadline
         ) {
-          // Send ISO string to match backend expectation
           payload.registration_deadline = registrationDadline.toISOString();
         }
         if (
           openingDate &&
           openingDate.toISOString() !== activeLeague.opening_date
         ) {
-          // Send ISO string to match backend expectation
           payload.opening_date = openingDate.toISOString();
         }
         if (
@@ -181,7 +179,6 @@ export default function UpdateLeagueForm({
           payload.status = status;
         }
 
-        // Only send request if there are changes
         if (Object.keys(payload).length === 0) {
           toast.info("No changes detected");
           setProcessing(false);
@@ -190,7 +187,7 @@ export default function UpdateLeagueForm({
 
         const response = await LeagueService.updateOne(leagueId, payload);
 
-        await refetchActiveLeague();
+        await refetch();
         return response;
       } catch (err) {
         throw err;

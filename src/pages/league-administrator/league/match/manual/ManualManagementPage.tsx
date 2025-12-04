@@ -16,16 +16,31 @@ import { useTheme } from "@/providers/theme-provider";
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense, useTransition } from "react";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
-import { useLeagueStore } from "@/stores/leagueStore";
 import type { LeagueStatus } from "@/service/leagueService";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { toast } from "sonner";
+import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 
 function ManualMatchingPageContent() {
-  const { league, isLoading, leagueId } = useLeagueStore();
+  const { activeLeagueId, activeLeagueStatus, isLoading } =
+    useLeagueCategoriesRoundsGroups();
   const [isPending, startTransition] = useTransition();
+
+  const leagueStatus = activeLeagueStatus as LeagueStatus;
+
+  const handledStates: Record<LeagueStatus, boolean> = {
+    Pending: true,
+    Completed: true,
+    Postponed: true,
+    Cancelled: true,
+    Scheduled: false,
+    Ongoing: false,
+    Rejected: true,
+  };
+
+  const isConfigurable = !handledStates[leagueStatus];
 
   const {
     changeType,
@@ -37,41 +52,31 @@ function ManualMatchingPageContent() {
     onDrop,
     onDragOver,
     onNodeDragStop,
-  } = useManageManualMatchConfigNode(leagueId);
+  } = useManageManualMatchConfigNode(activeLeagueId, isConfigurable);
+
   const { theme } = useTheme();
 
   if (isLoading) {
     return <SelectedLeagueStateScreen loading />;
   }
 
-  if (!league || !leagueId) {
+  if (!activeLeagueId) {
     return <SelectedLeagueStateScreen />;
   }
-
-  const leagueStatus = league.status as LeagueStatus;
 
   const handleRefresh = () => {
     startTransition(async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["manual-match-config-flow", leagueId],
+        queryKey: ["manual-match-config-flow", activeLeagueId],
         exact: true,
       });
 
       toast.success("Data refreshed!");
     });
   };
-  const handledStates: Record<LeagueStatus, boolean> = {
-    Pending: true,
-    Completed: true,
-    Postponed: true,
-    Cancelled: true,
-    Scheduled: false,
-    Ongoing: false,
-    Rejected: true,
-  };
 
   if (handledStates[leagueStatus]) {
-    return <SelectedLeagueStateScreen state={leagueStatus} league={league} />;
+    return <SelectedLeagueStateScreen state={leagueStatus} />;
   }
 
   const rightMenu = (

@@ -19,8 +19,8 @@ export default function LeagueMatchSetUnSchedulePage() {
   const {
     categories,
     rounds,
+    activeLeagueStatus,
     isLoading,
-    activeLeagueData,
     error,
     selectedCategory,
     selectedRound,
@@ -37,7 +37,7 @@ export default function LeagueMatchSetUnSchedulePage() {
     condition: "Unscheduled",
   });
 
-  if (activeLeagueData?.status == "Pending") {
+  if (activeLeagueStatus === "Pending") {
     return <LeagueNotApproveYet />;
   }
 

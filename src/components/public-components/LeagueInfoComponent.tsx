@@ -28,7 +28,6 @@ function Component({ publicLeagueId }: Props) {
 
   const [viewType, setViewType] = useState<"Teams" | "Match">("Teams");
 
-  // ⛔ Prevent rendering while loading
   if (isLoading) {
     return (
       <div className="h-40 grid place-content-center">
@@ -37,7 +36,6 @@ function Component({ publicLeagueId }: Props) {
     );
   }
 
-  // ⛔ No categories found
   if (!selectedCategory) {
     return <p className="text-muted-foreground">No category selected.</p>;
   }
@@ -59,7 +57,6 @@ function Component({ publicLeagueId }: Props) {
           </SelectContent>
         </Select>
 
-        {/* Category selector */}
         {categories.length > 0 && (
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="h-6 px-2 py-1 text-xs">

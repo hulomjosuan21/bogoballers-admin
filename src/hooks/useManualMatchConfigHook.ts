@@ -79,7 +79,10 @@ export function useManualMatchConfigDragAndDrop() {
   return { onDrop, onDragOver };
 }
 
-export function useManageManualMatchConfigNode(activeLeagueId?: string) {
+export function useManageManualMatchConfigNode(
+  activeLeagueId?: string,
+  enabled = true
+) {
   const [changeType, setChangeType] = useState<"Position" | undefined>();
 
   const { nodes, edges } = useManualMatchConfigFlowState();
@@ -102,7 +105,7 @@ export function useManageManualMatchConfigNode(activeLeagueId?: string) {
         if (!activeLeagueId) return null;
         return manualLeagueService.getFlowState(activeLeagueId);
       },
-      enabled: !!activeLeagueId,
+      enabled: !!activeLeagueId && enabled,
       staleTime: 0,
       refetchOnMount: true,
       gcTime: 5 * 60 * 1000,

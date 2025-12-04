@@ -8,7 +8,6 @@ import {
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense, useTransition } from "react";
-import { useLeagueStore } from "@/stores/leagueStore";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
 import type { LeagueStatus } from "@/service/leagueService";
 import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
@@ -19,41 +18,15 @@ import { queryClient } from "@/lib/queryClient";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 
 function AutomaticMatchConfigPage() {
-  const { league, isLoading, leagueId } = useLeagueStore();
+  const { activeLeagueId, activeLeagueStatus, isLoading } =
+    useLeagueCategoriesRoundsGroups();
   const [isPending, startTransition] = useTransition();
-  const {
-    nodes,
-    edges,
-    onNodesChange,
-    onEdgesChange,
-    onConnect,
-    onDrop,
-    onDragOver,
-    onNodeDragStop,
-  } = useManageAutomaticMatchConfigNode(leagueId);
 
-  const { theme } = useTheme();
-  if (isLoading) {
-    return <SelectedLeagueStateScreen loading />;
-  }
+  const leagueStatus = activeLeagueStatus as LeagueStatus;
 
-  if (!league || !leagueId) {
-    return <SelectedLeagueStateScreen />;
-  }
-
-  const leagueStatus = league.status as LeagueStatus;
-  const handleRefresh = () => {
-    startTransition(async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["auto-match-config-flow", leagueId],
-        exact: true,
-      });
-
-      toast.success("Data refreshed!");
-    });
-  };
   const handledStates: Record<LeagueStatus, boolean> = {
     Pending: true,
     Completed: true,
@@ -64,8 +37,41 @@ function AutomaticMatchConfigPage() {
     Rejected: true,
   };
 
+  const isConfigurable = !handledStates[leagueStatus];
+
+  const {
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onDrop,
+    onDragOver,
+    onNodeDragStop,
+  } = useManageAutomaticMatchConfigNode(activeLeagueId, isConfigurable);
+
+  const { theme } = useTheme();
+  if (isLoading) {
+    return <SelectedLeagueStateScreen loading />;
+  }
+
+  if (!activeLeagueId) {
+    return <SelectedLeagueStateScreen />;
+  }
+
+  const handleRefresh = () => {
+    startTransition(async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["auto-match-config-flow", activeLeagueId],
+        exact: true,
+      });
+
+      toast.success("Data refreshed!");
+    });
+  };
+
   if (handledStates[leagueStatus]) {
-    return <SelectedLeagueStateScreen state={leagueStatus} league={league} />;
+    return <SelectedLeagueStateScreen state={leagueStatus} />;
   }
 
   const menu = (
