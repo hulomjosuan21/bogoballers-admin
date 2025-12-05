@@ -182,6 +182,15 @@ export class LeagueService {
     });
     return response.data;
   }
+
+  async updateLeague(leagueId: string, data: Partial<League>) {
+    const response = await axiosClient.put<{ message: string }>(
+      `/update/${leagueId}`,
+      data
+    );
+
+    return response.data;
+  }
 }
 
 export const leagueService = new LeagueService();

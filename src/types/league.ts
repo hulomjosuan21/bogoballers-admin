@@ -38,17 +38,19 @@ export interface League extends LeagueResource {
   league_id: string;
   public_league_id: string;
   league_administrator_id: string;
-  league_title: string;
-  league_description: string;
-  league_address: string;
-  league_budget: number;
-  registration_deadline: string;
-  opening_date: string;
-  league_schedule: [string, string];
-  banner_url: string;
-  status: string;
-  season_year: number;
-  sportsmanship_rules: string[];
+  league_title: string; // updatable
+  league_description: string; // updatable
+  league_objective: string; // updatable
+  league_rationale: string[]; // updatable
+  league_address: string; // updatable
+  league_budget: number; // updatable
+  registration_deadline: string; // updatable
+  opening_date: string; // updatable
+  league_schedule: [string, string]; // updatable
+  banner_url: string; // updatable
+  status: string; // updatable
+  season_year: number; // updatable
+  sportsmanship_rules: string[]; // updatable
   league_created_at: string;
   league_updated_at: string;
   creator: LeagueAdministator;
