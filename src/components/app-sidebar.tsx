@@ -93,12 +93,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const otherNav = buildNavFromRoutes(otherRoutes);
 
   return (
-    <Sidebar collapsible="icon" {...props} variant="floating">
-      <SidebarHeader>
+    <Sidebar collapsible="icon" {...props} variant="floating" className="">
+      <SidebarHeader className="sidebarColor">
         <AppSidebarHeader />
       </SidebarHeader>
 
-      <ScrollArea className="flex-1 overflow-hidden">
+      <ScrollArea className="flex-1 overflow-hidden sidebarColor">
         <SidebarContent className="pb-4">
           {leagueAdminLoading ? (
             <div className="space-y-6">

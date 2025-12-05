@@ -81,7 +81,11 @@ export function NavMenu({
             )
           ) : (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild tooltip={item.title}>
+              <SidebarMenuButton
+                asChild
+                tooltip={item.title}
+                className="sidebarItem"
+              >
                 <Link to={item.url}>
                   {item.icon ? (
                     <item.icon className="text-sidebar-foreground/70" />
