@@ -37,6 +37,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import LeagueAdministratorService from "@/service/leagueAdminService";
+import { toast } from "sonner";
+import axiosClient from "@/lib/axiosClient";
+import { getErrorMessage } from "@/lib/error";
 
 export default function UpdateOrganizationTab() {
   const { leagueAdmin, leagueAdminLoading, refetchLeagueAdmin } =
@@ -72,6 +76,10 @@ export default function UpdateOrganizationTab() {
   const handleSaveDetails = async () => {
     setSavingDetails(true);
     try {
+      if (!leagueAdmin) {
+        toast.error("Something went wrong!");
+        return;
+      }
       const payload: Partial<LeagueAdministator> = {};
       Object.entries(formData).forEach(([key, value]) => {
         if (value !== (leagueAdmin as any)[key]) {
@@ -80,11 +88,16 @@ export default function UpdateOrganizationTab() {
       });
 
       if (Object.keys(payload).length > 0) {
-        console.log("Updating details:", payload);
+        const response = await LeagueAdministratorService.updateOne(
+          leagueAdmin.league_administrator_id,
+          payload
+        );
+
+        toast.success(response.message);
         await refetchLeagueAdmin();
       }
     } catch (error) {
-      console.error("Failed to update details:", error);
+      toast.error(getErrorMessage(error));
     } finally {
       setSavingDetails(false);
     }
@@ -92,25 +105,37 @@ export default function UpdateOrganizationTab() {
 
   const handleSavePhoto = async () => {
     if (!profileImage) return;
-    setSavingPhoto(true);
-    try {
-      const payload: Partial<LeagueAdministator> = {
-        organization_logo_url:
-          typeof profileImage === "string" ? profileImage : "uploaded_file_url",
-      };
 
-      console.log("Updating logo:", payload);
-      await refetchLeagueAdmin();
-    } catch (error) {
-      console.error("Failed to update logo:", error);
+    if (!leagueAdmin?.league_administrator_id) {
+      toast.error("Admin details not found!");
+      return;
+    }
+
+    setSavingPhoto(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("new_image", profileImage);
+
+      const entityId = leagueAdmin.league_administrator_id;
+      const accountType = "league_admin";
+      const response = await axiosClient.put(
+        `/entity/update/image/${entityId}/${accountType}`,
+        formData
+      );
+
+      if (response.status === 200) {
+        toast.success("Logo updated successfully!");
+        await refetchLeagueAdmin();
+      }
+    } catch (error: any) {
+      toast.error(getErrorMessage(error));
     } finally {
       setSavingPhoto(false);
     }
   };
-
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div>
         <h3 className="text-lg font-medium">Organization Settings</h3>
         <p className="text-sm text-muted-foreground">
@@ -286,16 +311,39 @@ export default function UpdateOrganizationTab() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contact_number_alt">Country</Label>
-                    <Input id="contact_number_alt" />
+                    <Label htmlFor="organization_country">Country</Label>
+                    <Input
+                      id="organization_country"
+                      defaultValue={leagueAdmin.organization_country}
+                      onChange={(e) =>
+                        handleChange("organization_country", e.target.value)
+                      }
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contact_number_fax">Province</Label>
-                    <Input id="contact_number_fax" />
+                    <Label htmlFor="organization_province">Province</Label>
+                    <Input
+                      id="organization_province"
+                      defaultValue={leagueAdmin.organization_province}
+                      onChange={(e) =>
+                        handleChange("organization_province", e.target.value)
+                      }
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contact_number_mobile">Municipality</Label>
-                    <Input id="contact_number_mobile" />
+                    <Label htmlFor="organization_municipality">
+                      Municipality
+                    </Label>
+                    <Input
+                      id="organization_municipality"
+                      defaultValue={leagueAdmin.organization_municipality}
+                      onChange={(e) =>
+                        handleChange(
+                          "organization_municipality",
+                          e.target.value
+                        )
+                      }
+                    />
                   </div>
                 </div>
               </div>

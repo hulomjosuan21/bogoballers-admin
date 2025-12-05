@@ -5,11 +5,19 @@ import ManangeReferees from "@/tables/ManageRefereesTable";
 import ManageCourts from "@/tables/ManageCourtsTable";
 import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
-import { useLeagueStore } from "@/stores/leagueStore";
-import type { LeagueStatus } from "@/service/leagueService";
+import { LeagueService, type LeagueStatus } from "@/service/leagueService";
+import { useQuery } from "@tanstack/react-query";
 
 export default function LeagueOfficialsPage() {
-  const { league, isLoading, leagueId } = useLeagueStore();
+  const { data: league, isLoading } = useQuery({
+    queryKey: ["active-league-data"],
+    queryFn: () => LeagueService.fetchActive(),
+    enabled: true,
+    retry: 1,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
+  const leagueId = league?.league_id;
 
   if (isLoading) {
     return <SelectedLeagueStateScreen loading />;

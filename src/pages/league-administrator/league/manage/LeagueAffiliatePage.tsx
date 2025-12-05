@@ -1,12 +1,20 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageAffiliates from "@/tables/ManangeAffiliateTable";
-import { useLeagueStore } from "@/stores/leagueStore";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
-import type { LeagueStatus } from "@/service/leagueService";
+import { LeagueService, type LeagueStatus } from "@/service/leagueService";
+import { useQuery } from "@tanstack/react-query";
 
 export default function LeagueAffiliatePage() {
-  const { league, isLoading, leagueId } = useLeagueStore();
+  const { data: league, isLoading } = useQuery({
+    queryKey: ["active-league-data"],
+    queryFn: () => LeagueService.fetchActive(),
+    enabled: true,
+    retry: 1,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
+  const leagueId = league?.league_id;
 
   if (isLoading) {
     return <SelectedLeagueStateScreen loading />;

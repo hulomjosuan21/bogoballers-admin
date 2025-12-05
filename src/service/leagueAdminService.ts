@@ -85,6 +85,18 @@ class LeagueAdministratorService {
     const response = await axiosClient.get<Category[]>("/category/all");
     return response.data;
   }
+
+  static async updateOne(
+    leagueAdministratorId: string,
+    data: Partial<LeagueAdministator>
+  ) {
+    const response = await axiosClient.put<{ message: string }>(
+      `/league-administrator/update/${leagueAdministratorId}`,
+      data
+    );
+
+    return response.data;
+  }
 }
 
 export default LeagueAdministratorService;

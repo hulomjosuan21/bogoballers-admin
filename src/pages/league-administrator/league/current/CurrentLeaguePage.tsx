@@ -22,6 +22,8 @@ export default function LeagueUpdatePage() {
     queryFn: () => LeagueService.fetchActive(),
     enabled: true,
     retry: 1,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
   const [showPdf, setShowPdf] = useState(true);
   const activeLeagueData = data;
@@ -30,17 +32,9 @@ export default function LeagueUpdatePage() {
   const activeLeagueId = activeLeagueData?.league_id;
   const activeLeagueLoading = false;
 
-  // const { runPrint, preparePrint, downloadLeague } = useLeaguePDF();
-
-  // const handlePrint = async () => {
-  //   const result = await preparePrint(activeLeagueId);
-  //   const url = await result?.unwrap();
-  //   runPrint(url);
-  // };
-
   const togglePdfViewer = () => {
-    setShowPdf(false); // unmount
-    setTimeout(() => setShowPdf(true), 0); // re-mount
+    setShowPdf(false);
+    setTimeout(() => setShowPdf(true), 0);
   };
 
   const navigate = useNavigate();

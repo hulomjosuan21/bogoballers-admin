@@ -1,12 +1,20 @@
 import ContentHeader from "@/components/content-header";
 import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import type { LeagueStatus } from "@/service/leagueService";
-import { useLeagueStore } from "@/stores/leagueStore";
+import { LeagueService, type LeagueStatus } from "@/service/leagueService";
 import { LeagueCategoriesTable } from "@/tables/LeagueCategoriesTable";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ManageLeagueCategoriesPage() {
-  const { league, isLoading, leagueId } = useLeagueStore();
+  const { data: league, isLoading } = useQuery({
+    queryKey: ["active-league-data"],
+    queryFn: () => LeagueService.fetchActive(),
+    enabled: true,
+    retry: 1,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
+  const leagueId = league?.league_id;
 
   if (isLoading) {
     return <SelectedLeagueStateScreen loading />;

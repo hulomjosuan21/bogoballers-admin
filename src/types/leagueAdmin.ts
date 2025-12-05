@@ -6,6 +6,9 @@ export type LeagueAdministator = {
   user_id: string;
   organization_name: string;
   organization_type: string;
+  organization_country: string;
+  organization_province: string;
+  organization_municipality: string;
   organization_address: string;
   organization_logo_url: string;
   league_admin_created_at: string;

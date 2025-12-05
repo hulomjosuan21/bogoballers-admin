@@ -175,6 +175,8 @@ export default function DashboardPage() {
     queryFn: () => LeagueService.fetchActive(),
     enabled: true,
     retry: 1,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
   const hasActiveLeague = !!data;
   const activeLeagueId = data?.league_id;
