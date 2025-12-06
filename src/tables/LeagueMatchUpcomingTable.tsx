@@ -55,6 +55,7 @@ import {
 import { RiErrorWarningFill } from "@remixicon/react";
 import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
 import { printMatchScorebook } from "@/components/pdf/MatchScorebookPdf";
+import { ManualScoreDialog } from "@/dialogs/manualScoreDialog";
 
 type SavedMatchItem = { matchId: string; state: GameState };
 
@@ -135,6 +136,13 @@ function MainTable({
   leagueMatchLoading,
   refetchLeagueMatch,
 }: Props) {
+  const [scoreDialog, setScoreDialog] = useState<{
+    isOpen: boolean;
+    match: Partial<LeagueMatch> | null;
+  }>({
+    isOpen: false,
+    match: null,
+  });
   const navigate = useNavigate();
   const { toggle: toggleMatchBook } = useToggleMatchBookSection();
 
@@ -257,6 +265,12 @@ function MainTable({
                 >
                   Setup
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setScoreDialog({ isOpen: true, match: m })}
+                >
+                  Set Result
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -334,6 +348,16 @@ function MainTable({
 
   return (
     <div className="space-y-6">
+      <ManualScoreDialog
+        open={scoreDialog.isOpen}
+        match={scoreDialog.match}
+        onOpenChange={(isOpen) =>
+          setScoreDialog((prev) => ({ ...prev, isOpen }))
+        }
+        onSuccess={async () => {
+          await refetchLeagueMatch();
+        }}
+      />
       <SelectedMatchAlert
         match={selectedMatch}
         onRemove={() => {

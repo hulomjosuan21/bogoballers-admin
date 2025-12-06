@@ -27,6 +27,7 @@ import {
   SheetTitle,
   SheetFooter,
   SheetTrigger,
+  SheetClose,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
@@ -39,12 +40,16 @@ import { leagueService } from "@/service/leagueService";
 import { queryClient } from "@/lib/queryClient";
 import { useLeagueStore } from "@/stores/leagueStore";
 import { useAlertDialog } from "@/hooks/userAlertDialog";
+import { useOpenAutomaticMatchesSheet } from "@/stores/automaticMatchStore";
+import { ToggleState } from "@/stores/toggleStore";
 
 const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
   NodeProps<Node<AutomaticMatchConfigLeagueCategoryRoundNodeData>> & {
     viewOnly?: boolean;
   }
 > = ({ data }) => {
+  const { toggle } = useOpenAutomaticMatchesSheet();
+
   const { round } = data;
   const roundId = round.round_id;
   const { leagueId } = useLeagueStore();
@@ -303,15 +308,6 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
                           </div>
                         </div>
                       </div>
-
-                      <div className="space-y-2 pt-4 border-t">
-                        <h4 className="text-sm font-semibold">
-                          Configuration Data
-                        </h4>
-                        <div className="bg-muted/50 p-3 rounded-md font-mono text-xs text-muted-foreground break-all">
-                          ID: {round.round_id}
-                        </div>
-                      </div>
                     </div>
                   </ScrollArea>
                 </SheetBody>
@@ -353,12 +349,31 @@ const AutomaticMatchConfigLeagueCategoryRoundNode: React.FC<
 
               <SheetFooter className="p-6 border-t bg-background shrink-0 sm:justify-start flex-col items-stretch gap-0">
                 <div className="space-y-4 w-full">
-                  {/* Actions Group */}
                   <div className="space-y-2">
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Match Actions
                     </h4>
                     <div className="grid gap-2">
+                      {!(
+                        loading === "generate" || !round.matches_generated
+                      ) && (
+                        <SheetClose asChild>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              toggle(
+                                {
+                                  round_name: round.round_name!,
+                                  round_id: round.round_id!,
+                                },
+                                ToggleState.OPEN_AUTOMATIC_MATCH_SHEET
+                              );
+                            }}
+                          >
+                            View Matches
+                          </Button>
+                        </SheetClose>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"

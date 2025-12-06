@@ -9,13 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  CheckIcon,
-  MoreVertical,
-  X,
-  Trophy,
-  AlertTriangle,
-} from "lucide-react";
+import { CheckIcon, MoreVertical, X } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +43,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "@/components/data-table-pagination";
@@ -60,7 +55,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { LeagueMatch } from "@/types/leagueMatch";
 import { Label } from "@/components/ui/label";
 import type { LeagueCourt, LeagueReferee } from "@/types/league";
 import { LeagueMatchService } from "@/service/leagueMatchService";
@@ -71,14 +65,8 @@ import {
   type RefetchOptions,
 } from "@tanstack/react-query";
 import { useLeagueStore } from "@/stores/leagueStore";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import type { LeagueMatch } from "@/types/leagueMatch";
+import { ManualScoreDialog } from "@/dialogs/manualScoreDialog";
 
 type SheetFormData = {
   scheduled_date?: Date;
@@ -89,22 +77,21 @@ type SheetFormData = {
   minutes_per_overtime?: number;
 };
 
+// Simplified state just for opening the dialog and tracking which match
 type ScoreDialogState = {
   isOpen: boolean;
-  match: LeagueMatch | null;
-  homeScore: string;
-  awayScore: string;
+  match: Partial<LeagueMatch> | null;
 };
 
 type Props = {
   leagueCategoryId?: string;
   roundId?: string;
-  leagueMatchData: LeagueMatch[] | null | undefined;
+  leagueMatchData: Partial<LeagueMatch>[] | null | undefined;
   leagueMatchLoading: boolean;
   leagueMatchError: Error | null;
   refetchLeagueMatch: (
     options?: RefetchOptions | undefined
-  ) => Promise<QueryObserverResult<LeagueMatch[] | null, Error>>;
+  ) => Promise<QueryObserverResult<Partial<LeagueMatch>[] | null, Error>>;
 };
 
 function UnscheduleTable({
@@ -119,15 +106,14 @@ function UnscheduleTable({
   const [rowSelection, setRowSelection] = useState({});
   const [refereesOption, setRefereesOption] = useState<LeagueReferee[]>([]);
   const [courtOption, setCourtOption] = useState<LeagueCourt[]>([]);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState<LeagueMatch | null>(null);
-  const [sheetFormData, setSheetFormData] = useState<SheetFormData>({});
 
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] =
+    useState<Partial<LeagueMatch> | null>(null);
+  const [sheetFormData, setSheetFormData] = useState<SheetFormData>({});
   const [scoreDialog, setScoreDialog] = useState<ScoreDialogState>({
     isOpen: false,
     match: null,
-    homeScore: "",
-    awayScore: "",
   });
 
   const toLocalISOString = (date: Date) => {
@@ -138,36 +124,13 @@ function UnscheduleTable({
     return localISOTime;
   };
 
-  const updateScoreMutation = useMutation({
-    mutationFn: ({
-      matchId,
-      homeScore,
-      awayScore,
-    }: {
-      matchId: string;
-      homeScore: number;
-      awayScore: number;
-    }) =>
-      LeagueMatchService.updateScore(matchId, {
-        home_score: homeScore,
-        away_score: awayScore,
-      }),
-    onSuccess: async (response) => {
-      toast.success(response.message || "Scores updated");
-      setScoreDialog((prev) => ({ ...prev, isOpen: false }));
-      await refetchLeagueMatch();
-    },
-    onError: (error) =>
-      toast.error(getErrorMessage(error) || "Failed to update scores"),
-  });
-
   const saveChangesMutation = useMutation({
     mutationFn: ({
       id,
       payload,
     }: {
       id: string;
-      payload: Partial<LeagueMatch>;
+      payload: Partial<Partial<LeagueMatch>>;
     }) => LeagueMatchService.updateOne(id, payload),
     onSuccess: async () => {
       toast.success("Match details updated successfully");
@@ -176,13 +139,14 @@ function UnscheduleTable({
     onError: (error) =>
       toast.error(getErrorMessage(error) || "Failed to save changes"),
   });
+
   const scheduleMatchMutation = useMutation({
     mutationFn: ({
       id,
       payload,
     }: {
       id: string;
-      payload: Partial<LeagueMatch>;
+      payload: Partial<Partial<LeagueMatch>>;
     }) => LeagueMatchService.updateOne(id, payload),
     onSuccess: async () => {
       toast.success("Match Scheduled Successfully");
@@ -197,7 +161,6 @@ function UnscheduleTable({
     const referees = (activeLeagueData?.league_referees ?? []).filter(
       (ref) => ref.is_available
     );
-
     const courts = (activeLeagueData?.league_courts ?? []).filter(
       (court) => court.is_available
     );
@@ -224,36 +187,9 @@ function UnscheduleTable({
     }
   }, [selectedMatch]);
 
-  const handleOpenSheet = (match: LeagueMatch) => {
+  const handleOpenSheet = (match: Partial<LeagueMatch>) => {
     setSelectedMatch(match);
     setIsSheetOpen(true);
-  };
-
-  const handleOpenScoreDialog = (match: LeagueMatch) => {
-    setScoreDialog({
-      isOpen: true,
-      match,
-      homeScore: String((match as any).home_score ?? 0),
-      awayScore: String((match as any).away_score ?? 0),
-    });
-  };
-
-  const handleUpdateScores = () => {
-    if (!scoreDialog.match) return;
-
-    const homeScore = parseInt(scoreDialog.homeScore);
-    const awayScore = parseInt(scoreDialog.awayScore);
-
-    if (isNaN(homeScore) || isNaN(awayScore)) {
-      toast.error("Please enter valid numeric scores");
-      return;
-    }
-
-    updateScoreMutation.mutate({
-      matchId: scoreDialog.match.league_match_id,
-      homeScore,
-      awayScore,
-    });
   };
 
   const handleFormChange = (field: keyof SheetFormData, value: any) => {
@@ -262,8 +198,7 @@ function UnscheduleTable({
 
   const handleSaveChanges = () => {
     if (!selectedMatch) return;
-
-    const payload: Partial<LeagueMatch> = {
+    const payload: Partial<Partial<LeagueMatch>> = {
       court: sheetFormData.court,
       quarters: sheetFormData.quarters,
       minutes_per_quarter: sheetFormData.minutes_per_quarter,
@@ -273,22 +208,19 @@ function UnscheduleTable({
         ? sheetFormData.scheduled_date.toISOString()
         : undefined,
     };
-
     saveChangesMutation.mutate({
-      id: selectedMatch.league_match_id,
+      id: selectedMatch.league_match_id!,
       payload,
     });
   };
 
   const handleSaveSchedule = () => {
     if (!selectedMatch) return;
-
     if (!sheetFormData.scheduled_date) {
       toast.error("Please select a date and time to schedule the match.");
       return;
     }
-
-    const payload: Partial<LeagueMatch> = {
+    const payload: Partial<Partial<LeagueMatch>> = {
       court: sheetFormData.court,
       quarters: sheetFormData.quarters,
       minutes_per_quarter: sheetFormData.minutes_per_quarter,
@@ -297,9 +229,8 @@ function UnscheduleTable({
       scheduled_date: toLocalISOString(sheetFormData.scheduled_date),
       status: "Scheduled",
     };
-
     scheduleMatchMutation.mutate({
-      id: selectedMatch.league_match_id,
+      id: selectedMatch.league_match_id!,
       payload,
     });
   };
@@ -308,7 +239,6 @@ function UnscheduleTable({
     const refresh = async () => {
       await refetchLeagueMatch();
     };
-
     toast.promise(refresh(), {
       loading: "Loading...",
       success: "Done",
@@ -316,13 +246,12 @@ function UnscheduleTable({
     });
   }
 
-  const columns: ColumnDef<LeagueMatch>[] = [
+  const columns: ColumnDef<Partial<LeagueMatch>>[] = [
     {
       accessorKey: "home-team",
       header: "Home team",
       cell: ({ row }) => {
         const { home_team } = row.original;
-
         if (!home_team) {
           return (
             <Badge variant="outline" className="gap-1">
@@ -331,7 +260,6 @@ function UnscheduleTable({
             </Badge>
           );
         }
-
         return (
           <div className="flex items-center gap-2">
             <img
@@ -349,7 +277,6 @@ function UnscheduleTable({
       header: "Away team",
       cell: ({ row }) => {
         const { away_team } = row.original;
-
         if (!away_team) {
           return (
             <Badge variant="outline" className="gap-1">
@@ -358,7 +285,6 @@ function UnscheduleTable({
             </Badge>
           );
         }
-
         return (
           <div className="flex items-center gap-2">
             <img
@@ -407,8 +333,7 @@ function UnscheduleTable({
       accessorKey: "referees",
       header: "Referees",
       cell: ({ row }) => {
-        const referees = row.original.referees;
-
+        const referees = row.original.referees ?? [];
         return referees.length > 0 ? (
           <TooltipProvider delayDuration={0}>
             <Tooltip>
@@ -444,7 +369,6 @@ function UnscheduleTable({
       id: "actions",
       cell: ({ row }) => {
         const match = row.original;
-
         return (
           <div className="text-right">
             <DropdownMenu>
@@ -459,8 +383,11 @@ function UnscheduleTable({
                 <DropdownMenuItem onClick={() => handleOpenSheet(match)}>
                   Manage Schedule
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleOpenScoreDialog(match)}>
-                  Record Result
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setScoreDialog({ isOpen: true, match })}
+                >
+                  Set Result
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -489,120 +416,16 @@ function UnscheduleTable({
 
   return (
     <div className="space-y-2">
-      <Dialog
+      <ManualScoreDialog
         open={scoreDialog.isOpen}
-        onOpenChange={(open) => {
-          if (!open) setScoreDialog((prev) => ({ ...prev, isOpen: false }));
+        match={scoreDialog.match}
+        onOpenChange={(isOpen) =>
+          setScoreDialog((prev) => ({ ...prev, isOpen }))
+        }
+        onSuccess={async () => {
+          await refetchLeagueMatch();
         }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              Record Match Result
-            </DialogTitle>
-          </DialogHeader>
-
-          <Alert variant={"warning"}>
-            <AlertTriangle />
-            <AlertTitle>Manual Entry</AlertTitle>
-            <AlertDescription className="text-xs">
-              Use this only if the Match Scorebook was not used. This sets the
-              team totals but <strong>does not</strong> track individual player
-              stats.
-            </AlertDescription>
-          </Alert>
-
-          <div className="grid grid-cols-2 gap-6 py-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase font-semibold">
-                Home Team
-              </Label>
-              <div className="flex items-center gap-2 mb-2">
-                {scoreDialog.match?.home_team ? (
-                  <>
-                    <img
-                      src={scoreDialog.match.home_team.team_logo_url}
-                      alt="Home"
-                      className="h-6 w-6 rounded object-cover"
-                    />
-                    <span className="text-sm font-medium truncate">
-                      {scoreDialog.match.home_team.team_name}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-sm text-muted-foreground">TBD</span>
-                )}
-              </div>
-              <Input
-                type="number"
-                min="0"
-                className="text-center text-lg font-bold"
-                placeholder="0"
-                value={scoreDialog.homeScore}
-                onChange={(e) =>
-                  setScoreDialog((prev) => ({
-                    ...prev,
-                    homeScore: e.target.value,
-                  }))
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase font-semibold">
-                Away Team
-              </Label>
-              <div className="flex items-center gap-2 mb-2">
-                {scoreDialog.match?.away_team ? (
-                  <>
-                    <img
-                      src={scoreDialog.match.away_team.team_logo_url}
-                      alt="Away"
-                      className="h-6 w-6 rounded object-cover"
-                    />
-                    <span className="text-sm font-medium truncate">
-                      {scoreDialog.match.away_team.team_name}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-sm text-muted-foreground">TBD</span>
-                )}
-              </div>
-              <Input
-                type="number"
-                min="0"
-                className="text-center text-lg font-bold"
-                placeholder="0"
-                value={scoreDialog.awayScore}
-                onChange={(e) =>
-                  setScoreDialog((prev) => ({
-                    ...prev,
-                    awayScore: e.target.value,
-                  }))
-                }
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() =>
-                setScoreDialog((prev) => ({ ...prev, isOpen: false }))
-              }
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleUpdateScores}
-              disabled={updateScoreMutation.isPending}
-            >
-              {updateScoreMutation.isPending ? "Saving..." : "Save Scores"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      />
 
       <div className="overflow-hidden rounded-md border">
         <Table>

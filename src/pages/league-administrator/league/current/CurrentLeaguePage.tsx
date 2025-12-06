@@ -113,8 +113,10 @@ export default function LeagueUpdatePage() {
         setPdfData(resetData);
       }
 
-      await refetch();
-      await queryClient.invalidateQueries({ queryKey: ["active-league-data"] });
+      await Promise.all([
+        refetch(),
+        queryClient.invalidateQueries({ queryKey: ["active-league-data"] }),
+      ]);
     },
     onError: (err) => {
       console.error(err);

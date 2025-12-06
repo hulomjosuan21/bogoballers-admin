@@ -21,7 +21,7 @@ import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
 import {
   MatchHistoryFilter,
   LeagueMatchTableWrapper,
-} from "./league/match/MatchHistoryPage";
+} from "./league/match/LeagueMatchCompletedPage";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { getLeagueMatchQueryOption } from "@/queries/leagueMatchQueryOption";

@@ -7,8 +7,12 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
-import { LeagueTeamService } from "@/service/leagueTeamService";
-
+import axiosClient from "@/lib/axiosClient";
+type ManualTeamOption = {
+  league_team_id: string;
+  team_name: string;
+  group_label: string;
+};
 interface Props {
   leagueCategoryId: string;
   advantagedTeamId?: string;
@@ -25,9 +29,18 @@ export default function SeriesTeamSelector({
   challengerTeamId,
   onChange,
 }: Props) {
+  const queryKey = ["league-teams-grouped-automatic", leagueCategoryId];
+
   const { data: teams, isLoading } = useQuery({
-    queryKey: ["remaining-teams", leagueCategoryId],
-    queryFn: () => LeagueTeamService.getRemainingTeams(leagueCategoryId),
+    queryKey: queryKey,
+    queryFn: async () => {
+      if (!leagueCategoryId) return [];
+
+      const { data } = await axiosClient.get<ManualTeamOption[]>(
+        `/league-team/grouped/${leagueCategoryId}`
+      );
+      return data;
+    },
   });
 
   if (isLoading) return <p>Loading teams...</p>;

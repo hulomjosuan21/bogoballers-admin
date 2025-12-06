@@ -7,6 +7,7 @@ export enum ToggleState {
   SHOW_SAVED_MATCH,
   SHOW_LEAGUE,
   CONFIG_UPCOMING,
+  OPEN_AUTOMATIC_MATCH_SHEET,
 }
 
 type ToggleStore<T> = {

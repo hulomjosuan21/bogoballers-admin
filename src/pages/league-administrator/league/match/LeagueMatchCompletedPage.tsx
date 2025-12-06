@@ -1,6 +1,5 @@
 import ContentHeader from "@/components/content-header";
 import { Spinner } from "@/components/ui/spinner";
-import { useLeagueMatch } from "@/hooks/leagueMatch";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import LeagueMatchStaticDisplayTable from "@/tables/LeagueMatchHistoryTable";
@@ -13,6 +12,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { LeagueMatch } from "@/types/leagueMatch";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import {
+  NoActiveLeagueAlert,
+  PendingLeagueAlert,
+} from "@/components/LeagueStatusAlert";
+import { useQuery } from "@tanstack/react-query";
+import axiosClient from "@/lib/axiosClient";
 export const MatchHistoryFilter = ({
   label,
   categories,
@@ -114,32 +120,45 @@ export const LeagueMatchTableWrapper = ({
 };
 
 const MatchHistoryPage = () => {
+  const { league_status, isActive, message } = useActiveLeagueMeta();
+
   const {
     categories,
     rounds,
-    isLoading,
     selectedCategory,
     selectedRound,
     setSelectedCategory,
     setSelectedRound,
   } = useLeagueCategoriesRoundsGroups();
 
-  const { leagueMatchData, leagueMatchLoading, refetchLeagueMatch } =
-    useLeagueMatch(selectedCategory, selectedRound, {
-      condition: "Completed",
-    });
+  const {
+    data: leagueMatchData,
+    isLoading: leagueMatchLoading,
+    refetch: refetchLeagueMatch,
+  } = useQuery({
+    queryKey: ["completed-matchs", selectedCategory, selectedRound],
+    queryFn: async () => {
+      const response = await axiosClient.get<LeagueMatch[]>(
+        `/league-match/${selectedCategory}/${selectedRound}/completed`
+      );
+      return response.data;
+    },
+    enabled: isActive,
+  });
 
-  if (isLoading) {
+  if (!isActive) {
     return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
     );
+  }
+
+  if (isActive && league_status === "Pending") {
+    return <PendingLeagueAlert />;
   }
 
   return (
     <ContentShell>
-      <ContentHeader title="History" />
+      <ContentHeader title="Completed Matches" />
       <ContentBody>
         <MatchHistoryFilter
           label="Filter"

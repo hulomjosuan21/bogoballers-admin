@@ -64,7 +64,7 @@ export class LeagueMatchService {
   async fetchUnscheduled(leagueCategoryId: string, roundId: string) {
     const url = `${this.base}/${leagueCategoryId}/${roundId}/unscheduled`;
 
-    const response = await axiosClient.get<LeagueMatch[]>(url);
+    const response = await axiosClient.get<Partial<LeagueMatch>[]>(url);
     return response.data;
   }
   async fetchScheduled(leagueCategoryId: string, roundId: string) {

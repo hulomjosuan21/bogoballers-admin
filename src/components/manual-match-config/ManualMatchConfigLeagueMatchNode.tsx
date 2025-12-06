@@ -273,7 +273,7 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
 
     return (
       <>
-        <div className="absolute right-[-20px] top-[33%] text-xs text-blue-500 -translate-y-1/2">
+        <div className="absolute -right-5 top-[33%] text-xs text-blue-500 -translate-y-1/2">
           W
         </div>
         <Handle
@@ -294,7 +294,7 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
     if (!is_elimination) {
       return (
         <>
-          <div className="absolute right-[-20px] top-[66%] text-xs text-red-500 -translate-y-1/2">
+          <div className="absolute -right-5 top-[66%] text-xs text-red-500 -translate-y-1/2">
             L
           </div>
           <Handle

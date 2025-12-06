@@ -79,28 +79,12 @@ const LeagueHistoryTable = () => {
       header: "Total Teams",
       cell: ({ row }) => <span>{row.original.teams.length ?? []}</span>,
     },
-
     {
       accessorKey: "league_match_records",
       header: "Match Records",
-      cell: ({ row }) => {
-        const data = row.original;
-        const records = data.league_match_records ?? [];
-        return (
-          <div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={records.length === 0}
-              onClick={() => toggle(data, ToggleState.SHOW_LEAGUE)}
-            >
-              {records.length === 0
-                ? "No Records"
-                : `${records.length} Record${records.length > 1 ? "s" : ""}`}
-            </Button>
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <span>{row.original.league_match_records.length ?? 0}</span>
+      ),
     },
     {
       accessorKey: "league_categories",
@@ -115,6 +99,26 @@ const LeagueHistoryTable = () => {
       cell: ({ row }) => (
         <span>{formatDate12h(row.original.league_created_at)}</span>
       ),
+    },
+    {
+      accessorKey: "actions",
+      header: "",
+      cell: ({ row }) => {
+        const data = row.original;
+        const records = data.league_match_records ?? [];
+        return (
+          <div className="text-right">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={records.length === 0}
+              onClick={() => toggle(data, ToggleState.SHOW_LEAGUE)}
+            >
+              Select
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 

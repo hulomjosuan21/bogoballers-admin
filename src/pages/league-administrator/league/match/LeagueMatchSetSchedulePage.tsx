@@ -8,21 +8,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
 import { UnscheduleMatchTable } from "@/tables/LeagueMatchUnscheduledTable";
 import { useQuery } from "@tanstack/react-query";
 import { leagueMatchService } from "@/service/leagueMatchService";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import {
+  NoActiveLeagueAlert,
+  PendingLeagueAlert,
+} from "@/components/LeagueStatusAlert";
 
 export default function LeagueMatchSetUnSchedulePage() {
+  const { league_status, isActive, message } = useActiveLeagueMeta();
+
   const {
     categories,
     rounds,
-    activeLeagueStatus,
-    isLoading,
-    error,
     selectedCategory,
     selectedRound,
     setSelectedCategory,
@@ -41,26 +44,14 @@ export default function LeagueMatchSetUnSchedulePage() {
     enabled: !!selectedCategory && !!selectedRound,
   });
 
-  if (activeLeagueStatus === "Pending") {
-    return <LeagueNotApproveYet />;
-  }
-
-  if (isLoading) {
+  if (!isActive) {
     return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
     );
   }
 
-  if (error) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <p className="text-sm text-red-500">
-          {error.message || "Error loading match"}
-        </p>
-      </div>
-    );
+  if (isActive && league_status === "Pending") {
+    return <PendingLeagueAlert />;
   }
 
   return (
@@ -116,7 +107,7 @@ export default function LeagueMatchSetUnSchedulePage() {
           >
             <UnscheduleMatchTable
               key={selectedCategory}
-              leagueMatchData={leagueMatchData}
+              leagueMatchData={leagueMatchData ?? []}
               leagueMatchLoading={leagueMatchLoading}
               leagueMatchError={leagueMatchError}
               refetchLeagueMatch={refetchLeagueMatch}

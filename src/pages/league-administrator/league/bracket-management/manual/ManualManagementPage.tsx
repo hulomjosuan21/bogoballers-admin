@@ -14,7 +14,7 @@ import { manualMatchConfigNodeTypes } from "@/components/manual-match-config";
 import { useTheme } from "@/providers/theme-provider";
 
 import { Spinner } from "@/components/ui/spinner";
-import { Suspense, useTransition } from "react";
+import { memo, Suspense, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
@@ -24,7 +24,39 @@ import {
   NoActiveLeagueAlert,
   PendingLeagueAlert,
 } from "@/components/LeagueStatusAlert";
-
+const ManualMatchFlowEditor = memo(
+  ({
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onDrop,
+    onDragOver,
+    onNodeDragStop,
+    theme,
+  }: any) => {
+    return (
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        onNodeDragStop={onNodeDragStop}
+        colorMode={theme}
+        nodeTypes={manualMatchConfigNodeTypes}
+        fitView
+      >
+        <Background />
+        <Controls />
+        <MiniMap />
+      </ReactFlow>
+    );
+  }
+);
 function ManualMatchingPageContent() {
   const {
     league_id: activeLeagueId,
@@ -134,7 +166,7 @@ function ManualMatchingPageContent() {
       </ContentHeader>
       <ContentBody className="flex-row flex">
         <div className="h-full border rounded-md w-full bg-background">
-          <ReactFlow
+          <ManualMatchFlowEditor
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
@@ -143,14 +175,8 @@ function ManualMatchingPageContent() {
             onDrop={onDrop}
             onDragOver={onDragOver}
             onNodeDragStop={onNodeDragStop}
-            colorMode={theme}
-            nodeTypes={manualMatchConfigNodeTypes}
-            fitView
-          >
-            <Background />
-            <Controls />
-            <MiniMap />
-          </ReactFlow>
+            theme={theme}
+          />
         </div>
         {rightMenu}
       </ContentBody>

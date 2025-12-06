@@ -7,7 +7,7 @@ import {
 } from "@/components/automatic-match-config/AutomaticMatchConfigNodeMenu";
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
 import { Spinner } from "@/components/ui/spinner";
-import { Suspense, useTransition } from "react";
+import { memo, Suspense, useTransition } from "react";
 import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
 import { automaticMatchConfigNodeTypes } from "@/components/automatic-match-config";
 import { useManageAutomaticMatchConfigNode } from "@/hooks/useAutomaticMatchConfigHook";
@@ -21,8 +21,50 @@ import {
   NoActiveLeagueAlert,
   PendingLeagueAlert,
 } from "@/components/LeagueStatusAlert";
-
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useOpenAutomaticMatchesSheet } from "@/stores/automaticMatchStore";
+import { ToggleState } from "@/stores/toggleStore";
+import { AutomaticMatchesTable } from "./match-sheet-components/matchSheetTable";
+const MatchFlowEditor = memo(
+  ({
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onDrop,
+    onDragOver,
+    onNodeDragStop,
+    theme,
+  }: any) => {
+    return (
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodeDragStop={onNodeDragStop}
+        nodeTypes={automaticMatchConfigNodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onDrop={onDrop}
+        colorMode={theme}
+        onDragOver={onDragOver}
+        fitView
+      >
+        <Background />
+        <Controls />
+        <MiniMap />
+      </ReactFlow>
+    );
+  }
+);
 function AutomaticMatchConfigPage() {
+  const { data, state, reset } = useOpenAutomaticMatchesSheet();
   const {
     league_id: activeLeagueId,
     league_status,
@@ -101,24 +143,46 @@ function AutomaticMatchConfigPage() {
         </Button>
       </ContentHeader>
       <ContentBody className="flex flex-row">
+        <Sheet
+          key={`${data?.round_id}-sheet`}
+          open={state == ToggleState.OPEN_AUTOMATIC_MATCH_SHEET && !!data}
+          onOpenChange={reset}
+        >
+          <SheetContent
+            side="top"
+            className="max-h-[80vh] overflow-y-auto"
+            aria-describedby={undefined}
+          >
+            <SheetHeader>
+              <SheetTitle>{data?.round_name} Round Matches</SheetTitle>
+            </SheetHeader>
+            <div className="">
+              {data?.round_id && (
+                <Suspense
+                  fallback={
+                    <div className="flex h-[200px] w-full items-center justify-center border rounded-md bg-muted/10">
+                      <Spinner />
+                    </div>
+                  }
+                >
+                  <AutomaticMatchesTable roundId={data.round_id} />
+                </Suspense>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
         <div className="h-full w-full border rounded-md bg-background">
-          <ReactFlow
+          <MatchFlowEditor
             nodes={nodes}
             edges={edges}
-            onNodeDragStop={onNodeDragStop}
-            nodeTypes={automaticMatchConfigNodeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onDrop={onDrop}
-            colorMode={theme}
             onDragOver={onDragOver}
-            fitView
-          >
-            <Background />
-            <Controls />
-            <MiniMap />
-          </ReactFlow>
+            onNodeDragStop={onNodeDragStop}
+            theme={theme}
+          />
         </div>
         {menu}
       </ContentBody>

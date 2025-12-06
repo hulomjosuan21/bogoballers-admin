@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
-import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import { Suspense, useEffect, useState } from "react";
 import {
   useToggleMatchBookSection,
@@ -23,12 +22,18 @@ import { SetupSelectedMatch } from "./SetupSelectedMatch";
 import { LeagueService } from "@/service/leagueService";
 import { useQuery } from "@tanstack/react-query";
 import { leagueMatchService } from "@/service/leagueMatchService";
+import {
+  NoActiveLeagueAlert,
+  PendingLeagueAlert,
+} from "@/components/LeagueStatusAlert";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
 
 export default function LeagueMatches() {
+  const { league_status, isActive, message } = useActiveLeagueMeta();
+
   const {
     categories,
     rounds,
-    isLoading,
     selectedCategory,
     selectedRound,
     setSelectedCategory,
@@ -85,16 +90,14 @@ export default function LeagueMatches() {
     setCourtOption(courts);
   }, [activeLeagueData]);
 
-  if (activeLeagueData?.status == "Pending") {
-    return <LeagueNotApproveYet />;
+  if (!isActive) {
+    return (
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
+    );
   }
 
-  if (isLoading) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
-    );
+  if (isActive && league_status === "Pending") {
+    return <PendingLeagueAlert />;
   }
 
   return (

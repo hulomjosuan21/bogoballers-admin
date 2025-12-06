@@ -115,7 +115,7 @@ export function useManageManualMatchConfigNode(
 
   useEffect(() => {
     if (isLoading) {
-      toast.loading("Loading league layout...", { id: TOAST_ID });
+      toast.loading("Loading manual layout...", { id: TOAST_ID });
     }
 
     if (isSuccess && data?.nodes && data?.edges) {
