@@ -13,7 +13,7 @@ import type { LeagueRefereeCreate } from "@/tables/ManageRefereesTable";
 import type { LeagueAffiliateCreate } from "@/tables/ManangeAffiliateTable";
 import type { LeagueUpdatePayload } from "@/forms/UpdateLeagueForm";
 import type { LeagueLog } from "@/types/leagueLogModel";
-import type { DashboardLeague } from "@/pages/league-administrator/DashboardPage";
+import type { DashboardLeague } from "@/pages/league-administrator/league/dashboard/DashboardPage";
 
 type FieldKeyMap = {
   league_courts: LeagueCourt;

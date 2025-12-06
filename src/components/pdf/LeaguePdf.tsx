@@ -7,6 +7,7 @@ import {
   View,
   StyleSheet,
   Image,
+  pdf,
 } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
@@ -107,7 +108,6 @@ const DetailRow = ({
       <Text style={styles.labelText}>:</Text>
     </View>
     <View style={styles.valueCol}>
-      {/* FORCE STRING: Ensure value is never null/undefined */}
       <Text style={isHighlight ? styles.highlightedText : styles.valueText}>
         {value || ""}
       </Text>
@@ -122,7 +122,6 @@ const ActivityDesignDocument = ({
   leagueAdmin: LeagueAdministator;
   league: League;
 }) => {
-  // 1. Loading Guard: Do not attempt to render if data is missing
   if (
     !league ||
     !leagueAdmin ||
@@ -278,12 +277,19 @@ const ActivityDesignDocument = ({
 
         <View>
           <Text style={styles.sectionTitle}>Rationale:</Text>
-          {documentData.rationale.length > 0 ? (
-            documentData.rationale.map((para, index) => (
-              <Text key={index} style={styles.paragraph}>
-                {para || ""}
-              </Text>
-            ))
+          {Array.isArray(documentData.rationale) &&
+          documentData.rationale.length > 0 ? (
+            documentData.rationale.map((para, index) => {
+              if (para === null || para === undefined) return null;
+              const textContent = String(para);
+              if (textContent.trim() === "") return null;
+
+              return (
+                <Text key={index} style={styles.paragraph}>
+                  {textContent}
+                </Text>
+              );
+            })
           ) : (
             <Text style={styles.paragraph}>No rationale provided.</Text>
           )}
@@ -292,5 +298,21 @@ const ActivityDesignDocument = ({
     </Document>
   );
 };
+export const openActivityDesignPDF = async (
+  league: League,
+  leagueAdmin: LeagueAdministator
+) => {
+  try {
+    const blob = await pdf(
+      <ActivityDesignDocument league={league} leagueAdmin={leagueAdmin} />
+    ).toBlob();
 
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+    setTimeout(() => URL.revokeObjectURL(url), 1000 * 60 * 5);
+  } catch (error) {
+    console.error("Failed to generate Activity Design PDF:", error);
+    alert("Something went wrong while generating the PDF.");
+  }
+};
 export default ActivityDesignDocument;

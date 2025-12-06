@@ -1,4 +1,11 @@
-import { useEffect, useState, useTransition, useMemo } from "react";
+import {
+  useEffect,
+  useState,
+  useTransition,
+  useMemo,
+  memo,
+  Suspense,
+} from "react";
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import {
@@ -43,7 +50,7 @@ import { format } from "date-fns";
 import { PDFViewer } from "@react-pdf/renderer";
 import { toast } from "sonner";
 import type { League } from "@/types/league";
-import ActivityDesignDocument from "@/components/pdf/LeaguePdf"; // Ensure this matches your file path
+import ActivityDesignDocument from "@/components/pdf/LeaguePdf";
 import { Spinner } from "@/components/ui/spinner";
 import {
   DropdownMenu,
@@ -54,12 +61,29 @@ import {
 import { DateTimePicker } from "@/components/datetime-picker";
 import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
 import { NoActiveLeagueAlert } from "@/components/LeagueStatusAlert";
+import { MultiSelect } from "@/components/multi-select";
+import { StaticData } from "@/data";
+import type { LeagueAdministator } from "@/types/leagueAdmin";
+
+const DocumentPdf = memo(
+  ({ pdfData, creator }: { pdfData: League; creator: LeagueAdministator }) => (
+    <PDFViewer
+      width="100%"
+      height="100%"
+      className="rounded-md shadow-sm"
+      showToolbar={true}
+    >
+      <ActivityDesignDocument league={pdfData} leagueAdmin={creator} />
+    </PDFViewer>
+  )
+);
 
 export default function LeagueUpdatePage() {
   const { isActive, message, refetch } = useActiveLeagueMeta();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
+
   const { data: serverData, isLoading } = useQuery({
     queryKey: ["active-league-data"],
     queryFn: () => LeagueService.fetchActive(),
@@ -70,6 +94,7 @@ export default function LeagueUpdatePage() {
 
   const [draft, setDraft] = useState<League | null>(null);
   const [pdfData, setPdfData] = useState<League | null>(null);
+
   useEffect(() => {
     if (serverData) {
       const clonedData = JSON.parse(JSON.stringify(serverData));
@@ -77,13 +102,22 @@ export default function LeagueUpdatePage() {
       setPdfData(clonedData);
     }
   }, [serverData]);
+
   useEffect(() => {
     if (draft) {
       startTransition(() => {
-        setPdfData(draft);
+        const safeRationale = Array.isArray(draft.league_rationale)
+          ? draft.league_rationale
+          : [];
+
+        setPdfData({
+          ...draft,
+          league_rationale: safeRationale,
+        });
       });
     }
   }, [draft]);
+
   const getDirtyFields = (
     original: League,
     current: League
@@ -97,22 +131,22 @@ export default function LeagueUpdatePage() {
     });
     return changes;
   };
+
   const isDirty = useMemo(() => {
     if (!serverData || !draft) return false;
     return JSON.stringify(serverData) !== JSON.stringify(draft);
   }, [serverData, draft]);
+
   const updateMutation = useMutation({
     mutationFn: (changes: Partial<League>) =>
       leagueService.updateLeague(serverData!.league_id, changes),
     onSuccess: async () => {
       toast.success("League details updated successfully!");
-
       if (serverData) {
         const resetData = JSON.parse(JSON.stringify(serverData));
         setDraft(resetData);
         setPdfData(resetData);
       }
-
       await Promise.all([
         refetch(),
         queryClient.invalidateQueries({ queryKey: ["active-league-data"] }),
@@ -127,16 +161,23 @@ export default function LeagueUpdatePage() {
   const handleSave = () => {
     if (!draft || !serverData) return;
 
-    const changes = getDirtyFields(serverData, draft);
+    const cleanDraft = {
+      ...draft,
+      league_rationale: Array.isArray(draft.league_rationale)
+        ? draft.league_rationale.filter((line) => line.trim() !== "")
+        : [],
+    };
+
+    const changes = getDirtyFields(serverData, cleanDraft);
 
     if (Object.keys(changes).length === 0) {
       toast.info("No changes detected.");
       return;
     }
 
-    console.log(JSON.stringify(changes, null, 2));
     updateMutation.mutate(changes);
   };
+
   const handleReset = () => {
     if (serverData) {
       const resetData = JSON.parse(JSON.stringify(serverData));
@@ -144,15 +185,19 @@ export default function LeagueUpdatePage() {
       startTransition(() => setPdfData(resetData));
     }
   };
+
   const handleTextChange = (field: keyof League, value: string | number) => {
     setDraft((prev) => (prev ? { ...prev, [field]: value } : null));
   };
 
   const handleArrayChange = (field: keyof League, rawValue: string) => {
     const lines = rawValue.split(/\r?\n/);
-    const cleanedLines = lines.map((line) => line.replace(/\s+$/, ""));
-
-    setDraft((prev) => (prev ? { ...prev, [field]: cleanedLines } : null));
+    setDraft((prev) => (prev ? { ...prev, [field]: lines } : null));
+  };
+  const handleRulesChange = (values: string[]) => {
+    setDraft((prev) =>
+      prev ? { ...prev, sportsmanship_rules: values } : null
+    );
   };
 
   const handleDateChange = (field: keyof League, date: Date | undefined) => {
@@ -179,7 +224,6 @@ export default function LeagueUpdatePage() {
     onChange: (d: Date | undefined) => void;
   }) => {
     const dateValue = dateIso ? new Date(dateIso) : undefined;
-
     return (
       <div className="flex flex-col space-y-2">
         <Label>{label}</Label>
@@ -236,11 +280,13 @@ export default function LeagueUpdatePage() {
   );
 
   const hasData = !!serverData;
+
   if (!isActive) {
     return (
       <NoActiveLeagueAlert message={message ?? "No active league found."} />
     );
   }
+
   return (
     <ContentShell>
       <ContentHeader title="Update League Activity Design">
@@ -273,7 +319,6 @@ export default function LeagueUpdatePage() {
               </Button>
             </>
           )}
-
           {draft && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -298,7 +343,6 @@ export default function LeagueUpdatePage() {
                   <ChevronDown className="h-4 w-4 opacity-60" />
                 </Button>
               </DropdownMenuTrigger>
-
               <DropdownMenuContent align="end" className="w-48">
                 {[
                   { value: "Pending", label: "Pending", color: "bg-amber-500" },
@@ -354,14 +398,12 @@ export default function LeagueUpdatePage() {
           )}
         </div>
       </ContentHeader>
-
       <ContentBody className="p-0 overflow-hidden h-[calc(100vh-60px)]">
         {isLoading && (
           <div className="h-40 grid place-content-center">
             <Spinner />
           </div>
         )}
-
         {!hasData && !isLoading && (
           <div className="p-6">
             <Alert variant="info">
@@ -383,13 +425,12 @@ export default function LeagueUpdatePage() {
             </Alert>
           </div>
         )}
-
         {draft && pdfData && (
           <div className="flex flex-row h-full w-full">
             <div className="w-1/2 h-full bg-background">
               <ScrollArea className="h-full w-full p-6">
                 <div className="flex flex-col gap-6 pb-20">
-                  <Card>
+                  <Card className="rounded-md">
                     <CardHeader>
                       <CardTitle className="text-lg">
                         General Information
@@ -434,7 +475,7 @@ export default function LeagueUpdatePage() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="rounded-md">
                     <CardHeader>
                       <CardTitle className="text-lg">
                         Schedule & Deadlines
@@ -446,7 +487,6 @@ export default function LeagueUpdatePage() {
                         dateIso={draft.opening_date}
                         onChange={(d) => handleDateChange("opening_date", d)}
                       />
-
                       <DateTimeField
                         label="Registration Deadline"
                         dateIso={draft.registration_deadline}
@@ -464,7 +504,6 @@ export default function LeagueUpdatePage() {
                         dateIso={draft.league_schedule[1]}
                         onChange={(d) => handleScheduleChange(1, d)}
                       />
-
                       <div className="space-y-2 col-span-2">
                         <Label>Description</Label>
                         <Textarea
@@ -481,8 +520,7 @@ export default function LeagueUpdatePage() {
                       </div>
                     </CardContent>
                   </Card>
-
-                  <Card>
+                  <Card className="rounded-md">
                     <CardHeader>
                       <CardTitle className="text-md">
                         Document Content
@@ -506,7 +544,6 @@ export default function LeagueUpdatePage() {
                           }
                         />
                       </div>
-
                       <div className="space-y-2">
                         <Label>Rationale</Label>
                         <Textarea
@@ -525,24 +562,22 @@ export default function LeagueUpdatePage() {
                           }
                         />
                       </div>
-
                       <div className="space-y-2">
-                        <Label>Sportsmanship Rules</Label>
-                        <Textarea
-                          className="min-h-[150px] font-mono text-sm leading-relaxed"
-                          placeholder="One rule per line..."
-                          value={
-                            Array.isArray(draft.sportsmanship_rules)
-                              ? draft.sportsmanship_rules.join("\n")
-                              : ""
-                          }
-                          onChange={(e) =>
-                            handleArrayChange(
-                              "sportsmanship_rules",
-                              e.target.value
-                            )
-                          }
+                        <Label>Select Sportsmanship Rules</Label>
+                        <MultiSelect
+                          id="rules"
+                          options={StaticData.SportsmanshipRules}
+                          onValueChange={(values) => handleRulesChange(values)}
+                          defaultValue={draft.sportsmanship_rules || []}
+                          maxCount={8}
+                          placeholder="Select rules..."
                         />
+                        <p className="text-[0.8rem] text-muted-foreground">
+                          List the rules that promote fair play, respect, and
+                          positive behavior during the league. These will guide
+                          how players, coaches, and spectators are expected to
+                          conduct themselves.
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -557,17 +592,15 @@ export default function LeagueUpdatePage() {
                 </span>
               </div>
               <div className="flex-1 overflow-hidden p-2 relative">
-                <PDFViewer
-                  width="100%"
-                  height="100%"
-                  className="rounded-md shadow-sm"
-                  showToolbar={true}
+                <Suspense
+                  fallback={
+                    <div className="grid place-content-center">
+                      <Spinner />
+                    </div>
+                  }
                 >
-                  <ActivityDesignDocument
-                    league={pdfData}
-                    leagueAdmin={pdfData.creator}
-                  />
-                </PDFViewer>
+                  <DocumentPdf pdfData={pdfData} creator={pdfData.creator} />
+                </Suspense>
                 {isPending && (
                   <div className="absolute inset-4 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-md border border-slate-200 shadow-sm transition-all duration-300">
                     <div className="flex flex-col items-center gap-3 p-6 bg-card rounded-xl shadow-lg border">

@@ -18,13 +18,9 @@ import {
 import { useEffect, useState } from "react";
 import { SelectedMatchAlert } from "@/tables/LeagueMatchUpcomingTable";
 import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
-import {
-  MatchHistoryFilter,
-  LeagueMatchTableWrapper,
-} from "./league/match/LeagueMatchCompletedPage";
+import { MatchHistoryFilter } from "../match/LeagueMatchCompletedPage";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { getLeagueMatchQueryOption } from "@/queries/leagueMatchQueryOption";
 import { LeagueService, leagueService } from "@/service/leagueService";
 import useDateTime from "@/hooks/useDatetime";
 import { Button } from "@/components/ui/button";
@@ -37,6 +33,15 @@ import {
   NoActiveLeagueAlert,
   PendingLeagueAlert,
 } from "@/components/LeagueStatusAlert";
+import { DashboardTable } from "./dashboard-components/matchTable";
+import {
+  completedColumns,
+  upcomingColumns,
+} from "./dashboard-components/matchColumns";
+import {
+  fetchCompletedMatches,
+  fetchUpcomingMatches,
+} from "./dashboard-components/matchFn";
 
 export interface DashboardLeague {
   league_id: string;
@@ -196,20 +201,19 @@ export default function DashboardPage() {
   } = useLeagueCategoriesRoundsGroups({ enable: isActive });
   const [upcomingMatch, completedMatch] = useQueries({
     queries: [
-      getLeagueMatchQueryOption(
-        selectedCategory,
-        selectedRound,
-        { condition: "Upcoming", limit: 5 },
-        !isActive
-      ),
-      getLeagueMatchQueryOption(
-        selectedCategory,
-        selectedRound,
-        { condition: "Completed", limit: 5 },
-        !isActive
-      ),
+      {
+        queryKey: ["matches", "upcoming", selectedCategory, selectedRound],
+        queryFn: () => fetchUpcomingMatches(selectedCategory!, selectedRound!),
+        enabled: !!selectedCategory && !!selectedRound,
+      },
+      {
+        queryKey: ["matches", "completed", selectedCategory, selectedRound],
+        queryFn: () => fetchCompletedMatches(selectedCategory!, selectedRound!),
+        enabled: !!selectedCategory && !!selectedRound,
+      },
     ],
   });
+
   const {
     data: analytics,
     isLoading: analyticsLoading,
@@ -292,7 +296,6 @@ export default function DashboardPage() {
               <LeagueSection league={data!} />
             )}
 
-            {/* Analytics */}
             <div className="flex gap-4 items-center flex-wrap">
               {analyticsLoading || !analytics ? (
                 <>
@@ -366,30 +369,20 @@ export default function DashboardPage() {
               {upcomingMatch.isLoading ? (
                 <Skeleton className="h-64 w-full rounded-md" />
               ) : (
-                <LeagueMatchTableWrapper
-                  label="Upcoming Match"
-                  selectedCategory={selectedCategory}
-                  selectedRound={selectedRound}
-                  leagueMatchData={upcomingMatch.data ?? []}
-                  leagueMatchLoading={upcomingMatch.isLoading}
-                  refresh={upcomingMatch.refetch}
-                  controlls={false}
-                  excludeFields={["home_team_score", "away_team_score"]}
+                <DashboardTable
+                  columns={upcomingColumns}
+                  data={upcomingMatch.data ?? []}
+                  label="Upcoming Matches"
                 />
               )}
 
               {completedMatch.isLoading ? (
                 <Skeleton className="h-64 w-full rounded-md" />
               ) : (
-                <LeagueMatchTableWrapper
-                  label="Completed Match"
-                  selectedCategory={selectedCategory}
-                  selectedRound={selectedRound}
-                  leagueMatchData={completedMatch.data ?? []}
-                  leagueMatchLoading={completedMatch.isLoading}
-                  refresh={completedMatch.refetch}
-                  controlls={false}
-                  excludeFields={["scheduled_date"]}
+                <DashboardTable
+                  columns={completedColumns}
+                  data={completedMatch.data ?? []}
+                  label="Completed Matches"
                 />
               )}
             </div>

@@ -12,8 +12,8 @@ class ManageLeagueAdministratorService {
     return response.data;
   }
 
-  async getAllLeagues(): Promise<League[]> {
-    const response = await axiosClient.get<League[]>(
+  async getAllLeagues(): Promise<Partial<League>[]> {
+    const response = await axiosClient.get<Partial<League>[]>(
       `${this.base}/all-leagues`
     );
     return response.data;

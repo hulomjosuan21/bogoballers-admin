@@ -16,8 +16,9 @@ import {
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import type { League } from "@/types/league";
-import { useLeaguePDF } from "@/hooks/usePrintLeagueDocument";
 import { LeagueStatus } from "@/service/leagueService";
+import { openActivityDesignPDF } from "../pdf/LeaguePdf";
+import type { LeagueAdministator } from "@/types/leagueAdmin";
 
 export type LeagueColumnsProps = {
   onUpdateStatus: (leagueId: string, status: LeagueStatus) => void;
@@ -27,7 +28,7 @@ export type LeagueColumnsProps = {
 export const getLeagueColumns = ({
   onUpdateStatus,
   updatingLeagueId,
-}: LeagueColumnsProps): ColumnDef<League>[] => [
+}: LeagueColumnsProps): ColumnDef<Partial<League>>[] => [
   {
     accessorKey: "league_title",
     header: "League",
@@ -35,7 +36,7 @@ export const getLeagueColumns = ({
       <div className="flex flex-col">
         <span className="font-medium">{row.original.league_title}</span>
         <span className="text-xs text-muted-foreground">
-          by {row.original.creator.organization_name}
+          by {row.original.creator?.organization_name ?? "N/A"}
         </span>
       </div>
     ),
@@ -59,7 +60,7 @@ export const getLeagueColumns = ({
     accessorKey: "league_schedule",
     header: "Schedule",
     cell: ({ row }) => {
-      const [start, end] = row.original.league_schedule;
+      const [start, end] = row.original.league_schedule ?? ["", ""];
       return (
         <div className="text-sm">
           {format(new Date(start), "MMM d, yyyy")} -{" "}
@@ -72,35 +73,32 @@ export const getLeagueColumns = ({
     accessorKey: "league_courts",
     header: "Courts",
     cell: ({ row }) => (
-      <Badge variant="outline">{row.original.league_courts.length}</Badge>
+      <Badge variant="outline">{row.original.league_courts?.length ?? 0}</Badge>
     ),
   },
   {
     accessorKey: "league_officials",
     header: "Officials",
     cell: ({ row }) => (
-      <Badge variant="outline">{row.original.league_officials.length}</Badge>
+      <Badge variant="outline">
+        {row.original.league_officials?.length ?? 0}
+      </Badge>
     ),
   },
   {
     accessorKey: "league_referees",
     header: "Referees",
     cell: ({ row }) => (
-      <Badge variant="outline">{row.original.league_referees.length}</Badge>
+      <Badge variant="outline">
+        {row.original.league_referees?.length ?? 0}
+      </Badge>
     ),
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const { preparePrint, runPrint, downloadLeague } = useLeaguePDF();
       const league = row.original;
       const isLoading = updatingLeagueId === league.league_id;
-
-      const handlePrint = async () => {
-        const result = await preparePrint(league.league_id);
-        const url = await result?.unwrap();
-        runPrint(url);
-      };
 
       return (
         <DropdownMenu>
@@ -130,7 +128,9 @@ export const getLeagueColumns = ({
                       <DropdownMenuItem
                         key={status}
                         disabled={league.status === status}
-                        onClick={() => onUpdateStatus(league.league_id, status)}
+                        onClick={() =>
+                          onUpdateStatus(league.league_id!, status)
+                        }
                       >
                         Set as{" "}
                         {status == LeagueStatus.Scheduled ? "Approved" : status}
@@ -140,24 +140,17 @@ export const getLeagueColumns = ({
               </DropdownMenuPortal>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>Documents</DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem
-                    key={"download"}
-                    onClick={() =>
-                      downloadLeague(league.league_id, league.league_title)
-                    }
-                  >
-                    Download PDF
-                  </DropdownMenuItem>
-                  <DropdownMenuItem key={"print"} onClick={handlePrint}>
-                    Print
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
+            <DropdownMenuLabel>Documents</DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={() => {
+                openActivityDesignPDF(
+                  league as League,
+                  league.creator as LeagueAdministator
+                );
+              }}
+            >
+              Print
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

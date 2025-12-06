@@ -1,4 +1,4 @@
-export { default as DashboardPage } from "./league-administrator/DashboardPage";
+export { default as DashboardPage } from "./league-administrator/league/dashboard/DashboardPage";
 export { default as LeagueCreationPage } from "./league-administrator/league/create/LeagueCreationPage";
 export { default as TeamSubmissionPage } from "./league-administrator/league/team/TeamSubmissionPage";
 export { default as SettingsPage } from "./league-administrator/SettingPage";

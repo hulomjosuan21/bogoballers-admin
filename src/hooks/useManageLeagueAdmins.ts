@@ -27,7 +27,9 @@ export const useManageLeagueAdmins = () => {
     queryFn: () => manageLeagueAdministratorService.getAllAdmins(),
   });
 
-  const { data: leagues, isLoading: isLoadingLeagues } = useQuery<League[]>({
+  const { data: leagues, isLoading: isLoadingLeagues } = useQuery<
+    Partial<League>[]
+  >({
     queryKey: leagueQueryKeys.lists(),
     queryFn: () => manageLeagueAdministratorService.getAllLeagues(),
   });

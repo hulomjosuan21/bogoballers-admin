@@ -68,8 +68,6 @@ export const ActivityLogsFeed = forwardRef<
         </ScrollArea>
       );
     }
-
-    // Empty state (no logs)
     if (logs.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-12">
@@ -81,8 +79,6 @@ export const ActivityLogsFeed = forwardRef<
         </div>
       );
     }
-
-    // Actual logs
     return (
       <ScrollArea ref={ref} className={cn("w-full", height, className)}>
         <div className="p-4 space-y-4">
