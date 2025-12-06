@@ -48,11 +48,9 @@ import { cn } from "@/lib/utils";
 
 export default function ManageCourts({
   data,
-  hasActiveLeague,
   activeLeagueId,
 }: {
   data: LeagueCourt[];
-  hasActiveLeague: boolean;
   activeLeagueId: string;
 }) {
   const handleError = useErrorToast();
@@ -216,12 +214,7 @@ export default function ManageCourts({
   });
 
   return (
-    <div
-      className={cn(
-        "space-y-2",
-        hasActiveLeague && "pointer-events-none opacity-50"
-      )}
-    >
+    <div className="space-y-2">
       <div className="flex justify-between items-center gap-4">
         <p className="text-helper">
           Manage courts and their availability for games.

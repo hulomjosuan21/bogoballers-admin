@@ -13,6 +13,7 @@ import type { LeagueRefereeCreate } from "@/tables/ManageRefereesTable";
 import type { LeagueAffiliateCreate } from "@/tables/ManangeAffiliateTable";
 import type { LeagueUpdatePayload } from "@/forms/UpdateLeagueForm";
 import type { LeagueLog } from "@/types/leagueLogModel";
+import type { DashboardLeague } from "@/pages/league-administrator/DashboardPage";
 
 type FieldKeyMap = {
   league_courts: LeagueCourt;
@@ -128,6 +129,14 @@ export class LeagueService {
     return response.data;
   }
 
+  static async fetchDashboard() {
+    const response = await axiosClient.get<DashboardLeague>(
+      "/league/dashboard"
+    );
+
+    return response.data;
+  }
+
   static async fetchGetOneByPublicId<
     T extends Partial<League> & { condition: string }
   >(publicLeagueId: string, data?: T) {
@@ -185,7 +194,7 @@ export class LeagueService {
 
   async updateLeague(leagueId: string, data: Partial<League>) {
     const response = await axiosClient.put<{ message: string }>(
-      `/update/${leagueId}`,
+      `/league/${leagueId}/update`,
       data
     );
 

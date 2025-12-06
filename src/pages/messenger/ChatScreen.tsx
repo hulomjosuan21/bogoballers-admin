@@ -287,7 +287,7 @@ const ChatScreen = () => {
 
                     <div
                       className={cn(
-                        "px-4 py-2 text-[14px] shadow-sm break-words rounded-2xl relative",
+                        "px-4 py-2 text-[14px] shadow-sm wrap-break-word rounded-2xl relative",
                         isMe
                           ? cn(
                               isPending ? "bg-primary/80" : "bg-primary",

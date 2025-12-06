@@ -1,6 +1,5 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import {
   Select,
   SelectContent,
@@ -12,26 +11,26 @@ import LeagueGuestTable from "@/tables/LeagueGuestTable";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import {
+  NoActiveLeagueAlert,
+  PendingLeagueAlert,
+} from "@/components/LeagueStatusAlert";
 
 export default function LeagueGuestPage() {
-  const {
-    categories,
-    activeLeagueStatus,
-    isLoading,
-    selectedCategory,
-    setSelectedCategory,
-  } = useLeagueCategoriesRoundsGroups();
+  const { categories, selectedCategory, setSelectedCategory } =
+    useLeagueCategoriesRoundsGroups();
 
-  if (activeLeagueStatus === "Pending") {
-    return <LeagueNotApproveYet />;
+  const { isActive, league_status, message } = useActiveLeagueMeta();
+
+  if (!isActive) {
+    return (
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
+    );
   }
 
-  if (isLoading) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
-    );
+  if (isActive && league_status === "Pending") {
+    return <PendingLeagueAlert />;
   }
 
   return (

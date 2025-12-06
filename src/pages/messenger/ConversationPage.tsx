@@ -7,6 +7,8 @@ import ContentHeader from "@/components/content-header";
 import { Input } from "@/components/ui/input";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 import { Spinner } from "@/components/ui/spinner";
+import { PendingLeagueAlert } from "@/components/LeagueStatusAlert";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
 
 const SOCKET_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000";
 
@@ -49,7 +51,7 @@ interface Conversation {
 }
 const ConversationPage = () => {
   const { leagueAdmin, leagueAdminLoading } = useAuthLeagueAdmin();
-
+  const { league_status, isActive } = useActiveLeagueMeta();
   const userId = leagueAdmin?.user_id || null;
 
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -161,6 +163,9 @@ const ConversationPage = () => {
     <ContentShell>
       <ContentHeader title="Chats" />
       <ContentBody>
+        {isActive && league_status == "Pending" && (
+          <PendingLeagueAlert onContentBody={false} />
+        )}
         {!isConnected && !isLoading && (
           <div className="bg-destructive/10 p-2 text-xs text-destructive text-center flex items-center justify-center">
             <AlertCircle className="w-3 h-3 mr-1" />

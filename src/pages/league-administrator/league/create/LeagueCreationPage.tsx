@@ -9,23 +9,21 @@ import {
   AlertToolbar,
 } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { LeagueService } from "@/service/leagueService";
-import { useQuery } from "@tanstack/react-query";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import { PendingLeagueAlert } from "@/components/LeagueStatusAlert";
 
 export default function CreateLeaguePage() {
-  const { data, refetch } = useQuery({
-    queryKey: ["active-league-data"],
-    queryFn: () => LeagueService.fetchActive(),
-    enabled: true,
-    retry: 1,
-  });
+  const { isActive, refetch, league_status } = useActiveLeagueMeta();
 
+  if (isActive && league_status === "Pending") {
+    return <PendingLeagueAlert />;
+  }
   return (
     <ContentShell>
       <ContentHeader title="Create League" />
 
       <ContentBody>
-        {data && (
+        {isActive && (
           <Alert variant="info">
             <AlertIcon>
               <RiSpamFill />
@@ -50,7 +48,7 @@ export default function CreateLeaguePage() {
             </AlertToolbar>
           </Alert>
         )}
-        <CreateLeagueForm hasActive={!!data} refetch={refetch} />
+        <CreateLeagueForm hasActive={isActive} refetch={refetch} />
       </ContentBody>
     </ContentShell>
   );

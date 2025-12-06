@@ -1,7 +1,15 @@
 import { useEffect, useState, useTransition, useMemo } from "react";
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import { Info, Save, RotateCcw, CalendarIcon, Loader2 } from "lucide-react";
+import {
+  Info,
+  Save,
+  RotateCcw,
+  CalendarIcon,
+  Loader2,
+  ChevronDown,
+  Check,
+} from "lucide-react";
 import {
   Alert,
   AlertIcon,
@@ -36,27 +44,32 @@ import { PDFViewer } from "@react-pdf/renderer";
 import { toast } from "sonner";
 import type { League } from "@/types/league";
 import ActivityDesignDocument from "@/components/pdf/LeaguePdf"; // Ensure this matches your file path
+import { Spinner } from "@/components/ui/spinner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DateTimePicker } from "@/components/datetime-picker";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import { NoActiveLeagueAlert } from "@/components/LeagueStatusAlert";
 
 export default function LeagueUpdatePage() {
+  const { isActive, message, refetch } = useActiveLeagueMeta();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
-
-  // --- 1. DATA FETCHING ---
   const { data: serverData, isLoading } = useQuery({
     queryKey: ["active-league-data"],
     queryFn: () => LeagueService.fetchActive(),
-    staleTime: Infinity, // Keep data fresh to avoid background overwrites
+    staleTime: Infinity,
+    enabled: isActive,
     refetchOnWindowFocus: false,
   });
 
-  // --- 2. STATE MANAGEMENT ---
-  // 'draft' controls the Form Inputs (Immediate UI response)
   const [draft, setDraft] = useState<League | null>(null);
-  // 'pdfData' controls the PDF Preview (Deferred/Transitioned update)
   const [pdfData, setPdfData] = useState<League | null>(null);
-
-  // Sync Server Data to Local State on Load
   useEffect(() => {
     if (serverData) {
       const clonedData = JSON.parse(JSON.stringify(serverData));
@@ -64,8 +77,6 @@ export default function LeagueUpdatePage() {
       setPdfData(clonedData);
     }
   }, [serverData]);
-
-  // Sync Draft to PDF Data with low priority (Optimization)
   useEffect(() => {
     if (draft) {
       startTransition(() => {
@@ -73,15 +84,12 @@ export default function LeagueUpdatePage() {
       });
     }
   }, [draft]);
-
-  // --- 3. CHANGE DETECTION (Diffing) ---
   const getDirtyFields = (
     original: League,
     current: League
   ): Partial<League> => {
     const changes: Partial<League> = {};
     (Object.keys(current) as Array<keyof League>).forEach((key) => {
-      // Simple JSON stringify comparison handles Arrays and Objects efficiently for this data size
       if (JSON.stringify(original[key]) !== JSON.stringify(current[key])) {
         // @ts-ignore - dynamic assignment
         changes[key] = current[key];
@@ -89,21 +97,24 @@ export default function LeagueUpdatePage() {
     });
     return changes;
   };
-
-  // Check if anything changed to enable/disable Save button
   const isDirty = useMemo(() => {
     if (!serverData || !draft) return false;
     return JSON.stringify(serverData) !== JSON.stringify(draft);
   }, [serverData, draft]);
-
-  // --- 4. MUTATION (SAVE) ---
   const updateMutation = useMutation({
     mutationFn: (changes: Partial<League>) =>
       leagueService.updateLeague(serverData!.league_id, changes),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("League details updated successfully!");
-      queryClient.invalidateQueries({ queryKey: ["active-league-data"] });
-      // Note: serverData update triggers useEffect, which resets draft/pdfData to new server state
+
+      if (serverData) {
+        const resetData = JSON.parse(JSON.stringify(serverData));
+        setDraft(resetData);
+        setPdfData(resetData);
+      }
+
+      await refetch();
+      await queryClient.invalidateQueries({ queryKey: ["active-league-data"] });
     },
     onError: (err) => {
       console.error(err);
@@ -121,9 +132,9 @@ export default function LeagueUpdatePage() {
       return;
     }
 
+    console.log(JSON.stringify(changes, null, 2));
     updateMutation.mutate(changes);
   };
-
   const handleReset = () => {
     if (serverData) {
       const resetData = JSON.parse(JSON.stringify(serverData));
@@ -131,14 +142,15 @@ export default function LeagueUpdatePage() {
       startTransition(() => setPdfData(resetData));
     }
   };
-
-  // --- 5. INPUT HANDLERS ---
   const handleTextChange = (field: keyof League, value: string | number) => {
     setDraft((prev) => (prev ? { ...prev, [field]: value } : null));
   };
 
-  const handleArrayChange = (field: keyof League, value: string) => {
-    setDraft((prev) => (prev ? { ...prev, [field]: value.split("\n") } : null));
+  const handleArrayChange = (field: keyof League, rawValue: string) => {
+    const lines = rawValue.split(/\r?\n/);
+    const cleanedLines = lines.map((line) => line.replace(/\s+$/, ""));
+
+    setDraft((prev) => (prev ? { ...prev, [field]: cleanedLines } : null));
   };
 
   const handleDateChange = (field: keyof League, date: Date | undefined) => {
@@ -155,7 +167,32 @@ export default function LeagueUpdatePage() {
     setDraft({ ...draft, league_schedule: newSchedule as [string, string] });
   };
 
-  // --- 6. HELPER COMPONENTS ---
+  const DateTimeField = ({
+    label,
+    dateIso,
+    onChange,
+  }: {
+    label: string;
+    dateIso: string;
+    onChange: (d: Date | undefined) => void;
+  }) => {
+    const dateValue = dateIso ? new Date(dateIso) : undefined;
+
+    return (
+      <div className="flex flex-col space-y-2">
+        <Label>{label}</Label>
+        <DateTimePicker
+          dateTime={dateValue}
+          setDateTime={(update) => {
+            const newDate =
+              update instanceof Function ? update(dateValue) : update;
+            onChange(newDate);
+          }}
+        />
+      </div>
+    );
+  };
+
   const DatePickerField = ({
     label,
     dateIso,
@@ -197,7 +234,11 @@ export default function LeagueUpdatePage() {
   );
 
   const hasData = !!serverData;
-
+  if (!isActive) {
+    return (
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
+    );
+  }
   return (
     <ContentShell>
       <ContentHeader title="Update League Activity Design">
@@ -220,7 +261,6 @@ export default function LeagueUpdatePage() {
                 size="sm"
                 onClick={handleSave}
                 disabled={updateMutation.isPending || !isDirty}
-                className="bg-blue-600 hover:bg-blue-700"
               >
                 {updateMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -231,10 +271,95 @@ export default function LeagueUpdatePage() {
               </Button>
             </>
           )}
+
+          {draft && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 min-w-40">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        "w-2 h-2 rounded-full",
+                        draft.status === "Pending" && "bg-amber-500",
+                        draft.status === "Scheduled" && "bg-indigo-500",
+                        draft.status === "Ongoing" && "bg-green-500",
+                        draft.status === "Completed" && "bg-teal-500",
+                        draft.status === "Rejected" && "bg-red-500",
+                        draft.status === "Postponed" && "bg-orange-500",
+                        draft.status === "Cancelled" && "bg-gray-500"
+                      )}
+                    />
+                    <span className="font-medium">
+                      {draft.status || "Select Status"}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end" className="w-48">
+                {[
+                  { value: "Pending", label: "Pending", color: "bg-amber-500" },
+                  {
+                    value: "Scheduled",
+                    label: "Scheduled",
+                    color: "bg-indigo-500",
+                  },
+                  { value: "Ongoing", label: "Ongoing", color: "bg-green-500" },
+                  {
+                    value: "Completed",
+                    label: "Completed",
+                    color: "bg-teal-500",
+                  },
+                  { value: "Rejected", label: "Rejected", color: "bg-red-500" },
+                  {
+                    value: "Postponed",
+                    label: "Postponed",
+                    color: "bg-orange-500",
+                  },
+                  {
+                    value: "Cancelled",
+                    label: "Cancelled",
+                    color: "bg-gray-500",
+                  },
+                ].map((status) => (
+                  <DropdownMenuItem
+                    key={status.value}
+                    onClick={() => {
+                      if (draft.status !== status.value) {
+                        setDraft((prev) =>
+                          prev
+                            ? { ...prev, status: status.value as string }
+                            : null
+                        );
+                        toast.success(`Status updated to ${status.label}`);
+                      }
+                    }}
+                    className={cn(
+                      "gap-2 cursor-pointer",
+                      draft.status === status.value && "font-semibold"
+                    )}
+                  >
+                    <div className={cn("w-2 h-2 rounded-full", status.color)} />
+                    {status.label}
+                    {draft.status === status.value && (
+                      <Check className="ml-auto h-4 w-4" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </ContentHeader>
 
       <ContentBody className="p-0 overflow-hidden h-[calc(100vh-60px)]">
+        {isLoading && (
+          <div className="h-40 grid place-content-center">
+            <Spinner />
+          </div>
+        )}
+
         {!hasData && !isLoading && (
           <div className="p-6">
             <Alert variant="info">
@@ -259,11 +384,9 @@ export default function LeagueUpdatePage() {
 
         {draft && pdfData && (
           <div className="flex flex-row h-full w-full">
-            {/* --- LEFT: FORM (Immediate Updates) --- */}
-            <div className="w-1/2 h-full border-r bg-background">
+            <div className="w-1/2 h-full bg-background">
               <ScrollArea className="h-full w-full p-6">
                 <div className="flex flex-col gap-6 pb-20">
-                  {/* General Info */}
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">
@@ -309,8 +432,6 @@ export default function LeagueUpdatePage() {
                       </div>
                     </CardContent>
                   </Card>
-
-                  {/* Schedule & Dates */}
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">
@@ -318,12 +439,13 @@ export default function LeagueUpdatePage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="grid grid-cols-2 gap-4">
-                      <DatePickerField
+                      <DateTimeField
                         label="Opening Date"
                         dateIso={draft.opening_date}
                         onChange={(d) => handleDateChange("opening_date", d)}
                       />
-                      <DatePickerField
+
+                      <DateTimeField
                         label="Registration Deadline"
                         dateIso={draft.registration_deadline}
                         onChange={(d) =>
@@ -340,28 +462,11 @@ export default function LeagueUpdatePage() {
                         dateIso={draft.league_schedule[1]}
                         onChange={(d) => handleScheduleChange(1, d)}
                       />
-                    </CardContent>
-                  </Card>
 
-                  {/* Text Content */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">
-                        Document Content
-                      </CardTitle>
-                      <CardDescription>
-                        Edit the narrative parts of the document.
-                        <span className="block mt-1 text-amber-600 font-medium text-xs">
-                          *For Rationale & Rules: Each new line acts as a new
-                          paragraph/bullet point.
-                        </span>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="space-y-2">
+                      <div className="space-y-2 col-span-2">
                         <Label>Description</Label>
                         <Textarea
-                          className="min-h-[80px]"
+                          className="min-h-20"
                           placeholder="Brief description..."
                           value={draft.league_description}
                           onChange={(e) =>
@@ -372,11 +477,27 @@ export default function LeagueUpdatePage() {
                           }
                         />
                       </div>
+                    </CardContent>
+                  </Card>
 
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-md">
+                        Document Content
+                      </CardTitle>
+                      <CardDescription>
+                        Edit the narrative parts of the document.
+                        <span className="block mt-1 text-amber-600 font-medium text-xs">
+                          *For Rationale & Rules: Each new line acts as a new
+                          paragraph/value.
+                        </span>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
                       <div className="space-y-2">
                         <Label>Objective</Label>
                         <Textarea
-                          className="min-h-[80px]"
+                          className="min-h-20"
                           value={draft.league_objective}
                           onChange={(e) =>
                             handleTextChange("league_objective", e.target.value)
@@ -388,7 +509,7 @@ export default function LeagueUpdatePage() {
                         <Label>Rationale</Label>
                         <Textarea
                           className="min-h-[150px] font-mono text-sm leading-relaxed"
-                          placeholder="Reason 1...&#10;Reason 2..."
+                          placeholder="Type each point on a new line..."
                           value={
                             Array.isArray(draft.league_rationale)
                               ? draft.league_rationale.join("\n")
@@ -397,7 +518,7 @@ export default function LeagueUpdatePage() {
                           onChange={(e) =>
                             handleArrayChange(
                               "league_rationale",
-                              e.target.value.split("\n") as any // Forces TS to ignore the type mismatch
+                              e.target.value
                             )
                           }
                         />
@@ -407,8 +528,12 @@ export default function LeagueUpdatePage() {
                         <Label>Sportsmanship Rules</Label>
                         <Textarea
                           className="min-h-[150px] font-mono text-sm leading-relaxed"
-                          placeholder="Rule 1...&#10;Rule 2..."
-                          value={draft.sportsmanship_rules.join("\n")}
+                          placeholder="One rule per line..."
+                          value={
+                            Array.isArray(draft.sportsmanship_rules)
+                              ? draft.sportsmanship_rules.join("\n")
+                              : ""
+                          }
                           onChange={(e) =>
                             handleArrayChange(
                               "sportsmanship_rules",
@@ -422,36 +547,30 @@ export default function LeagueUpdatePage() {
                 </div>
               </ScrollArea>
             </div>
-
-            {/* --- RIGHT: PDF PREVIEW (Transitioned Updates) --- */}
-            <div className="w-1/2 h-full bg-slate-100 flex flex-col border-l relative">
-              <div className="bg-white border-b p-2 px-6 text-sm font-medium text-muted-foreground flex justify-between items-center z-10">
+            <div className="w-1/2 h-full flex flex-col relative">
+              <div className="p-1 px-6 text-sm font-medium text-muted-foreground flex justify-between items-center z-10">
                 <span>Document Preview</span>
-                <span className="text-xs flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                <span className="text-xs flex items-center gap-1 text-amber-600 px-2 py-1 rounded border">
                   <Info className="w-3 h-3" /> Auto-updates on pause
                 </span>
               </div>
-
-              {/* PDF Container */}
-              <div className="flex-1 overflow-hidden p-4 relative">
+              <div className="flex-1 overflow-hidden p-2 relative">
                 <PDFViewer
                   width="100%"
                   height="100%"
-                  className="rounded-md shadow-sm border bg-white"
+                  className="rounded-md shadow-sm"
                   showToolbar={true}
                 >
                   <ActivityDesignDocument
-                    league={pdfData} // Uses the deferred state
+                    league={pdfData}
                     leagueAdmin={pdfData.creator}
                   />
                 </PDFViewer>
-
-                {/* --- OPTIMIZATION: LOADING SPINNER OVERLAY --- */}
                 {isPending && (
                   <div className="absolute inset-4 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-md border border-slate-200 shadow-sm transition-all duration-300">
-                    <div className="flex flex-col items-center gap-3 p-6 bg-white rounded-xl shadow-lg border">
-                      <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-                      <p className="text-sm font-medium text-slate-600">
+                    <div className="flex flex-col items-center gap-3 p-6 bg-card rounded-xl shadow-lg border">
+                      <Spinner className="h-8 w-8" />
+                      <p className="text-sm font-medium">
                         Generating Preview...
                       </p>
                     </div>

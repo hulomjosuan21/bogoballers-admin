@@ -69,7 +69,6 @@ export interface TotalProfit {
 }
 
 export interface LeagueAnalytics {
-  active_league: League;
   total_profit: TotalProfit;
   total_accepted_teams: {
     count: number;

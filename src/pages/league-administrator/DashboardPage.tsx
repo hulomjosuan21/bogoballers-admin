@@ -9,9 +9,6 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ProfitAreaChart } from "@/charts/DashboardProfitChart";
 import {
-  SendToBack,
-  UserRound,
-  UsersRound,
   PanelRightOpen,
   PanelRightClose,
   type LucideIcon,
@@ -19,9 +16,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useActiveLeagueAnalytics } from "@/hooks/useActiveLeague";
-
-import type { League } from "@/types/league";
 import { SelectedMatchAlert } from "@/tables/LeagueMatchUpcomingTable";
 import { useSelectedMatchStore } from "@/stores/selectedMatchStore";
 import {
@@ -31,18 +25,26 @@ import {
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { getLeagueMatchQueryOption } from "@/queries/leagueMatchQueryOption";
-import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
-import { useLeagueStore } from "@/stores/leagueStore";
-import {
-  LeagueService,
-  leagueService,
-  LeagueStatus,
-} from "@/service/leagueService";
+import { LeagueService, leagueService } from "@/service/leagueService";
 import useDateTime from "@/hooks/useDatetime";
 import { Button } from "@/components/ui/button";
 import { ActivityLogsFeed } from "@/components/ActivityLogsFeed";
 import { Skeleton } from "@/components/ui/skeleton";
 import ScheduleGraph from "@/components/ScheduleGraph";
+import { queryClient } from "@/lib/queryClient";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import {
+  NoActiveLeagueAlert,
+  PendingLeagueAlert,
+} from "@/components/LeagueStatusAlert";
+
+export interface DashboardLeague {
+  league_id: string;
+  status: string;
+  banner_url: string;
+  league_title: string;
+  league_description: string;
+}
 
 interface DashboardCardProps {
   title: string;
@@ -51,7 +53,7 @@ interface DashboardCardProps {
   icon?: LucideIcon;
 }
 
-const LeagueSection = ({ league, wrap }: { league: League; wrap: boolean }) => {
+const LeagueSection = ({ league }: { league: DashboardLeague }) => {
   const leagueStatus = (status: string) => {
     const map: Record<
       string,
@@ -80,11 +82,7 @@ const LeagueSection = ({ league, wrap }: { league: League; wrap: boolean }) => {
 
   return (
     <section>
-      <div
-        className={`grid gap-4 items-start ${
-          wrap ? "grid-cols-1" : "sm:grid-cols-1 lg:grid-cols-2"
-        }`}
-      >
+      <div className="grid gap-4 items-start">
         <ImageZoom>
           <img
             src={league.banner_url}
@@ -95,12 +93,10 @@ const LeagueSection = ({ league, wrap }: { league: League; wrap: boolean }) => {
 
         <div className="flex flex-col gap-3 items-center text-center lg:items-start lg:text-left">
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 my-2">
-            <h1 className="text-lg font-semibold break-words">
-              {league.league_title}
-            </h1>
-            {leagueStatus(league.status!)}
+            <h1 className="text-lg font-semibold">{league.league_title}</h1>
+            {leagueStatus(league.status)}
           </div>
-          <p className="text-muted-foreground text-sm text-justify break-words">
+          <p className="text-muted-foreground text-sm text-justify">
             {league.league_description}
           </p>
         </div>
@@ -168,34 +164,27 @@ const DashboardFallback = ({
 };
 
 export default function DashboardPage() {
+  const { isActive, league_id, message, league_status } = useActiveLeagueMeta();
+
+  const activeLeagueId = league_id!;
   const dateTime = useDateTime();
 
-  const { data, isLoading, refetch, isError, error } = useQuery({
-    queryKey: ["active-league-data"],
-    queryFn: () => LeagueService.fetchActive(),
-    enabled: true,
-    retry: 1,
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["league-dashboard"],
+    queryFn: () => LeagueService.fetchDashboard(),
+    enabled: isActive,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
-  const hasActiveLeague = !!data;
-  const activeLeagueId = data?.league_id;
-
-  const { setLeague, setQueryState } = useLeagueStore();
 
   useEffect(() => {
-    setQueryState({
-      isLoading: false,
-      isError,
-      error: error ?? null,
-      leagueId: activeLeagueId,
-      refetch,
+    if (!isActive) return;
+    queryClient.prefetchQuery({
+      queryKey: ["active-league-data"],
+      queryFn: () => LeagueService.fetchActive(),
+      staleTime: Infinity,
     });
-  }, [isLoading, isError, error, activeLeagueId, refetch, setQueryState]);
-
-  useEffect(() => {
-    if (data) setLeague(data);
-  }, [data, setLeague]);
+  }, [queryClient, isActive]);
 
   const {
     categories,
@@ -204,55 +193,52 @@ export default function DashboardPage() {
     selectedRound,
     setSelectedCategory,
     setSelectedRound,
-  } = useLeagueCategoriesRoundsGroups();
-
+  } = useLeagueCategoriesRoundsGroups({ enable: isActive });
   const [upcomingMatch, completedMatch] = useQueries({
     queries: [
       getLeagueMatchQueryOption(
         selectedCategory,
         selectedRound,
         { condition: "Upcoming", limit: 5 },
-        hasActiveLeague
+        !isActive
       ),
       getLeagueMatchQueryOption(
         selectedCategory,
         selectedRound,
         { condition: "Completed", limit: 5 },
-        hasActiveLeague
+        !isActive
       ),
     ],
   });
-
-  const { selectedMatch, removeSelectedMatch } = useSelectedMatchStore();
-  const { activeLeagueAnalyticsData, activeLeagueAnalyticsLoading } =
-    useActiveLeagueAnalytics(activeLeagueId);
-
-  const [showActivityFeed, setShowActivityFeed] = useState(true);
-
-  const queryKey = ["activity-logs", activeLeagueId];
   const {
-    data: logData,
-    isLoading: logLoading,
-    error: logError,
+    data: analytics,
+    isLoading: analyticsLoading,
+    isError: analyticsError,
+    refetch: refetchAnalytics,
   } = useQuery({
-    queryKey,
+    queryKey: ["active-league-analytics", activeLeagueId],
+    queryFn: () => LeagueService.analytics(activeLeagueId),
+    enabled: isActive,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
+  const {
+    data: logs,
+    isLoading: logsLoading,
+    error: logsError,
+  } = useQuery({
+    queryKey: ["league-logs", activeLeagueId],
     queryFn: () => leagueService.getLogs({ league_id: activeLeagueId }),
-    enabled: !!activeLeagueId,
+    enabled: isActive,
   });
 
-  const leagueStatus = (data?.status ?? "Pending") as LeagueStatus;
-  const handledStates: Record<LeagueStatus, boolean> = {
-    Pending: false,
-    Completed: true,
-    Postponed: true,
-    Rejected: true,
-    Cancelled: true,
-    Scheduled: false,
-    Ongoing: false,
-  };
+  const { selectedMatch, removeSelectedMatch } = useSelectedMatchStore();
+  const [showActivityFeed, setShowActivityFeed] = useState(true);
 
-  if (data && handledStates[leagueStatus]) {
-    return <SelectedLeagueStateScreen state={leagueStatus} league={data} />;
+  if (!isActive) {
+    return (
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
+    );
   }
 
   if (!isLoading && (isError || !data)) {
@@ -263,6 +249,7 @@ export default function DashboardPage() {
     <ContentShell>
       <ContentHeader title="Active League Dashboard">
         <span className="text-xs font-medium">{dateTime}</span>
+
         <Button
           variant="ghost"
           size="icon"
@@ -278,6 +265,10 @@ export default function DashboardPage() {
       </ContentHeader>
 
       <ContentBody>
+        {isActive && league_status === "Pending" && (
+          <PendingLeagueAlert onContentBody={false} />
+        )}
+
         <div
           className={`grid gap-4 ${
             showActivityFeed ? "lg:grid-cols-[1fr_20rem]" : "grid-cols-1"
@@ -292,82 +283,73 @@ export default function DashboardPage() {
               />
             )}
 
-            {isLoading ? (
+            {isLoading && !data ? (
               <div className="space-y-3">
-                <Skeleton className="h-16 w-full rounded-md" />
-                <Skeleton className="h-10 w-2/3 rounded-md" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-10 w-2/3" />
               </div>
             ) : (
-              <LeagueSection league={data!} wrap={true} />
+              <LeagueSection league={data!} />
             )}
 
+            {/* Analytics */}
             <div className="flex gap-4 items-center flex-wrap">
-              {!activeLeagueAnalyticsData && activeLeagueAnalyticsLoading ? (
+              {analyticsLoading || !analytics ? (
                 <>
                   <Skeleton className="h-24 w-40 rounded-xl" />
                   <Skeleton className="h-24 w-40 rounded-xl" />
                   <Skeleton className="h-24 w-40 rounded-xl" />
                 </>
+              ) : analyticsError ? (
+                <p className="text-sm text-red-500">
+                  Failed to load analytics.{" "}
+                  <button onClick={() => refetchAnalytics()}>Retry</button>
+                </p>
               ) : (
                 <>
                   <AnalyticsCard
                     title="Total Teams"
-                    value={
-                      activeLeagueAnalyticsData?.total_accepted_teams.count ?? 0
-                    }
+                    value={analytics.total_accepted_teams?.count ?? 0}
                     lastUpdate={
-                      activeLeagueAnalyticsData?.total_accepted_teams
-                        .last_update
+                      analytics.total_accepted_teams?.last_update ?? null
                     }
-                    icon={UsersRound}
                   />
                   <AnalyticsCard
                     title="Total Players"
-                    value={activeLeagueAnalyticsData?.total_players.count ?? 0}
-                    lastUpdate={
-                      activeLeagueAnalyticsData?.total_players.last_update
-                    }
-                    icon={UserRound}
+                    value={analytics.total_players?.count ?? 0}
+                    lastUpdate={analytics.total_players?.last_update ?? null}
                   />
                   <AnalyticsCard
                     title="Total Categories"
-                    value={
-                      activeLeagueAnalyticsData?.total_categories.count ?? 0
-                    }
-                    lastUpdate={
-                      activeLeagueAnalyticsData?.total_categories.last_update
-                    }
-                    icon={SendToBack}
+                    value={analytics.total_categories?.count ?? 0}
+                    lastUpdate={analytics.total_categories?.last_update ?? null}
                   />
                 </>
               )}
             </div>
 
-            {!activeLeagueAnalyticsData && activeLeagueAnalyticsLoading ? (
-              <Skeleton className="h-[300px] w-full rounded-xl" />
-            ) : (
-              <ProfitAreaChart
-                data={activeLeagueAnalyticsData?.total_profit!}
-              />
-            )}
+            {analytics && (
+              <>
+                {analyticsLoading ? (
+                  <Skeleton className="h-[300px] w-full rounded-xl" />
+                ) : (
+                  <ProfitAreaChart data={analytics.total_profit ?? []} />
+                )}
 
-            {activeLeagueAnalyticsLoading ? (
-              <Skeleton className="h-24 w-full rounded-md" />
-            ) : (
-              <ScheduleGraph
-                data={activeLeagueAnalyticsData?.matches_chart_data.chart ?? []}
-                endDate={
-                  activeLeagueAnalyticsData?.matches_chart_data.last_match_date
-                    ? new Date(
-                        activeLeagueAnalyticsData.matches_chart_data.last_match_date
-                      )
-                    : new Date()
-                }
-                days={
-                  activeLeagueAnalyticsData?.matches_chart_data.total_days ??
-                  365
-                }
-              />
+                {analyticsLoading ? (
+                  <Skeleton className="h-24 w-full rounded-md" />
+                ) : (
+                  <ScheduleGraph
+                    data={analytics.matches_chart_data?.chart ?? []}
+                    endDate={
+                      analytics.matches_chart_data?.last_match_date
+                        ? new Date(analytics.matches_chart_data.last_match_date)
+                        : new Date()
+                    }
+                    days={analytics.matches_chart_data?.total_days ?? 365}
+                  />
+                )}
+              </>
             )}
 
             <div className="space-y-2">
@@ -385,13 +367,13 @@ export default function DashboardPage() {
                 <Skeleton className="h-64 w-full rounded-md" />
               ) : (
                 <LeagueMatchTableWrapper
+                  label="Upcoming Match"
                   selectedCategory={selectedCategory}
                   selectedRound={selectedRound}
                   leagueMatchData={upcomingMatch.data ?? []}
                   leagueMatchLoading={upcomingMatch.isLoading}
                   refresh={upcomingMatch.refetch}
                   controlls={false}
-                  label="Upcoming Match"
                   excludeFields={["home_team_score", "away_team_score"]}
                 />
               )}
@@ -400,13 +382,13 @@ export default function DashboardPage() {
                 <Skeleton className="h-64 w-full rounded-md" />
               ) : (
                 <LeagueMatchTableWrapper
+                  label="Completed Match"
                   selectedCategory={selectedCategory}
                   selectedRound={selectedRound}
                   leagueMatchData={completedMatch.data ?? []}
                   leagueMatchLoading={completedMatch.isLoading}
                   refresh={completedMatch.refetch}
                   controlls={false}
-                  label="Completed Match"
                   excludeFields={["scheduled_date"]}
                 />
               )}
@@ -417,7 +399,7 @@ export default function DashboardPage() {
             <div className="hidden lg:block relative">
               <div className="absolute inset-0">
                 <div className="h-full rounded-md bg-card border">
-                  {logLoading || activeLeagueAnalyticsLoading ? (
+                  {logsLoading ? (
                     <div className="space-y-3 p-4">
                       <Skeleton className="h-6 w-full" />
                       <Skeleton className="h-6 w-5/6" />
@@ -426,9 +408,9 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <ActivityLogsFeed
-                      logs={logData?.data || []}
-                      isLoading={logLoading}
-                      error={logError}
+                      logs={logs?.data || []}
+                      isLoading={logsLoading}
+                      error={logsError}
                       height="h-full"
                     />
                   )}

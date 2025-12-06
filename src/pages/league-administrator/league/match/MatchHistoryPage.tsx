@@ -70,9 +70,6 @@ export const MatchHistoryFilter = ({
   );
 };
 
-// ---------------------------
-// Table Wrapper Component
-// ---------------------------
 export const LeagueMatchTableWrapper = ({
   selectedCategory,
   selectedRound,
@@ -85,7 +82,7 @@ export const LeagueMatchTableWrapper = ({
 }: {
   selectedCategory: string | undefined;
   selectedRound: string | undefined;
-  leagueMatchData: LeagueMatch[];
+  leagueMatchData: Partial<LeagueMatch>[];
   leagueMatchLoading: boolean;
   refresh: () => Promise<any>;
   controlls?: boolean;

@@ -8,8 +8,6 @@ import {
 import { AutomaticMatchConfigFlowProvider } from "@/context/AutomaticMatchConfigFlowContext";
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense, useTransition } from "react";
-import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
-import type { LeagueStatus } from "@/service/leagueService";
 import { ReactFlow, Background, Controls, MiniMap } from "@xyflow/react";
 import { automaticMatchConfigNodeTypes } from "@/components/automatic-match-config";
 import { useManageAutomaticMatchConfigNode } from "@/hooks/useAutomaticMatchConfigHook";
@@ -18,26 +16,26 @@ import { queryClient } from "@/lib/queryClient";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
-import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import {
+  NoActiveLeagueAlert,
+  PendingLeagueAlert,
+} from "@/components/LeagueStatusAlert";
 
 function AutomaticMatchConfigPage() {
-  const { activeLeagueId, activeLeagueStatus, isLoading } =
-    useLeagueCategoriesRoundsGroups();
+  const {
+    league_id: activeLeagueId,
+    league_status,
+    message,
+    isActive,
+  } = useActiveLeagueMeta();
+
+  const validate: boolean = !!(
+    isActive &&
+    league_status &&
+    ["Scheduled", "Ongoing"].includes(league_status)
+  );
   const [isPending, startTransition] = useTransition();
-
-  const leagueStatus = activeLeagueStatus as LeagueStatus;
-
-  const handledStates: Record<LeagueStatus, boolean> = {
-    Pending: true,
-    Completed: true,
-    Postponed: true,
-    Cancelled: true,
-    Scheduled: false,
-    Ongoing: false,
-    Rejected: true,
-  };
-
-  const isConfigurable = !handledStates[leagueStatus];
 
   const {
     nodes,
@@ -48,16 +46,9 @@ function AutomaticMatchConfigPage() {
     onDrop,
     onDragOver,
     onNodeDragStop,
-  } = useManageAutomaticMatchConfigNode(activeLeagueId, isConfigurable);
+  } = useManageAutomaticMatchConfigNode(activeLeagueId, validate);
 
   const { theme } = useTheme();
-  if (isLoading) {
-    return <SelectedLeagueStateScreen loading />;
-  }
-
-  if (!activeLeagueId) {
-    return <SelectedLeagueStateScreen />;
-  }
 
   const handleRefresh = () => {
     startTransition(async () => {
@@ -69,10 +60,6 @@ function AutomaticMatchConfigPage() {
       toast.success("Data refreshed!");
     });
   };
-
-  if (handledStates[leagueStatus]) {
-    return <SelectedLeagueStateScreen state={leagueStatus} />;
-  }
 
   const menu = (
     <div className="w-48 flex flex-col gap-2">
@@ -90,6 +77,16 @@ function AutomaticMatchConfigPage() {
       </Tabs>
     </div>
   );
+
+  if (!isActive) {
+    return (
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
+    );
+  }
+
+  if (isActive && league_status === "Pending") {
+    return <PendingLeagueAlert />;
+  }
 
   return (
     <ContentShell>

@@ -123,17 +123,37 @@ const ActivityDesignDocument = ({
   league: League;
 }) => {
   // 1. Loading Guard: Do not attempt to render if data is missing
-  if (!league || !leagueAdmin) {
+  if (
+    !league ||
+    !leagueAdmin ||
+    !league.league_title ||
+    typeof league.league_title !== "string" ||
+    !league.league_schedule?.[0] ||
+    !league.league_schedule?.[1] ||
+    !league.league_description ||
+    !league.league_objective ||
+    !Array.isArray(league.league_rationale) ||
+    !Array.isArray(league.sportsmanship_rules)
+  ) {
     return (
       <Document>
-        <Page style={styles.page}>
-          <Text>Loading...</Text>
+        <Page size="A4" style={styles.page}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              padding: 40,
+            }}
+          >
+            <Text style={{ fontSize: 14, color: "#666", textAlign: "center" }}>
+              Preview loading... (Data incomplete - please wait or reset)
+            </Text>
+          </View>
         </Page>
       </Document>
     );
   }
-
-  // 2. Safe Calculation Helpers
   const getTotalTeams = Array.isArray(league.league_categories)
     ? league.league_categories.reduce(
         (total, category) => total + (category.max_team || 0),
@@ -159,7 +179,6 @@ const ActivityDesignDocument = ({
     return leagueAdmin.organization_address.split(",")[0].replace("Brgy. ", "");
   };
 
-  // 3. Prepare Data with Fallbacks
   const documentData = {
     details: [
       { label: "PROPONENT", value: leagueAdmin.organization_type || "N/A" },
@@ -183,7 +202,7 @@ const ActivityDesignDocument = ({
       { label: "NO. OF TEAMS", value: `${getTotalTeams} Teams` },
       {
         label: "ESTIMATED COST",
-        value: `₱ ${Number(league.league_budget || 0).toLocaleString("en-US", {
+        value: `P ${Number(league.league_budget || 0).toLocaleString("en-US", {
           minimumFractionDigits: 2,
         })}`,
       },
@@ -194,7 +213,6 @@ const ActivityDesignDocument = ({
         } (Brgy. ${safeAddress()})`,
       },
     ],
-    // IMPORTANT: Ensure these are strings, not null/undefined
     description: league.league_description || "",
     objective: league.league_objective || "",
     rationale: Array.isArray(league.league_rationale)
@@ -245,25 +263,16 @@ const ActivityDesignDocument = ({
             <DetailRow
               key={index}
               label={item.label}
-              value={item.value} // Value is already safe from above
+              value={item.value}
               isHighlight={item.isHighlight}
             />
           ))}
         </View>
 
-        {/* Guard Conditional Rendering for Description */}
-        {documentData.description ? (
-          <View>
-            <Text style={styles.sectionTitle}>Description:</Text>
-            <Text style={styles.paragraph}>{documentData.description}</Text>
-          </View>
-        ) : null}
-
         <View>
           <Text style={styles.sectionTitle}>Objectives:</Text>
-          {/* Ensure this is a string */}
           <Text style={styles.objectivesText}>
-            {documentData.objective || "No objective set."}
+            "{documentData.objective || "No objective set."}"
           </Text>
         </View>
 

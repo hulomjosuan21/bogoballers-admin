@@ -10,31 +10,33 @@ import {
 } from "@/components/ui/select";
 import { TeamSubmissionTable } from "@/tables/LeagueTeamSubmissionTable";
 import { LeagueTeamSheetSheetSubmissionSheet } from "@/components/league-team/LeagueTeamManagementComponents";
-import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { Spinner } from "@/components/ui/spinner";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import {
+  NoActiveLeagueAlert,
+  PendingLeagueAlert,
+} from "@/components/LeagueStatusAlert";
 
 export default function TeamSubmissionPage() {
+  const { isActive, league_status, message } = useActiveLeagueMeta();
+
   const {
     activeLeagueId,
-    activeLeagueStatus,
     categories,
-    isLoading,
     error,
     selectedCategory,
     setSelectedCategory,
   } = useLeagueCategoriesRoundsGroups();
 
-  if (activeLeagueStatus === "Pending") {
-    return <LeagueNotApproveYet />;
+  if (!isActive) {
+    return (
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
+    );
   }
 
-  if (isLoading) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
-    );
+  if (isActive && league_status === "Pending") {
+    return <PendingLeagueAlert />;
   }
 
   if (error) {

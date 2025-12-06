@@ -28,6 +28,7 @@ interface LeagueCategoriesResponse {
 
 export function useLeagueCategoriesRoundsGroups(params?: {
   publicLeagueId?: string;
+  enable?: boolean;
 }) {
   const {
     selectedCategory,
@@ -57,6 +58,8 @@ export function useLeagueCategoriesRoundsGroups(params?: {
       );
       return data;
     },
+
+    enabled: params?.enable,
   });
 
   const categories = data?.payload || [];

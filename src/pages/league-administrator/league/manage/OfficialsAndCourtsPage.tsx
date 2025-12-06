@@ -3,44 +3,34 @@ import { ContentBody, ContentShell } from "@/layouts/ContentShell";
 import ManageOfficials from "@/tables/ManageOfficialsTable";
 import ManangeReferees from "@/tables/ManageRefereesTable";
 import ManageCourts from "@/tables/ManageCourtsTable";
-import { NoActiveLeagueAlert } from "@/components/noActiveLeagueAlert";
-import SelectedLeagueStateScreen from "@/components/selectedLeagueStateScreen";
-import { LeagueService, type LeagueStatus } from "@/service/leagueService";
+import { LeagueService } from "@/service/leagueService";
 import { useQuery } from "@tanstack/react-query";
+import {
+  NoActiveLeagueAlert,
+  PendingLeagueAlert,
+} from "@/components/LeagueStatusAlert";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
 
 export default function LeagueOfficialsPage() {
-  const { data: league, isLoading } = useQuery({
+  const { league_status, league_id, isActive, message } = useActiveLeagueMeta();
+
+  const { data: league } = useQuery({
     queryKey: ["active-league-data"],
     queryFn: () => LeagueService.fetchActive(),
-    enabled: true,
+    enabled: isActive,
     retry: 1,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
-  const leagueId = league?.league_id;
 
-  if (isLoading) {
-    return <SelectedLeagueStateScreen loading />;
+  if (!isActive) {
+    return (
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
+    );
   }
 
-  if (!league || !leagueId) {
-    return <SelectedLeagueStateScreen />;
-  }
-
-  const leagueStatus = league.status as LeagueStatus;
-
-  const handledStates: Record<LeagueStatus, boolean> = {
-    Pending: false,
-    Completed: true,
-    Postponed: true,
-    Rejected: true,
-    Cancelled: true,
-    Scheduled: false,
-    Ongoing: false,
-  };
-
-  if (handledStates[leagueStatus]) {
-    return <SelectedLeagueStateScreen state={leagueStatus} league={league} />;
+  if (isActive && league_status === "Pending") {
+    return <PendingLeagueAlert />;
   }
 
   return (
@@ -48,24 +38,22 @@ export default function LeagueOfficialsPage() {
       <ContentHeader title="League Officials" />
 
       <ContentBody className="">
-        <>
-          {!league && <NoActiveLeagueAlert />}
-          <ManageOfficials
-            data={league.league_officials ?? []}
-            hasActiveLeague={!league}
-            activeLeagueId={leagueId}
-          />
-          <ManangeReferees
-            data={league?.league_referees ?? []}
-            hasActiveLeague={!league}
-            activeLeagueId={leagueId}
-          />
-          <ManageCourts
-            data={league?.league_courts ?? []}
-            hasActiveLeague={!league}
-            activeLeagueId={leagueId}
-          />
-        </>
+        {league && league_id && (
+          <>
+            <ManageOfficials
+              data={league.league_officials ?? []}
+              activeLeagueId={league_id}
+            />
+            <ManangeReferees
+              data={league.league_referees ?? []}
+              activeLeagueId={league_id}
+            />
+            <ManageCourts
+              data={league.league_courts ?? []}
+              activeLeagueId={league_id}
+            />
+          </>
+        )}
       </ContentBody>
     </ContentShell>
   );

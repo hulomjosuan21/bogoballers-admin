@@ -84,26 +84,6 @@ export class LeagueTeamService {
 
     return response.data;
   }
-
-  static async getGrouped(leagueCategoryId: string): Promise<LeagueTeam[]> {
-    const { data } = await axiosClient.get<LeagueTeam[]>(
-      `/league-team/grouped/${leagueCategoryId}`
-    );
-    return data;
-  }
-
-  static async updateGroups(
-    leagueCategoryId: string,
-    teams: { league_team_id: string; group_label: string }[]
-  ): Promise<LeagueTeam[]> {
-    const { data } = await axiosClient.put<LeagueTeam[]>(
-      `/league-team/update-grouped/${leagueCategoryId}`,
-      {
-        teams,
-      }
-    );
-    return data;
-  }
 }
 
 export class LeagueTeamSubmissionService {

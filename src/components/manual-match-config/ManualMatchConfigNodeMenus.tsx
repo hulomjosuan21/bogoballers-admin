@@ -13,22 +13,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { IManualMatchConfigGroup } from "@/types/manualMatchConfigTypes";
-import {
-  RoundTypeEnum,
-  type LeagueCategory,
-} from "@/types/leagueCategoryTypes";
-import type { LeagueTeam } from "@/types/team";
+import { RoundTypeEnum } from "@/types/leagueCategoryTypes";
 import type { LeagueMatch } from "@/types/leagueMatch";
-import { useActiveLeagueCategories } from "@/hooks/useLeagueCategories";
-import { useLeagueStore } from "@/stores/leagueStore";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { LeagueTeamService } from "@/service/leagueTeamService";
 import { toast } from "sonner";
 import { queryClient } from "@/lib/queryClient";
 import { ScrollArea } from "../ui/scroll-area";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import axiosClient from "@/lib/axiosClient";
+type ManualCategoryOption = {
+  league_category_id: string;
+  category_name: string;
+};
 
+type ManualTeamOption = {
+  league_team_id: string;
+  team_name: string;
+  group_label: string;
+};
 export function ManualGroupNodeMenu() {
   const [groups, setGroups] = useState<IManualMatchConfigGroup[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -137,29 +141,35 @@ export function ManualRoundNodeMenu() {
 
 export const ManualLeagueTeamNodeMenu = memo(() => {
   {
-    const { leagueId: activeLeagueId } = useLeagueStore();
+    const { league_id: activeLeagueId } = useActiveLeagueMeta();
 
     if (!activeLeagueId) return null;
 
-    const { activeLeagueCategories } = useActiveLeagueCategories(
-      activeLeagueId,
+    const { data: manualCategories } = useSuspenseQuery<ManualCategoryOption[]>(
       {
-        condition: "Manual",
+        queryKey: ["manual-categories", activeLeagueId],
+        queryFn: async () => {
+          const response = await axiosClient.get<ManualCategoryOption[]>(
+            `/manual-league-management/league-categories/${activeLeagueId}`
+          );
+
+          return response.data;
+        },
       }
     );
 
     const [selectedCategory, setSelectedCategory] =
-      useState<LeagueCategory | null>(null);
+      useState<ManualCategoryOption | null>(null);
 
     useEffect(() => {
       if (
-        activeLeagueCategories &&
-        activeLeagueCategories.length > 0 &&
+        manualCategories &&
+        manualCategories.length > 0 &&
         !selectedCategory
       ) {
-        setSelectedCategory(activeLeagueCategories[0]);
+        setSelectedCategory(manualCategories[0]);
       }
-    }, [activeLeagueCategories, selectedCategory]);
+    }, [manualCategories, selectedCategory]);
 
     const queryKey = [
       "league-teams-grouped",
@@ -169,41 +179,50 @@ export const ManualLeagueTeamNodeMenu = memo(() => {
       queryKey: queryKey,
       queryFn: async () => {
         if (!selectedCategory) return [];
-        return await LeagueTeamService.getGrouped(
-          selectedCategory.league_category_id
+
+        const { data } = await axiosClient.get<ManualTeamOption[]>(
+          `/league-team/grouped/${selectedCategory.league_category_id}`
         );
+        return data;
       },
     });
 
     const { mutate: saveGroups, isPending: isSaving } = useMutation({
-      mutationFn: (
-        payload: { league_team_id: string; group_label: string }[]
+      mutationFn: async (
+        teams: { league_team_id: string; group_label: string }[]
       ) => {
         if (!selectedCategory) throw new Error("No category");
-        return LeagueTeamService.updateGroups(
-          selectedCategory.league_category_id,
-          payload
+
+        const { data } = await axiosClient.put<ManualTeamOption[]>(
+          `/league-team/update-grouped/${selectedCategory.league_category_id}`,
+          { teams }
         );
+
+        return data;
       },
       onSuccess: (updatedTeams) => {
         queryClient.setQueryData(queryKey, updatedTeams);
         toast.success("Groups updated");
         handleLocalReset(updatedTeams);
       },
-      onError: () => toast.error("Failed to update groups"),
+      onError: () => {
+        toast.error("Failed to update groups");
+      },
     });
 
     const [groupCount, setGroupCount] = useState<number>(1);
-    const [targetGroup, setTargetGroup] = useState<string>("all"); // NEW: Filter for Roll
-    const [currentRoll, setCurrentRoll] = useState<LeagueTeam[]>([]);
+    const [targetGroup, setTargetGroup] = useState<string>("all");
+    const [currentRoll, setCurrentRoll] = useState<ManualTeamOption[]>([]);
     const [lastRolledGroupIndex, setLastRolledGroupIndex] = useState<
       string | null
     >(null);
     const [showAll, setShowAll] = useState(false);
-    const [teamPool, setTeamPool] = useState<Record<string, LeagueTeam[]>>({});
+    const [teamPool, setTeamPool] = useState<
+      Record<string, ManualTeamOption[]>
+    >({});
 
-    const handleLocalReset = useCallback((teams: LeagueTeam[]) => {
-      const groups: Record<string, LeagueTeam[]> = {};
+    const handleLocalReset = useCallback((teams: ManualTeamOption[]) => {
+      const groups: Record<string, ManualTeamOption[]> = {};
       teams.forEach((team) => {
         const gLabel = team.group_label || "0";
         if (!groups[gLabel]) groups[gLabel] = [];
@@ -284,7 +303,7 @@ export const ManualLeagueTeamNodeMenu = memo(() => {
     }, [teamPool, teamData, handleLocalReset, targetGroup]);
 
     const onDragStart = useCallback(
-      (event: React.DragEvent<HTMLDivElement>, team: LeagueTeam) => {
+      (event: React.DragEvent<HTMLDivElement>, team: ManualTeamOption) => {
         event.dataTransfer.setData(
           "application/reactflow-team",
           JSON.stringify(team)
@@ -299,7 +318,7 @@ export const ManualLeagueTeamNodeMenu = memo(() => {
       [teamPool]
     );
 
-    const TeamCard = ({ team }: { team: LeagueTeam }) => (
+    const TeamCard = ({ team }: { team: ManualTeamOption }) => (
       <div
         onDragStart={(evt) => onDragStart(evt, team)}
         draggable
@@ -316,7 +335,7 @@ export const ManualLeagueTeamNodeMenu = memo(() => {
       <div className="flex flex-col items-center gap-4">
         <Select
           onValueChange={(catId) => {
-            const cat = activeLeagueCategories?.find(
+            const cat = manualCategories?.find(
               (c) => c.league_category_id === catId
             );
             setSelectedCategory(cat || null);
@@ -327,7 +346,7 @@ export const ManualLeagueTeamNodeMenu = memo(() => {
             <SelectValue placeholder="Select Category" />
           </SelectTrigger>
           <SelectContent>
-            {activeLeagueCategories?.map((c) => (
+            {manualCategories?.map((c) => (
               <SelectItem
                 key={c.league_category_id}
                 value={c.league_category_id}

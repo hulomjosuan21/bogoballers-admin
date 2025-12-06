@@ -5,7 +5,6 @@ import { LeagueTeamReadyForMatchSection } from "@/components/league-team/LeagueT
 import { useToggleOfficialLeagueTeamSection } from "@/stores/leagueTeamStores";
 import { ToggleState } from "@/stores/toggleStore";
 import { Spinner } from "@/components/ui/spinner";
-import LeagueNotApproveYet from "@/components/LeagueNotApproveYet";
 import {
   Select,
   SelectContent,
@@ -16,38 +15,26 @@ import {
 
 import { useLeagueCategoriesRoundsGroups } from "@/hooks/useLeagueCategoriesRoundsGroups";
 import { Suspense } from "react";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import {
+  NoActiveLeagueAlert,
+  PendingLeagueAlert,
+} from "@/components/LeagueStatusAlert";
 
 export default function LeagueTeamsPage() {
+  const { isActive, league_status, message } = useActiveLeagueMeta();
   const { state, data } = useToggleOfficialLeagueTeamSection();
-  const {
-    categories,
-    activeLeagueStatus,
-    isLoading,
-    error,
-    selectedCategory,
-    setSelectedCategory,
-  } = useLeagueCategoriesRoundsGroups();
+  const { categories, selectedCategory, setSelectedCategory } =
+    useLeagueCategoriesRoundsGroups();
 
-  if (activeLeagueStatus === "Pending") {
-    return <LeagueNotApproveYet />;
-  }
-
-  if (isLoading) {
+  if (!isActive) {
     return (
-      <div className="h-screen grid place-content-center">
-        <Spinner />
-      </div>
+      <NoActiveLeagueAlert message={message ?? "No active league found."} />
     );
   }
 
-  if (error) {
-    return (
-      <div className="h-screen grid place-content-center">
-        <p className="text-sm text-red-500">
-          {error.message || "Error loading league category"}
-        </p>
-      </div>
-    );
+  if (isActive && league_status === "Pending") {
+    return <PendingLeagueAlert />;
   }
 
   return (

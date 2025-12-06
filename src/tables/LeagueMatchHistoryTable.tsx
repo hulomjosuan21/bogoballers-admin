@@ -30,7 +30,7 @@ import { ArrowUpDown } from "lucide-react";
 import { formatDate12h } from "@/lib/app_utils";
 
 type Props = {
-  data: LeagueMatch[];
+  data: Partial<LeagueMatch>[];
   isLoading: boolean;
   refresh: () => Promise<any>;
   controlls?: boolean;
@@ -59,7 +59,7 @@ const LeagueMatchStaticDisplayTable = memo(
       });
     }
 
-    const baseColumns: ColumnDef<LeagueMatch>[] = [
+    const baseColumns: ColumnDef<Partial<LeagueMatch>>[] = [
       {
         header: "Home Team",
         cell: ({ row }) => {

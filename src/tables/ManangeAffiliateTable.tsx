@@ -55,12 +55,10 @@ export type LeagueAffiliateCreate = {
 
 export default function ManageAffiliates({
   data,
-  hasActiveLeague,
   activeLeagueId,
   isActive = true,
 }: {
   data: LeagueAffiliate[];
-  hasActiveLeague: boolean;
   activeLeagueId: string;
   isActive?: boolean;
 }) {
@@ -228,12 +226,7 @@ export default function ManageAffiliates({
   });
 
   return (
-    <div
-      className={cn(
-        "space-y-2",
-        hasActiveLeague && "pointer-events-none opacity-50"
-      )}
-    >
+    <div className="space-y-2">
       <div className="flex justify-between items-center gap-4">
         <p className="text-helper">Manage league sponsors and partners.</p>
         <div className="flex gap-2 items-center">
