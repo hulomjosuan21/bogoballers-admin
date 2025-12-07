@@ -46,6 +46,9 @@ import { Button } from "../ui/button";
 import type { PlayerTeam } from "@/types/player";
 import { Spinner } from "../ui/spinner";
 import { useNavigate } from "react-router-dom";
+import axiosClient from "@/lib/axiosClient";
+import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 export function LeagueTeamSheetSheetSubmissionSheet() {
   const { isOpen, data, dialogClose } = useCheckPlayerSheet();
@@ -102,12 +105,26 @@ export function LeagueTeamPlayerDataGrid({
     pageSize: 5,
   });
 
+  const { mutate: banPlayer, isPending } = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await axiosClient.delete(`/player-team/remove/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Player has been banned.");
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("Failed to ban player.");
+    },
+  });
   const columns = useMemo<ColumnDef<PlayerTeam>[]>(
     () => [
       {
         accessorKey: "full_name",
         header: "Player",
         cell: ({ row }) => {
+          const p = row.original;
           const isCaptain = row.original.is_team_captain;
           const documents = row.original.valid_documents;
           const openWindow = (url: string) => {
@@ -141,7 +158,16 @@ export function LeagueTeamPlayerDataGrid({
                     >
                       Chat
                     </DropdownMenuItem>
-
+                    <DropdownMenuItem
+                      disabled={isPending}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        banPlayer(p.player_team_id);
+                      }}
+                      className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                    >
+                      {isPending ? "Banning..." : "Ban"}
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel>Documents</DropdownMenuLabel>
                     <DropdownMenuSeparator />

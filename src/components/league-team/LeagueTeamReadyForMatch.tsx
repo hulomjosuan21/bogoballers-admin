@@ -45,7 +45,7 @@ export function LeagueTeamReadyForMatchSection({ data }: Props) {
         <ChevronLeft />
       </Button>
       <div className="flex items-center gap-4 p-2 border rounded-md bg-card">
-        <div className="w-16 h-16 flex-shrink-0">
+        <div className="w-16 h-16 shrink-0">
           <img
             src={data.team_logo_url}
             alt={data.team_name}

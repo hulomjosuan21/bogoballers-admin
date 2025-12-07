@@ -29,6 +29,9 @@ import axiosClient from "@/lib/axiosClient";
 import type { LeagueWithRecord } from "@/types/leagueRecord";
 import { useToggleLeagueHistorySection } from "@/stores/leagueHistoryStore";
 import { ToggleState } from "@/stores/toggleStore";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2 } from "lucide-react";
 
 async function fetchRecords() {
   const response = await axiosClient.get<LeagueWithRecord[]>("/league/records");
@@ -36,6 +39,7 @@ async function fetchRecords() {
   return response.data;
 }
 const LeagueHistoryTable = () => {
+  const { league_id } = useActiveLeagueMeta();
   const { data, isLoading, refetch } = useQuery<LeagueWithRecord[]>({
     queryKey: ["league-history-table"],
     queryFn: fetchRecords,
@@ -54,12 +58,62 @@ const LeagueHistoryTable = () => {
       error: (e) => getErrorMessage(e),
     });
   }
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case "Ongoing":
+        return "primary";
+      case "Completed":
+        return "secondary";
+      case "Scheduled":
+      case "Pending":
+        return "outline";
+      case "Cancelled":
+      case "Rejected":
+        return "destructive";
+      case "Postponed":
+        return "warning";
+      default:
+        return "secondary";
+    }
+  };
 
   const columns: ColumnDef<LeagueWithRecord>[] = [
     {
       accessorKey: "league_title",
       header: "League Title",
+      cell: ({ row }) => {
+        const isActive = row.original.league_id === league_id;
+
+        return (
+          <div className="flex items-center gap-2">
+            <span className="font-medium truncate">
+              {row.getValue("league_title")}
+            </span>
+            {isActive && (
+              <Badge
+                variant="outline"
+                className="border-green-600 text-green-600 gap-1 px-2"
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                Active
+              </Badge>
+            )}
+          </div>
+        );
+      },
     },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string;
+
+        return (
+          <Badge variant={getStatusVariant(status) as any}>{status}</Badge>
+        );
+      },
+    },
+    // ... rest of your columns (registration_deadline, etc.)
     {
       accessorKey: "registration_deadline",
       header: "Registration deadline",
@@ -77,20 +131,20 @@ const LeagueHistoryTable = () => {
     {
       accessorKey: "teams_count",
       header: "Total Teams",
-      cell: ({ row }) => <span>{row.original.teams.length ?? []}</span>,
+      cell: ({ row }) => <span>{row.original.teams?.length ?? 0}</span>,
     },
     {
       accessorKey: "league_match_records",
       header: "Match Records",
       cell: ({ row }) => (
-        <span>{row.original.league_match_records.length ?? 0}</span>
+        <span>{row.original.league_match_records?.length ?? 0}</span>
       ),
     },
     {
       accessorKey: "league_categories",
       header: "Total Categories",
       cell: ({ row }) => (
-        <span>{row.original.league_categories.length ?? []}</span>
+        <span>{row.original.league_categories?.length ?? 0}</span>
       ),
     },
     {
@@ -121,7 +175,6 @@ const LeagueHistoryTable = () => {
       },
     },
   ];
-
   const table = useReactTable({
     data: data ?? [],
     columns,

@@ -12,74 +12,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { useMutation } from "@tanstack/react-query";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
+
 import { cn } from "@/lib/utils";
+import { ManualScoreDialog } from "@/dialogs/manualScoreDialog";
+import type { LeagueMatch } from "@/types/leagueMatch";
 import { queryClient } from "@/lib/queryClient";
+import useActiveLeagueMeta from "@/hooks/useActiveLeagueMeta";
 
 const TeamDropZone = ({
   team,
   side,
   placeholder,
-  is_round_robin,
-  matchId,
-  slot,
-  currentScore = 0,
-  leagueId,
 }: {
   side: "left" | "right";
   team?: LeagueTeam | null;
   is_round_robin?: boolean;
   placeholder: string;
-  matchId: string;
-  slot: "home" | "away";
-  currentScore?: number;
-  leagueId: string;
 }) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [scoreInput, setScoreInput] = useState("");
-
-  const updateScoreMutation = useMutation({
-    mutationFn: (score: number) =>
-      manualLeagueService.updateScore(matchId, { slot, score }),
-    onSuccess: async (response) => {
-      await queryClient.invalidateQueries({
-        queryKey: ["manual-match-config-flow", leagueId],
-        exact: true,
-      });
-      toast.success(response.data.message || "Score updated");
-      setScoreInput("");
-    },
-    onError: () => toast.error("Failed to update score"),
-  });
-
-  const eliminateMutation = useMutation({
-    mutationFn: () => manualLeagueService.eliminateTeam(team!.league_team_id),
-    onSuccess: (response) => {
-      toast.success(response.data.message || "Team eliminated");
-      setIsDialogOpen(false);
-    },
-    onError: () => toast.error("Failed to eliminate team"),
-  });
-
-  const handleUpdateScore = () => {
-    const score = scoreInput === "" ? 0 : parseInt(scoreInput, 10);
-    if (isNaN(score) || score < 0) {
-      toast.error("Please enter a valid score");
-      return;
-    }
-    updateScoreMutation.mutate(score);
-  };
-
   const baseClasses =
     "border border-dashed h-14 w-28 rounded-sm grid place-content-center text-center p-1 bg-background/50 cursor-pointer transition-all hover:bg-accent/50 select-none";
 
@@ -91,10 +40,6 @@ const TeamDropZone = ({
             ? baseClasses
             : `${baseClasses} border-muted-foreground/30 opacity-70`
         }
-        onDoubleClick={() => {
-          if (!team) return;
-          setIsDialogOpen(true);
-        }}
       >
         {team ? (
           <TooltipProvider>
@@ -131,61 +76,6 @@ const TeamDropZone = ({
           </span>
         )}
       </div>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-sm" aria-describedby={undefined}>
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">
-              {team?.team_name || "Empty Slot"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-5 py-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-1">
-                <Label htmlFor="score" className="sr-only">
-                  Score
-                </Label>
-                <Input
-                  id="score"
-                  type="number"
-                  min="0"
-                  placeholder={currentScore.toString()}
-                  value={scoreInput}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "" || /^\d+$/.test(val)) setScoreInput(val);
-                  }}
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="flex justify-between items-center">
-              {is_round_robin ? (
-                <Button
-                  variant="destructive"
-                  onClick={() => eliminateMutation.mutate()}
-                  disabled={eliminateMutation.isPending || !is_round_robin}
-                >
-                  Eliminate
-                </Button>
-              ) : (
-                <span className="text-info text-[10px]">
-                  Eliminating a team in a match node is only allowed in a match
-                  format template
-                </span>
-              )}
-
-              <Button
-                onClick={handleUpdateScore}
-                disabled={updateScoreMutation.isPending}
-              >
-                {updateScoreMutation.isPending ? "..." : "Update"}
-              </Button>
-            </DialogFooter>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };
@@ -193,9 +83,17 @@ const TeamDropZone = ({
 const ManualMatchConfigLeagueMatchNode: React.FC<
   NodeProps<Node<ManualMatchConfigLeagueMatchNodeData>>
 > = ({ id, data }) => {
+  const { league_id } = useActiveLeagueMeta();
   const dispatch = useManualMatchConfigFlowDispatch();
   const match = data.league_match;
-  const matchId = match.league_match_id || id;
+
+  const [scoreDialog, setScoreDialog] = useState<{
+    isOpen: boolean;
+    match: Partial<LeagueMatch> | null;
+  }>({
+    isOpen: false,
+    match: null,
+  });
 
   const updateMatch = useCallback(
     (updates: Partial<typeof match>) => {
@@ -311,7 +209,23 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
   };
 
   return (
-    <div className="p-3 border rounded-lg bg-card shadow-sm">
+    <div
+      className="p-3 border rounded-lg bg-card shadow-sm"
+      onDoubleClick={() => setScoreDialog({ isOpen: true, match })}
+    >
+      <ManualScoreDialog
+        open={scoreDialog.isOpen}
+        match={scoreDialog.match}
+        onOpenChange={(isOpen) =>
+          setScoreDialog((prev) => ({ ...prev, isOpen }))
+        }
+        onSuccess={async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ["manual-match-config-flow", league_id],
+            exact: true,
+          });
+        }}
+      />
       <div className="text-center text-xs font-medium text-muted-foreground mb-2">
         {resolveDisplayName()}
       </div>
@@ -320,13 +234,9 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
         <div onDragOver={onDragOver} onDrop={(e) => onDrop(e, "home")}>
           <TeamDropZone
             team={match.home_team}
-            leagueId={data.league_match.league_id!}
             side="left"
             placeholder="Home Team"
             is_round_robin={match.is_round_robin}
-            matchId={matchId}
-            slot="home"
-            currentScore={match.home_team_score ?? 0}
           />
         </div>
 
@@ -335,13 +245,9 @@ const ManualMatchConfigLeagueMatchNode: React.FC<
         <div onDragOver={onDragOver} onDrop={(e) => onDrop(e, "away")}>
           <TeamDropZone
             team={match.away_team}
-            leagueId={data.league_match.league_id!}
             side="right"
             placeholder="Away Team"
             is_round_robin={match.is_round_robin}
-            matchId={matchId}
-            slot="away"
-            currentScore={match.away_team_score ?? 0}
           />
         </div>
       </div>

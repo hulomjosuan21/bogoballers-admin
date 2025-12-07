@@ -3,12 +3,12 @@ import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import { type ManualMatchConfigLeagueCategoryNodeData } from "@/types/manualMatchConfigTypes";
 import { Button } from "../ui/button";
 import { ArrowRightLeft } from "lucide-react";
-import { useManualMatchConfigFlowDispatch } from "@/context/ManualMatchConfigFlowContext";
 import { toast } from "sonner";
 import { manualLeagueService } from "@/service/manualLeagueManagementService";
 import { Spinner } from "../ui/spinner";
 import { getErrorMessage } from "@/lib/error";
 import { useLeagueStore } from "@/stores/leagueStore";
+import { queryClient } from "@/lib/queryClient";
 
 const handleStyle = {};
 
@@ -23,7 +23,6 @@ const ManualMatchConfigLeagueCategoryNode: React.FC<
 
   const { league_category_id } = data.league_category;
 
-  const dispatch = useManualMatchConfigFlowDispatch();
   const [isPending, startTransition] = useTransition();
 
   const handleSyncBracket = async () => {
@@ -39,11 +38,12 @@ const ManualMatchConfigLeagueCategoryNode: React.FC<
         const result = await manualLeagueService.synchronizeBracket(
           league_category_id
         );
-        const updatedState = await manualLeagueService.getFlowState(
-          activeLeagueId
-        );
+
+        await queryClient.invalidateQueries({
+          queryKey: ["manual-match-config-flow", activeLeagueId],
+          exact: true,
+        });
         toast.success(`${result.message}`);
-        dispatch({ type: "SET_STATE", payload: updatedState });
       });
     } catch (error) {
       toast.error(

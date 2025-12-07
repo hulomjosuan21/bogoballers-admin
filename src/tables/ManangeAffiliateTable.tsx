@@ -172,7 +172,7 @@ export default function ManageAffiliates({
     },
     {
       accessorKey: "value",
-      header: "Value",
+      header: "Contribution",
     },
     {
       accessorKey: "contact_info",
