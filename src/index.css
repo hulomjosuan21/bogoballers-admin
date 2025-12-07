@@ -7,30 +7,20 @@ html {
 
 /* kani diri usbon */
 
-/* .sidebarColor {
-  background-color: #751168;
+/* .mamove {
+  position: fixed !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 50;
 } */
 
-/* .backgroundColor {
-  background-color: rgb(30, 196, 93);
+/* .eluyo {
+  background-color: rgb(58, 12, 12);
 } */
 
-/* body {
-  color: rgb(40, 1, 214) !important;
-} */
-
-/* .sidebarItem {
-  @apply hover:text-[#861b78] hover:bg-[#0bb357];
-} */
-
-/* .sidebarSubItem {
-  @apply hover:text-[#861b78] hover:bg-[#0bb357] hover:bg;
-} */
-/* 
-.sidebarItem:hover {
-  background: #581212;
-  color: #700b2d;
-} */
+.e_move_ang_logo {
+}
 
 /* ayaw nani hilabti diri padung ubos */
 

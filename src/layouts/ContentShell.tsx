@@ -25,7 +25,7 @@ export function ContentBody({ children, className }: ContentBodyProps) {
   return (
     <div
       className={cn(
-        "flex-1 overflow-y-auto p-4 flex flex-col gap-4",
+        "flex-1 overflow-y-auto p-4 flex flex-col gap-4 eluyo",
         className
       )}
     >

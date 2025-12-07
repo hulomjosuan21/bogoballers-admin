@@ -46,7 +46,10 @@ export const HeroHeader = () => {
         >
           <div className="relative flex flex-wrap items-center justify-between gap-3 py-2 lg:gap-0 lg:py-3">
             <div className="flex w-full justify-between lg:w-auto">
-              <Link to={"/"} className="flex items-center gap-2">
+              <Link
+                to={"/"}
+                className="flex items-center gap-2 e_move_ang_logo"
+              >
                 <img src={logo.src} className="max-h-8" alt={logo.alt} />
                 <span className="text-lg font-semibold tracking-tighter">
                   {logo.title}
