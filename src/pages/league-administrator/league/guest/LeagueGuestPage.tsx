@@ -169,8 +169,15 @@ export default function LeagueGuestPage() {
         header: "Player Name",
         cell: ({ row }) => {
           const details = row.original.details;
+
           return isPlayer(details) ? (
-            <span className="font-medium">{details.full_name}</span>
+            <div className="flex flex-col">
+              <span className="font-medium">{details.full_name}</span>
+              {/* Email added below */}
+              <span className="text-xs text-muted-foreground">
+                {details.user.email}
+              </span>
+            </div>
           ) : (
             <span>Unknown</span>
           );

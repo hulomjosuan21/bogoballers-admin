@@ -84,7 +84,7 @@ export function NavMenu({
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                className="sidebarItem"
+                className="hover_sa_sidebar"
               >
                 <Link to={item.url}>
                   {item.icon ? (
