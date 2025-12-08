@@ -260,7 +260,7 @@ const LeagueReportDocument = ({
 
         {/* --- V. Affiliates --- */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>V. Sponsors & Affiliates</Text>
+          <Text style={styles.sectionTitle}>V. Sponsors & Partners</Text>
           {affiliates.length > 0 ? (
             <BulletList items={affiliates} />
           ) : (
