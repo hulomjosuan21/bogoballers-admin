@@ -42,6 +42,7 @@ import type { League } from "@/types/league";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import type { LeagueAdministator } from "@/types/leagueAdmin";
+import LeagueReportDocument from "@/components/pdf/LeagueReport";
 
 export const columns: ColumnDef<LeagueRecord>[] = [
   {
@@ -166,6 +167,27 @@ const LeaguePdf = memo(
   }
 );
 
+const LeaguePdfReport = memo(
+  ({
+    league,
+    leagueAdmin,
+  }: {
+    league: League;
+    leagueAdmin: LeagueAdministator;
+  }) => {
+    return (
+      <PDFViewer
+        width="100%"
+        height="900px"
+        className="rounded-md shadow-sm"
+        showToolbar={true}
+      >
+        <LeagueReportDocument league={league} leagueAdmin={leagueAdmin} />
+      </PDFViewer>
+    );
+  }
+);
+
 export function LeaguesTabContent() {
   const { state, data: leagueHistory, reset } = useToggleLeagueHistorySection();
   const { leagueAdmin } = useAuthLeagueAdmin();
@@ -241,6 +263,20 @@ export function LeaguesTabContent() {
               <LeaguePdf
                 leagueAdmin={leagueAdmin!}
                 leagueHistory={leagueHistory as League}
+              />
+            </Suspense>
+          </div>
+          <div className="flex-1 overflow-hidden p-2 relative">
+            <Suspense
+              fallback={
+                <div className="h-40 grid place-content-center">
+                  <Spinner />
+                </div>
+              }
+            >
+              <LeaguePdfReport
+                leagueAdmin={leagueAdmin!}
+                league={leagueHistory as League}
               />
             </Suspense>
           </div>

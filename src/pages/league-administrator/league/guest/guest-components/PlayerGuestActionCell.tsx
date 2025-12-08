@@ -39,7 +39,6 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-// Hooks & Types
 import { useLeagueGuestOperations } from "@/hooks/useLeagueGuestOperations";
 import axiosClient from "@/lib/axiosClient";
 import { getErrorMessage } from "@/lib/error";
@@ -47,7 +46,6 @@ import type { GuestRegistrationRequest } from "@/types/guest";
 import type { Player } from "@/types/player";
 import { GuestRefundDialog } from "./GuestRefundDialog";
 
-// -- Helper Hook for Dropdown --
 function useLeagueTeams(leagueCategoryId: string) {
   return useQuery({
     queryKey: ["activeTeams", leagueCategoryId],
@@ -71,8 +69,6 @@ export function PlayerGuestActionCell({
   const { updateMutation, deleteMutation, refundMutation } =
     useLeagueGuestOperations(categoryId);
   const { data: teams, isLoading: isLoadingTeams } = useLeagueTeams(categoryId);
-
-  // -- State --
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string>("");
   const [isRefundOpen, setIsRefundOpen] = useState(false);
@@ -81,7 +77,6 @@ export function PlayerGuestActionCell({
     title: "",
   });
 
-  // -- Actions --
   const handleAccept = async () => {
     if (!selectedTeamId) return toast.error("Please select a team.");
 
@@ -165,7 +160,6 @@ export function PlayerGuestActionCell({
         </DialogContent>
       </Dialog>
 
-      {/* Refund Dialog */}
       <GuestRefundDialog
         isOpen={isRefundOpen}
         onClose={() => setIsRefundOpen(false)}
