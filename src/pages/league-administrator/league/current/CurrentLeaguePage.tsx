@@ -289,7 +289,7 @@ export default function LeagueUpdatePage() {
 
   return (
     <ContentShell>
-      <ContentHeader title="Update League Activity Design">
+      <ContentHeader title="Active League Section">
         <div className="flex items-center gap-2">
           <Button variant={"ghost"} size={"sm"}>
             <Info className="h-4 w-4" />

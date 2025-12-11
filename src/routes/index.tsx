@@ -32,6 +32,7 @@ import {
   ClipboardClock,
   UserStar,
   MessageSquare,
+  UserCog,
 } from "lucide-react";
 import ViewScorebookPage from "@/pages/scorebook/ViewLiveScoreBook";
 import LoginPage from "@/pages/auth/LoginPage";
@@ -49,6 +50,7 @@ import MatchHistoryPage from "@/pages/league-administrator/league/match/LeagueMa
 import ManageLeagueAdministratorPage from "@/pages/ManageLeagueAdminPage";
 import ConversationPage from "@/pages/messenger/ConversationPage";
 import ChatScreen from "@/pages/messenger/ChatScreen";
+import StaffManagementPage from "@/pages/league-administrator/staff/StaffManagementPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -114,7 +116,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     index: true,
     element: <DashboardPage />,
-    permissions: [Permission.ViewDashboard],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "League Dashboard",
     icon: LayoutDashboard,
@@ -140,7 +142,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league-admins",
     element: <ManageLeagueAdministratorPage />,
-    permissions: [Permission.ManagementLeagueAdmins],
+    permissions: [Permission.ManageLeagueAdmins],
     showInSidebar: true,
     sidebarTitle: "LGU Admin Dashboard",
     icon: UserStar,
@@ -149,7 +151,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/new",
     element: <LeagueCreationPage />,
-    permissions: [Permission.CreateLeague],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Start New",
     icon: Trophy,
@@ -158,7 +160,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/active",
     element: <LeagueUpdatePage />,
-    permissions: [Permission.UpdateLeague],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Active",
     icon: SquarePen,
@@ -167,7 +169,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/manual/configuration",
     element: <ManualMatchingPage />,
-    permissions: [Permission.MatchManangement],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Manual",
     sidebarParent: "Match Config",
@@ -178,7 +180,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/automatic/configuration",
     element: <AutomaticMatchConfigPage />,
-    permissions: [Permission.MatchManangement],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Automatic",
     sidebarParent: "Match Config",
@@ -188,7 +190,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/team/official",
     element: <LeagueTeamsPage />,
-    permissions: [Permission.ManageTeams],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Official Teams",
     sidebarParent: "Team",
@@ -198,7 +200,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/team/submission",
     element: <TeamSubmissionPage />,
-    permissions: [Permission.ViewTeamSubmissions],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Submissions",
     sidebarParent: "Team",
@@ -207,7 +209,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league-categories/manage",
     element: <ManageLeagueCategoriesPage />,
-    permissions: [Permission.ManageCategories],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "League Categories",
     sidebarParent: "Manage",
@@ -216,7 +218,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league-guest/manage",
     element: <LeagueGuestPage />,
-    permissions: [Permission.ManageLeagueGuest],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "League Guest",
     sidebarParent: "Manage",
@@ -225,7 +227,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/officials&courts",
     element: <LeagueOfficialsPage />,
-    permissions: [Permission.ManageOfficialsAndCourts],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Officials & Courts",
     sidebarParent: "Manage",
@@ -235,7 +237,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/affiliates",
     element: <LeagueAffiliatePage />,
-    permissions: [Permission.ManageAffiliates],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Sponsors & Partners",
     sidebarParent: "Manage",
@@ -244,7 +246,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/match/unscheduled",
     element: <LeagueMatchSetUnSchedulePage />,
-    permissions: [Permission.ScheduleMatches],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Set Schedule",
     sidebarParent: "Match",
@@ -259,7 +261,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
     sidebarParent: "Match",
     sidebarTitle: "Scheduled",
-    permissions: [Permission.ScheduleMatches, Permission.ViewScheduledMatches],
+    permissions: [],
   },
   {
     path: "pages/league-matches/history",
@@ -269,12 +271,21 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
     sidebarParent: "Match",
     sidebarTitle: "Completed",
-    permissions: [Permission.ViewScheduledMatches],
+    permissions: [],
+  },
+  {
+    path: "pages/manage/staff",
+    element: <StaffManagementPage />,
+    permissions: [],
+    showInSidebar: true,
+    sidebarTitle: "Manage Staff",
+    sidebarGroup: "system",
+    icon: UserCog
   },
   {
     path: "pages/settings/:tab?",
     element: <SettingsPage />,
-    permissions: [Permission.ManageSettings],
+    permissions: [],
     showInSidebar: true,
     sidebarTitle: "Settings",
     sidebarGroup: "system",
@@ -285,20 +296,20 @@ export const protectedRoutesWithoutSidebar: AppRouteObject[] = [
   {
     path: "/scorebook/:match_id?",
     element: <StartScorebookPage />,
-    permissions: [Permission.ScoreBook],
+    permissions: [],
     showInSidebar: false,
   },
   {
     path: "/test/notsidebar",
     element: <span>test</span>,
-    permissions: [Permission.ScoreBook],
+    permissions: [],
     showInSidebar: false,
   },
   {
     path: "/match/setup/:match_id?",
     element: <MatchSetupPage />,
     showInSidebar: false,
-    permissions: [Permission.SetupMatch],
+    permissions: [],
   },
 ];
 
