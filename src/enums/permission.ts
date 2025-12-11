@@ -1,71 +1,16 @@
 export enum Permission {
-  ViewDashboard,
-  CreateLeague,
-  UpdateLeague,
-  ManageCategories,
-  ManagePlayers,
-  ManageTeams,
-  ViewTeamSubmissions,
-  ManageOfficialsAndCourts,
-  MatchManangement,
-  ManageAffiliates,
-  ManageBrackets,
-  ScheduleMatches,
-  ViewScheduledMatches,
-  ManageSettings,
-  ScoreBook,
-  ManagementLeagueAdmins,
-  ViewChat,
-  ManageLeagueGuest,
-  SetupMatch,
+  StartNewLeague = "StartNewLeague",
+  ManageStaff = "ManageStaff",
+  ManageLeagueAdmins = "ManageLeagueAdmins",
+  ScoreGames = "ScoreGames",
+  ScheduleMatch = "ScheduleMatch",
+  ManageTeams = "ManageTeams",
+  ManageTeamsSubmission = "ManageTeamsSubmission",
+  ViewReports = "ViewReports",
+  ManageLeagueData = "ManageLeagueData",
+  ManageGuest = "ManageLeagueData",
+  ManageLeagueCategories = "ManageLeagueCategories",
+  ManageMatchAndBracket = "ManageMatchAndBracket",
 }
 
-export function getUserPermissions(accountType: string): Permission[] {
-  switch (accountType) {
-    case "League_Administrator_Local":
-      return [
-        Permission.ViewDashboard,
-        Permission.CreateLeague,
-        Permission.UpdateLeague,
-        Permission.ManageLeagueGuest,
-        Permission.ManageCategories,
-        Permission.ManagePlayers,
-        Permission.MatchManangement,
-        Permission.ManageTeams,
-        Permission.ViewTeamSubmissions,
-        Permission.ManageOfficialsAndCourts,
-        Permission.ManageAffiliates,
-        Permission.ManageBrackets,
-        Permission.ScheduleMatches,
-        Permission.ViewScheduledMatches,
-        Permission.ManageSettings,
-        Permission.ScoreBook,
-        Permission.ViewChat,
-        Permission.SetupMatch,
-      ];
-    case "League_Administrator_LGU":
-      return [
-        Permission.ViewDashboard,
-        Permission.CreateLeague,
-        Permission.UpdateLeague,
-        Permission.ManageCategories,
-        Permission.ManagePlayers,
-        Permission.ManageLeagueGuest,
-        Permission.MatchManangement,
-        Permission.ManageTeams,
-        Permission.ViewTeamSubmissions,
-        Permission.ManageOfficialsAndCourts,
-        Permission.ManageAffiliates,
-        Permission.ManageBrackets,
-        Permission.ScheduleMatches,
-        Permission.ViewScheduledMatches,
-        Permission.ManageSettings,
-        Permission.ManagementLeagueAdmins,
-        Permission.ScoreBook,
-        Permission.ViewChat,
-        Permission.SetupMatch,
-      ];
-    default:
-      return [];
-  }
-}
+// ["ManageLeagueAdmins", "ScoreGames", "ManageTeams", "ViewReports"]

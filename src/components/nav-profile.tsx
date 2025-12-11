@@ -31,6 +31,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import LeagueAdministratorDisplay from "./LeagueAdministratorDisplay";
+import { leagueAdminStaffService } from "@/service/leagueAdminStaffService";
 export function NavProfile({
   leagueAdmin,
 }: {
@@ -45,9 +46,13 @@ export function NavProfile({
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      const res = await LeagueAdministratorService.logout();
+      await Promise.all([
+        leagueAdminStaffService.logout(),
+        LeagueAdministratorService.logout(),
+      ]);
+
       queryClient.clear();
-      toast.success(res.message);
+      toast.success("Logout Success");
       navigate("/auth/login", { replace: true });
     } catch (e) {
       handleError(e);

@@ -13,8 +13,8 @@ import { NavMenu } from "./nav-menu";
 import { AppSidebarHeader } from "./nav-header";
 import { NavProfile } from "./nav-profile";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
-import { getUserPermissions } from "@/enums/permission";
 import { leagueAdminRoutes, type AppRouteObject } from "@/routes";
+import { useStaffAuth } from "@/hooks/useStaffAuth";
 
 function buildNavFromRoutes(routes: AppRouteObject[]) {
   const navItems: any[] = [];
@@ -68,16 +68,16 @@ const bottomLinks = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { leagueAdmin, leagueAdminLoading, leagueAdminError } =
     useAuthLeagueAdmin();
-
+  const { staff, loading: staffLoading } = useStaffAuth();
   const userPermissions =
-    leagueAdmin && !leagueAdminLoading
-      ? getUserPermissions(leagueAdmin.account.account_type)
+    leagueAdmin && staff && !leagueAdminLoading && !staffLoading
+      ? staff.permissions
       : [];
 
   const visibleRoutes = leagueAdminRoutes.filter((route) => {
     if (!route.showInSidebar) return false;
     if (route.permissions.length === 0) return true;
-    return route.permissions.some((p) => userPermissions.includes(p));
+    return route.permissions.every((p) => userPermissions.includes(p));
   });
 
   const platformRoutes = visibleRoutes.filter(
