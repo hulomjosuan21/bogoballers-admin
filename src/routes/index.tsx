@@ -151,7 +151,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/new",
     element: <LeagueCreationPage />,
-    permissions: [],
+    permissions: [Permission.ManageLeagueData, Permission.StartNewLeague],
     showInSidebar: true,
     sidebarTitle: "Start New",
     icon: Trophy,
@@ -160,7 +160,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/active",
     element: <LeagueUpdatePage />,
-    permissions: [],
+    permissions: [Permission.ManageLeagueData],
     showInSidebar: true,
     sidebarTitle: "Active",
     icon: SquarePen,
@@ -169,7 +169,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/manual/configuration",
     element: <ManualMatchingPage />,
-    permissions: [],
+    permissions: [Permission.ManageMatchAndBracket],
     showInSidebar: true,
     sidebarTitle: "Manual",
     sidebarParent: "Match Config",
@@ -180,7 +180,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/automatic/configuration",
     element: <AutomaticMatchConfigPage />,
-    permissions: [],
+    permissions: [Permission.ManageMatchAndBracket],
     showInSidebar: true,
     sidebarTitle: "Automatic",
     sidebarParent: "Match Config",
@@ -190,7 +190,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/team/official",
     element: <LeagueTeamsPage />,
-    permissions: [],
+    permissions: [Permission.ManageTeams],
     showInSidebar: true,
     sidebarTitle: "Official Teams",
     sidebarParent: "Team",
@@ -200,7 +200,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/team/submission",
     element: <TeamSubmissionPage />,
-    permissions: [],
+    permissions: [Permission.ManageTeams, Permission.ManageTeamsSubmission],
     showInSidebar: true,
     sidebarTitle: "Submissions",
     sidebarParent: "Team",
@@ -209,7 +209,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league-categories/manage",
     element: <ManageLeagueCategoriesPage />,
-    permissions: [],
+    permissions: [Permission.ManageLeagueCategories],
     showInSidebar: true,
     sidebarTitle: "League Categories",
     sidebarParent: "Manage",
@@ -218,7 +218,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league-guest/manage",
     element: <LeagueGuestPage />,
-    permissions: [],
+    permissions: [Permission.ManageGuest],
     showInSidebar: true,
     sidebarTitle: "League Guest",
     sidebarParent: "Manage",
@@ -227,9 +227,9 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/officials&courts",
     element: <LeagueOfficialsPage />,
-    permissions: [],
+    permissions: [Permission.ManageLeagueData],
     showInSidebar: true,
-    sidebarTitle: "Officials & Courts",
+    sidebarTitle: "Referees & Courts",
     sidebarParent: "Manage",
     icon: ChartNoAxesGantt,
     sidebarGroup: "league",
@@ -237,7 +237,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/affiliates",
     element: <LeagueAffiliatePage />,
-    permissions: [],
+    permissions: [Permission.ManageLeagueData],
     showInSidebar: true,
     sidebarTitle: "Sponsors & Partners",
     sidebarParent: "Manage",
@@ -246,7 +246,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/league/match/unscheduled",
     element: <LeagueMatchSetUnSchedulePage />,
-    permissions: [],
+    permissions: [Permission.ScheduleMatch],
     showInSidebar: true,
     sidebarTitle: "Set Schedule",
     sidebarParent: "Match",
@@ -261,7 +261,7 @@ export const leagueAdminRoutes: AppRouteObject[] = [
     sidebarGroup: "league",
     sidebarParent: "Match",
     sidebarTitle: "Scheduled",
-    permissions: [],
+    permissions: [Permission.ScoreGames],
   },
   {
     path: "pages/league-matches/history",
@@ -276,11 +276,11 @@ export const leagueAdminRoutes: AppRouteObject[] = [
   {
     path: "pages/manage/staff",
     element: <StaffManagementPage />,
-    permissions: [],
+    permissions: [Permission.ManageStaff],
     showInSidebar: true,
     sidebarTitle: "Manage Staff",
     sidebarGroup: "system",
-    icon: UserCog
+    icon: UserCog,
   },
   {
     path: "pages/settings/:tab?",

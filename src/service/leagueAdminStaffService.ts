@@ -16,9 +16,10 @@ interface CreateStaff {
   permissions: string[];
   pin: string;
 }
-
-interface LoginStaff {
+interface CreateSuperStaff {
   username: string;
+  full_name: string;
+  contact_info: string;
   pin: string;
 }
 
@@ -39,9 +40,9 @@ class LeagueAdminStaffService {
     );
     return response.data;
   }
-  async login(data: LoginStaff) {
-    const response = await axiosClient.post(
-      `${this.base}/league-staff/login`,
+  async login(data: FormData) {
+    const response = await axiosClient.post<{ message: string }>(
+      `${this.base}/login`,
       data
     );
     return response.data;
@@ -60,7 +61,38 @@ class LeagueAdminStaffService {
     return response.data;
   }
   async logout() {
-    await axiosClient.post(`${this.base}/league-staff/logout`);
+    await axiosClient.post(`${this.base}/logout`);
+  }
+
+  async checkSuperStaffStatus(leagueAdminId: string) {
+    const response = await axiosClient.get<{ exists: boolean }>(
+      `${this.base}/super-staff/status/${leagueAdminId}`
+    );
+    return response.data;
+  }
+
+  async createSuperStaff(data: CreateSuperStaff, leagueAdminId: string) {
+    const response = await axiosClient.post(
+      `${this.base}/super-staff/create/${leagueAdminId}`,
+      data
+    );
+    return response.data;
+  }
+
+  async verifySuperStaff(data: { username: string; pin: string }) {
+    const response = await axiosClient.post(
+      `${this.base}/super-staff/verify`,
+      data
+    );
+    return response.data;
+  }
+
+  async authStaff() {
+    const response = await axiosClient.get<{ exists: boolean }>(
+      "/staff/super-staff/exists"
+    );
+
+    return response.data.exists;
   }
 }
 

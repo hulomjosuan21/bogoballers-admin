@@ -1,21 +1,16 @@
 export enum Permission {
+  StartNewLeague = "StartNewLeague",
+  ManageStaff = "ManageStaff",
   ManageLeagueAdmins = "ManageLeagueAdmins",
   ScoreGames = "ScoreGames",
+  ScheduleMatch = "ScheduleMatch",
   ManageTeams = "ManageTeams",
-  ViewReports = "ViewReports"
+  ManageTeamsSubmission = "ManageTeamsSubmission",
+  ViewReports = "ViewReports",
+  ManageLeagueData = "ManageLeagueData",
+  ManageGuest = "ManageLeagueData",
+  ManageLeagueCategories = "ManageLeagueCategories",
+  ManageMatchAndBracket = "ManageMatchAndBracket",
 }
 
-export function getUserPermissions(accountType: string): Permission[] {
-  switch (accountType) {
-    case "League_Administrator_Local":
-      return [
-       
-      ];
-    case "League_Administrator_LGU":
-      return [
-        Permission.ManageLeagueAdmins
-      ];
-    default:
-      return [];
-  }
-}
+// ["ManageLeagueAdmins", "ScoreGames", "ManageTeams", "ViewReports"]

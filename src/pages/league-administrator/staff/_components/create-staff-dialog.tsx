@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { leagueAdminStaffService } from "@/service/leagueAdminStaffServie";
+import { leagueAdminStaffService } from "@/service/leagueAdminStaffService";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
 
 import MultipleSelector, { type Option } from "@/components/ui/multiselect";
@@ -165,8 +165,7 @@ export function CreateStaffDialog() {
                 </InputOTP>
               </div>
               <p className="text-[0.8rem] text-muted-foreground">
-                This 6-digit PIN will be used for quick access on every
-                devices.
+                This 6-digit PIN will be used for quick access on every devices.
               </p>
             </div>
 

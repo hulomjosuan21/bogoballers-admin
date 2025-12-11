@@ -7,7 +7,7 @@ import {
   getFilteredRowModel,
   type SortingState,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -16,25 +16,43 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useState } from "react"
-import { CreateStaffDialog } from "./create-staff-dialog"
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { CreateStaffDialog } from "./create-staff-dialog";
+import { DataTablePagination } from "@/components/data-table-pagination";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/error";
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  filterColumn?: string
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  filterColumn?: string;
+  refresh: () => Promise<any>;
 }
 
 export function StaffDataTable<TData, TValue>({
   columns,
   data,
-  filterColumn = "username", 
+  filterColumn = "username",
+  refresh,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<any>([])
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<any>([]);
+
+  function handleRefresh(): void {
+    toast.promise(
+      async () => {
+        await refresh();
+      },
+      {
+        loading: "Loading...",
+        success: "Done",
+        error: (e) => getErrorMessage(e),
+      }
+    );
+  }
 
   const table = useReactTable({
     data,
@@ -49,24 +67,28 @@ export function StaffDataTable<TData, TValue>({
       sorting,
       columnFilters,
     },
-  })
+  });
 
   return (
     <div>
       <div className="flex items-center py-4">
         <Input
           placeholder={`Filter ${filterColumn}...`}
-          value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
+          value={
+            (table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
             table.getColumn(filterColumn)?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-          <p className="text-helper">Manage your referees, scorekeepers, and officials.</p>
+        <p className="text-helper">
+          Manage your referees, scorekeepers, and officials.
+        </p>
         <div className="flex-1" />
-       <div className="flex items-center gap-1">
-        <CreateStaffDialog />
-       </div>
+        <div className="flex items-center gap-1">
+          <CreateStaffDialog />
+        </div>
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -83,7 +105,7 @@ export function StaffDataTable<TData, TValue>({
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -97,14 +119,20 @@ export function StaffDataTable<TData, TValue>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -112,24 +140,14 @@ export function StaffDataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
+      <div className="flex items-center mt-2 gap-2">
+        <div className="flex-1">
+          <DataTablePagination showPageSize={false} table={table} />
+        </div>
+        <Button variant={"outline"} size={"sm"} onClick={handleRefresh}>
+          Refresh
         </Button>
       </div>
     </div>
-  )
+  );
 }

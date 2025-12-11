@@ -1,6 +1,5 @@
 import ContentHeader from "@/components/content-header";
 import { ContentBody, ContentShell } from "@/layouts/ContentShell";
-import ManageOfficials from "@/tables/ManageOfficialsTable";
 import ManangeReferees from "@/tables/ManageRefereesTable";
 import ManageCourts from "@/tables/ManageCourtsTable";
 import { LeagueService } from "@/service/leagueService";
@@ -40,10 +39,6 @@ export default function LeagueOfficialsPage() {
       <ContentBody className="">
         {league && league_id && (
           <>
-            <ManageOfficials
-              data={league.league_officials ?? []}
-              activeLeagueId={league_id}
-            />
             <ManangeReferees
               data={league.league_referees ?? []}
               activeLeagueId={league_id}

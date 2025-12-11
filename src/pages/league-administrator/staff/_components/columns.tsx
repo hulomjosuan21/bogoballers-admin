@@ -1,8 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown} from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import type { Staff } from "@/service/leagueAdminStaffServie";
+import type { Staff } from "@/service/leagueAdminStaffService";
 import {
   Popover,
   PopoverContent,
@@ -50,7 +50,9 @@ export const columns: ColumnDef<Staff>[] = [
   {
     accessorKey: "staff_created_at",
     header: "Added at",
-    cell: ({ row }) => <div>{formatDate12h(row.getValue("staff_created_at"))}</div>,
+    cell: ({ row }) => (
+      <div>{formatDate12h(row.getValue("staff_created_at"))}</div>
+    ),
   },
   {
     accessorKey: "permissions",

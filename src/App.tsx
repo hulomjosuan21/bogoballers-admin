@@ -4,9 +4,10 @@ import {
   useNavigate,
   useLocation,
   matchPath,
+  Navigate,
 } from "react-router-dom";
 import { useAuthLeagueAdmin } from "@/hooks/useAuth";
-import { getUserPermissions } from "@/enums/permission";
+import { useStaffAuth } from "@/hooks/useStaffAuth";
 import {
   leagueAdminRoutes,
   protectedRoutesWithoutSidebar,
@@ -19,6 +20,9 @@ import { Progress } from "@/components/ui/progress";
 import LoginPage from "@/pages/auth/LoginPage";
 import LeagueAdminLayout from "@/layouts/LeagueAdminLayout";
 import { toast } from "sonner";
+import { CreateSuperStaffGate } from "./pages/league-administrator/staff/_components/staffComponents";
+import StaffLoginPage from "./pages/league-administrator/staff/_components/staffLogin";
+import { leagueAdminStaffService } from "./service/leagueAdminStaffService";
 
 function NotFoundPage() {
   const navigate = useNavigate();
@@ -36,28 +40,62 @@ function NotFoundPage() {
 export default function App() {
   const location = useLocation();
   const [progress, setProgress] = useState(0);
+  const [hasSuperStaff, setHasSuperStaff] = useState<boolean | null>(null);
 
+  // 1. Define paths
   const protectedPaths = [
     "portal/league-administrator",
     "portal/league-administrator/*",
+    "/create-super-staff",
     ...protectedRoutesWithoutSidebar.map((route) => route.path),
   ];
 
+  // 2. Check if current path is protected
   const isProtectedPath = protectedPaths.some((path) =>
     matchPath(path!, location.pathname)
   );
 
-  const { leagueAdmin, leagueAdminLoading, leagueAdminError } =
+  // 3. Robust check for creation page (Handles trailing slashes)
+  const isCreationPage = !!matchPath("/create-super-staff", location.pathname);
+
+  const { leagueAdminId, leagueAdmin, leagueAdminLoading, leagueAdminError } =
     useAuthLeagueAdmin(isProtectedPath);
 
+  const { staff, loading: staffLoading } = useStaffAuth();
+
+  const isLoading =
+    leagueAdminLoading ||
+    (isProtectedPath && staffLoading) ||
+    (isProtectedPath && hasSuperStaff === null);
+
   useEffect(() => {
-    if (leagueAdminLoading) {
+    if (isProtectedPath && leagueAdmin && leagueAdminId) {
+      const checkSuperStaff = async () => {
+        try {
+          const response = await leagueAdminStaffService.checkSuperStaffStatus(
+            leagueAdminId
+          );
+          setHasSuperStaff(response.exists);
+        } catch (error) {
+          setHasSuperStaff(false);
+        }
+      };
+      checkSuperStaff();
+    } else if (!isProtectedPath) {
+      setHasSuperStaff(null);
+    }
+  }, [isProtectedPath, leagueAdmin, leagueAdminId]);
+
+  useEffect(() => {
+    if (isLoading) {
       const interval = setInterval(() => {
         setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
       }, 300);
       return () => clearInterval(interval);
     }
-  }, [leagueAdminLoading]);
+  }, [isLoading]);
+
+  // --- RENDER LOGIC ---
 
   if (isProtectedPath) {
     if (leagueAdminLoading) {
@@ -80,20 +118,35 @@ export default function App() {
     }
 
     if (!leagueAdmin.is_operational) {
-      toast.error(
-        "This account is not yet given the privilege to operate. Please wait for your local government unit to grant access."
-      );
+      toast.error("This account is not yet given the privilege to operate.");
+      return <LoginPage />;
+    }
 
+    if (hasSuperStaff === null) {
       return (
-        <Routes>
-          <Route path="*" element={<LoginPage />} />
-        </Routes>
+        <div className="flex flex-col items-center justify-center h-screen px-4 space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Verifying Staff Configuration...
+          </p>
+          <Progress value={progress} className="w-64" />
+        </div>
       );
     }
 
-    const userPermissions = getUserPermissions(
-      leagueAdmin.account.account_type
-    );
+    if (hasSuperStaff === false) {
+      if (!isCreationPage) {
+        return <Navigate to="/create-super-staff" replace />;
+      }
+    } else if (hasSuperStaff === true) {
+      if (isCreationPage) {
+        return <Navigate to="/staff-login" replace />;
+      }
+      if (!staff) {
+        return <Navigate to="/staff-login" replace />;
+      }
+    }
+
+    const userPermissions = staff?.permissions || [];
 
     const filteredLeagueAdminRoutes = leagueAdminRoutes.filter((route) => {
       if (route.permissions.length === 0) return true;
@@ -129,7 +182,8 @@ export default function App() {
             element={route.element}
           />
         ))}
-
+        <Route path="/create-super-staff" element={<CreateSuperStaffGate />} />
+        <Route path="/staff-login" element={<StaffLoginPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     );
@@ -137,6 +191,9 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/staff-login" element={<StaffLoginPage />} />
+      <Route path="/create-super-staff" element={<CreateSuperStaffGate />} />
+
       {publicRoutes.map((route, index) => (
         <Route
           key={`public-${index}`}

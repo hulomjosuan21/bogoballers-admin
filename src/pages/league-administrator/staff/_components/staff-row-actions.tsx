@@ -24,9 +24,10 @@ import {
 
 import { UpdateStaffDialog } from "./update-staff-dialog";
 import type { Row } from "@tanstack/react-table";
-import { leagueAdminStaffService, type Staff } from "@/service/leagueAdminStaffServie";
-
-
+import {
+  leagueAdminStaffService,
+  type Staff,
+} from "@/service/leagueAdminStaffService";
 
 interface StaffRowActionsProps {
   row: Row<Staff>;
